@@ -1,71 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>US Probation Book Club</title>
   <style>
     :root{
-      --green-1:#8fac7e;
-      --green-2:#6b8e5a;
-      --sand-1:#a0956b;
-      --glass: rgba(255,255,255,.2);
-      --glass-2: rgba(255,255,255,.3);
-      --ink:#333;
-      --muted:#666;
-      --line:#e9ecef;
-      --gold:#b8860b;
-      --shadow:0 20px 40px rgba(0,0,0,.1);
-      --r:20px;
+      --green-1:#8fac7e;--green-2:#6b8e5a;--sand-1:#a0956b;
+      --glass:rgba(255,255,255,.2);--glass-2:rgba(255,255,255,.3);
+      --ink:#333;--muted:#666;--line:#e9ecef;--gold:#b8860b;
+      --shadow:0 20px 40px rgba(0,0,0,.1)
     }
-
     *{margin:0;padding:0;box-sizing:border-box}
-
     body{
       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,Helvetica,Arial,sans-serif;
       background:linear-gradient(135deg,var(--green-1) 0%,var(--green-2) 50%,var(--sand-1) 100%);
-      min-height:100vh;
-      padding:20px;
+      min-height:100vh;padding:20px
     }
-
     .container{max-width:1200px;margin:0 auto}
-
     .header{color:#fff;text-align:center;margin-bottom:30px}
     .header h1{font-size:2.5rem;margin-bottom:10px;text-shadow:0 2px 4px rgba(0,0,0,.3)}
     .header p{opacity:.9;font-size:1.1rem}
 
-    .user-info{
-      display:none;justify-content:space-between;align-items:center;
-      background:var(--glass);padding:10px 20px;border-radius:20px;color:#fff;margin-bottom:20px;
-      backdrop-filter: blur(12px);
-    }
-    .logout-btn{
-      background:none;border:1px solid #fff;color:#fff;padding:6px 14px;border-radius:14px;cursor:pointer;font-size:12px
-    }
+    .user-info{display:none;justify-content:space-between;align-items:center;background:var(--glass);padding:10px 20px;border-radius:20px;color:#fff;margin-bottom:20px;backdrop-filter:blur(12px)}
+    .logout-btn{background:none;border:1px solid #fff;color:#fff;padding:6px 14px;border-radius:14px;cursor:pointer;font-size:12px}
 
     .stats-bar{display:flex;justify-content:center;gap:30px;margin-bottom:30px;flex-wrap:wrap}
-    .stat-card{
-      background:var(--glass);padding:14px 22px;border-radius:20px;color:#fff;text-align:center;
-      border:1px solid var(--glass-2);backdrop-filter: blur(15px);transition:.25s transform,.25s background
-    }
+    .stat-card{background:var(--glass);padding:14px 22px;border-radius:20px;color:#fff;text-align:center;border:1px solid var(--glass-2);backdrop-filter:blur(15px);transition:.25s}
     .stat-card:hover{transform:translateY(-5px);background:rgba(255,255,255,.32)}
     .stat-number{font-size:2rem;font-weight:700;display:block}
     .stat-label{font-size:.9rem;opacity:.9}
 
     .nav{display:flex;gap:10px;justify-content:center;margin-bottom:30px;flex-wrap:wrap}
-    .nav-btn{
-      background:var(--glass);color:#fff;border:2px solid var(--glass-2);
-      padding:12px 24px;border-radius:25px;cursor:pointer;transition:.25s transform,.25s background;backdrop-filter: blur(10px)
-    }
+    .nav-btn{background:var(--glass);color:#fff;border:2px solid var(--glass-2);padding:12px 24px;border-radius:25px;cursor:pointer;transition:.2s;backdrop-filter:blur(10px)}
     .nav-btn:hover,.nav-btn.active{background:rgba(255,255,255,.34);transform:translateY(-2px)}
 
-    .content{
-      background:rgba(255,255,255,.97);border-radius:20px;padding:30px;backdrop-filter: blur(20px);
-      box-shadow:var(--shadow)
-    }
+    .content{background:rgba(255,255,255,.97);border-radius:20px;padding:30px;box-shadow:var(--shadow)}
 
     .login-screen{text-align:center;padding:60px 20px}
     .login-form{background:#fff;padding:40px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.1);max-width:420px;margin:0 auto}
@@ -74,53 +44,42 @@
     .section{display:none}
     .section.active{display:block}
 
-    .add-book-form{
-      background:linear-gradient(135deg,#f5f2e8 0%,#ede5d3 100%);
-      padding:24px;border-radius:15px;margin-bottom:30px;border-left:4px solid var(--green-1)
-    }
+    .add-book-form{background:linear-gradient(135deg,#f5f2e8 0%,#ede5d3 100%);padding:24px;border-radius:15px;margin-bottom:30px;border-left:4px solid var(--green-1)}
 
-    .form-group{margin-bottom:18px}
-    .form-group label{display:block;margin-bottom:8px;font-weight:600;color:var(--ink)}
-    .input, .select, .textarea{
-      width:100%;padding:12px;border:2px solid var(--line);border-radius:8px;font-size:16px;transition:.2s border-color
-    }
+    .form-row{display:flex;gap:12px;flex-wrap:wrap}
+    .form-group{flex:1 1 250px;margin-bottom:14px}
+    .form-group label{display:block;margin-bottom:6px;font-weight:600;color:var(--ink)}
+    .input,.select,.textarea{width:100%;padding:12px;border:2px solid var(--line);border-radius:8px;font-size:16px;transition:.2s border-color}
     .textarea{resize:vertical;min-height:100px}
     .input:focus,.select:focus,.textarea:focus{outline:none;border-color:var(--green-1)}
-
-    .btn{
-      background:linear-gradient(135deg,var(--green-1) 0%,var(--green-2) 100%);
-      color:#fff;border:none;padding:12px 22px;border-radius:25px;cursor:pointer;font-size:16px;font-weight:600;
-      transition:.2s transform,.2s box-shadow
-    }
+    .btn{background:linear-gradient(135deg,var(--green-1) 0%,var(--green-2) 100%);color:#fff;border:none;padding:12px 22px;border-radius:25px;cursor:pointer;font-size:16px;font-weight:600;transition:.2s}
     .btn:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(143,172,126,.4)}
     .btn-small{padding:6px 12px;font-size:12px;margin:2px}
     .btn-danger{background:#dc3545}
 
-    .search-filter{display:flex;gap:15px;margin-bottom:25px;flex-wrap:wrap}
-    .search-input{flex:1;min-width:220px}
-    .filter-select{min-width:160px}
+    .search-filter{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+    .chip{background:#eef3ea;border:1px solid #dfe8d7;color:#3a5630;padding:6px 10px;border-radius:999px;font-size:12px}
 
     .book-feed{display:flex;flex-direction:column;gap:24px}
 
-    .book-post{
-      background:#fff;border-radius:15px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.1);
-      transition:.25s transform,.25s box-shadow;border-left:4px solid var(--green-1)
-    }
+    .activity{background:#fff;border-radius:15px;padding:16px 18px;margin-bottom:18px;border-left:4px solid var(--sand-1);box-shadow:0 6px 18px rgba(0,0,0,.08)}
+    .activity h3{margin-bottom:8px;color:#5b6540}
+    .activity-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f1f1f1}
+    .activity-item:last-child{border-bottom:none}
+    .activity-badge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#f1efe5}
+    .activity-meta{font-size:12px;color:#888}
+
+    .book-post{background:#fff;border-radius:15px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.1);transition:.25s;border-left:4px solid var(--green-1)}
     .book-post:hover{transform:translateY(-3px);box-shadow:0 15px 35px rgba(0,0,0,.15)}
 
     .post-header{display:flex;gap:18px;margin-bottom:16px;align-items:flex-start}
     .book-cover{width:100px;height:150px;object-fit:cover;border-radius:10px;border:2px solid var(--line);flex-shrink:0}
-    .book-cover-placeholder{
-      width:100px;height:150px;background:linear-gradient(135deg,#e9ecef 0%,#dee2e6 100%);
-      border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#6c757d;text-align:center;flex-shrink:0
-    }
+    .book-cover-placeholder{width:100px;height:150px;background:linear-gradient(135deg,#e9ecef 0%,#dee2e6 100%);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#6c757d;flex-shrink:0}
 
     .book-info{flex:1}
     .book-title{font-size:1.35rem;font-weight:800;color:var(--ink);margin-bottom:6px}
     .book-author{color:#666;margin-bottom:6px;font-style:italic}
-    .book-genre{
-      background:var(--green-1);color:#fff;padding:4px 12px;border-radius:15px;font-size:.8rem;font-weight:700;text-transform:uppercase;display:inline-block;margin-bottom:8px
-    }
+    .book-genre{background:var(--green-1);color:#fff;padding:4px 12px;border-radius:15px;font-size:.8rem;font-weight:700;text-transform:uppercase;display:inline-block;margin-bottom:8px}
     .book-recommender{font-size:.95rem;color:var(--green-2);font-weight:600;margin-bottom:10px}
     .book-rating{display:flex;align-items:center;gap:10px;margin-bottom:10px}
     .stars{display:flex;gap:3px}
@@ -129,13 +88,8 @@
 
     .book-description{color:#555;line-height:1.6;margin-bottom:16px}
 
-    .post-actions{
-      display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;margin-bottom:14px;flex-wrap:wrap
-    }
-    .action-btn{
-      background:none;border:1px solid var(--green-1);color:var(--green-1);padding:8px 14px;border-radius:20px;cursor:pointer;transition:.2s;
-      font-size:14px;display:flex;align-items:center;gap:6px
-    }
+    .post-actions{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;margin-bottom:14px;flex-wrap:wrap}
+    .action-btn{background:none;border:1px solid var(--green-1);color:var(--green-1);padding:8px 14px;border-radius:20px;cursor:pointer;transition:.2s;font-size:14px;display:flex;align-items:center;gap:6px}
     .action-btn:hover,.action-btn.active{background:var(--green-1);color:#fff}
 
     .comments-section{margin-top:8px}
@@ -160,11 +114,20 @@
 
     .empty-state{text-align:center;padding:50px 20px;color:#666}
 
-    .toast{
-      position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:10px 14px;border-radius:10px;opacity:0;transform:translateY(10px);
-      transition:.25s;pointer-events:none;z-index:9999;max-width:70ch;box-shadow:0 8px 24px rgba(0,0,0,.25)
-    }
+    .dropdown{position:relative}
+    .results{position:absolute;z-index:40;top:100%;left:0;right:0;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.12);margin-top:6px;max-height:280px;overflow:auto}
+    .result-item{padding:10px 12px;display:flex;gap:10px;align-items:center;cursor:pointer}
+    .result-item:hover{background:#f5f7f2}
+    .result-cover{width:32px;height:48px;border-radius:6px;object-fit:cover;background:#e9ecef}
+
+    .toast{position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:10px 14px;border-radius:10px;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none;z-index:9999;max-width:70ch;box-shadow:0 8px 24px rgba(0,0,0,.25)}
     .toast.show{opacity:1;transform:translateY(0)}
+
+    /* modal for finish rating */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:10000}
+    .modal .card{background:#fff;border-radius:16px;padding:20px;max-width:420px;width:90%;box-shadow:0 12px 36px rgba(0,0,0,.25)}
+    .modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+
     @media (max-width:768px){
       .post-header{flex-direction:column;align-items:center;text-align:center}
       .post-actions{flex-wrap:wrap}
@@ -174,14 +137,14 @@
 </head>
 <body>
   <div class="container">
-    <div class="header" role="banner">
+    <div class="header">
       <h1>US Probation Book Club</h1>
       <p>Find your next favorite book with your colleagues</p>
     </div>
 
     <div id="user-info" class="user-info" aria-live="polite">
       <span>Welcome, <strong id="current-user-name"></strong>!</span>
-      <button class="logout-btn" id="logout-btn" type="button" aria-label="Switch user">Switch User</button>
+      <button class="logout-btn" id="logout-btn" type="button">Switch User</button>
     </div>
 
     <div class="stats-bar" role="region" aria-label="Stats">
@@ -198,27 +161,34 @@
       <button class="nav-btn" id="professional-btn" type="button">Professional Books</button>
     </nav>
 
-    <main class="content" id="app-root">
-      <!-- Login Screen -->
-      <section id="login-section" class="login-screen" aria-label="Login">
+    <main class="content">
+      <!-- Login -->
+      <section id="login-section" class="login-screen">
         <form class="login-form" id="login-form" novalidate>
           <h2>Welcome to the Book Club!</h2>
           <p style="margin-bottom:20px;color:#666">Enter your first name to access your personal reading lists</p>
           <div class="form-group">
             <label for="username-input" class="visually-hidden">First name</label>
-            <input class="input" type="text" id="username-input" placeholder="Enter your first name" autocomplete="given-name" required style="text-align:center" />
+            <input class="input" type="text" id="username-input" placeholder="Enter your first name" autocomplete="given-name" required style="text-align:center"/>
           </div>
           <button class="btn" type="submit">Join Book Club</button>
         </form>
       </section>
 
-      <!-- Main App -->
+      <!-- App -->
       <section id="main-app" style="display:none">
-        <!-- Book Feed -->
+        <!-- Feed -->
         <section id="feed" class="section active" aria-label="Book Feed">
+          <!-- Activity stream -->
+          <div class="activity" id="activity">
+            <h3>Activity</h3>
+            <div id="activity-list"></div>
+          </div>
+
+          <!-- Smart search / filters -->
           <div class="search-filter">
-            <input type="text" class="input search-input" placeholder="Search books..." id="search-input" aria-label="Search books" />
-            <select class="select filter-select" id="category-filter" aria-label="Filter by category">
+            <input type="text" class="input" placeholder="Search title, author, recommender…" id="search-input" aria-label="Search books"/>
+            <select class="select" id="category-filter" aria-label="Category">
               <option value="">All Categories</option>
               <option value="professional">Professional</option>
               <option value="fiction">Fiction</option>
@@ -227,46 +197,80 @@
               <option value="self-help">Self-Help</option>
               <option value="other">Other</option>
             </select>
+            <select class="select" id="min-rating" aria-label="Minimum rating">
+              <option value="0">Min Rating (Any)</option>
+              <option value="5">5★</option>
+              <option value="4">4★+</option>
+              <option value="3">3★+</option>
+            </select>
+            <select class="select" id="sort-by" aria-label="Sort">
+              <option value="new">Newest</option>
+              <option value="likes">Most Likes</option>
+              <option value="rating">Rating (High → Low)</option>
+              <option value="title">Title (A → Z)</option>
+            </select>
+            <span class="chip" id="result-count"></span>
           </div>
+
           <div id="books-feed" class="book-feed"></div>
         </section>
 
         <!-- Add Book -->
         <section id="add" class="section" aria-label="Add Book">
           <div class="add-book-form">
-            <h2 style="margin-bottom:14px;color:#333">Share a Book Recommendation</h2>
+            <h2 style="margin-bottom:10px;color:#333">Share a Book Recommendation</h2>
+
+            <!-- External book search (auto-fill) -->
+            <div class="form-row">
+              <div class="form-group dropdown" style="flex:2 1 380px">
+                <label for="book-search">Search books to auto-fill (Open Library)</label>
+                <input id="book-search" class="input" type="text" placeholder="Start typing a title or author…"/>
+                <div id="book-results" class="results" style="display:none"></div>
+              </div>
+            </div>
+
             <form id="book-form" novalidate>
-              <div class="form-group">
-                <label for="title">Book Title</label>
-                <input class="input" type="text" id="title" required />
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="title">Book Title</label>
+                  <input class="input" type="text" id="title" required/>
+                </div>
+                <div class="form-group">
+                  <label for="author">Author</label>
+                  <input class="input" type="text" id="author" required/>
+                </div>
               </div>
-              <div class="form-group">
-                <label for="author">Author</label>
-                <input class="input" type="text" id="author" required />
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="genre">Category</label>
+                  <select class="select" id="genre">
+                    <option value="fiction">Fiction</option>
+                    <option value="non-fiction">Non-Fiction</option>
+                    <option value="biography">Biography</option>
+                    <option value="self-help">Self-Help</option>
+                    <option value="other">Other</option>
+                    <option value="professional">Professional</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="recommender">Your Name</label>
+                  <input class="input" type="text" id="recommender" required/>
+                </div>
               </div>
-              <div class="form-group">
-                <label for="genre">Category</label>
-                <select class="select" id="genre">
-                  <option value="fiction">Fiction</option>
-                  <option value="non-fiction">Non-Fiction</option>
-                  <option value="biography">Biography</option>
-                  <option value="self-help">Self-Help</option>
-                  <option value="other">Other</option>
-                  <option value="professional">Professional</option>
-                </select>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="book-image">Book Cover Image (optional)</label>
+                  <input class="input" type="url" id="book-image" placeholder="https://example.com/book-cover.jpg"/>
+                </div>
               </div>
-              <div class="form-group">
-                <label for="recommender">Your Name</label>
-                <input class="input" type="text" id="recommender" required />
-              </div>
-              <div class="form-group">
-                <label for="book-image">Book Cover Image (optional)</label>
-                <input class="input" type="url" id="book-image" placeholder="https://example.com/book-cover.jpg" />
-              </div>
+
               <div class="form-group">
                 <label for="description">Why you recommend it</label>
                 <textarea class="textarea" id="description" required placeholder="Tell your colleagues why they should read this book..."></textarea>
               </div>
+
               <div class="form-group" aria-label="Your Rating">
                 <label>Your Rating</label>
                 <div class="stars" id="rating-stars" role="radiogroup" aria-label="Rating from 1 to 5">
@@ -277,6 +281,7 @@
                   <button class="star" type="button" data-rating="5" aria-pressed="true"  aria-label="5 stars">★</button>
                 </div>
               </div>
+
               <button type="submit" class="btn">Share Book</button>
             </form>
           </div>
@@ -302,7 +307,7 @@
           </div>
         </section>
 
-        <!-- Professional Books -->
+        <!-- Professional -->
         <section id="professional" class="section" aria-label="Professional Development Books">
           <h2 style="margin-bottom:10px;color:#333">Professional Development Books</h2>
           <p style="margin-bottom:18px;color:#666">Books relevant to probation work, criminal justice, and professional growth</p>
@@ -315,206 +320,145 @@
   <!-- Toast -->
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+  <!-- Finish rating modal -->
+  <div id="finish-modal" class="modal" aria-hidden="true">
+    <div class="card">
+      <h3 style="margin-bottom:8px">Rate this book</h3>
+      <p id="finish-title" style="color:#666;margin-bottom:8px"></p>
+      <div class="stars" id="finish-stars" style="margin:8px 0 4px">
+        <button class="star" data-rating="1" type="button">★</button>
+        <button class="star" data-rating="2" type="button">★</button>
+        <button class="star" data-rating="3" type="button">★</button>
+        <button class="star" data-rating="4" type="button">★</button>
+        <button class="star" data-rating="5" type="button">★</button>
+      </div>
+      <div class="actions">
+        <button class="btn" id="finish-save" type="button">Save</button>
+        <button class="btn btn-danger" id="finish-cancel" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    /***************
-     * State & Store
-     ***************/
-    const LS_KEYS = {
-      books: 'bookclub_books',
-      users: 'bookclub_userData',
-      current: 'bookclub_currentUser'
-    };
-
-    let currentUser = '';
-    let books = [];
-    let userData = {};
-    let currentRating = 5;               // "Add Book" rating
-    let currentBooks = [];               // filtered view
-    const commentRatings = new Map();    // per-book temporary comment rating
-
-    const $ = (sel, root=document) => root.querySelector(sel);
-    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-
-    const showToast = (msg) => {
-      const t = $('#toast');
-      t.textContent = msg;
-      t.classList.add('show');
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(()=> t.classList.remove('show'), 1800);
-    };
-
-    const saveState = () => {
-      localStorage.setItem(LS_KEYS.books, JSON.stringify(books));
-      localStorage.setItem(LS_KEYS.users, JSON.stringify(userData));
-      localStorage.setItem(LS_KEYS.current, currentUser);
-    };
-
-    const loadState = () => {
-      try{
-        const b = JSON.parse(localStorage.getItem(LS_KEYS.books) || 'null');
-        const u = JSON.parse(localStorage.getItem(LS_KEYS.users) || 'null');
-        const c = localStorage.getItem(LS_KEYS.current) || '';
-        if(Array.isArray(b) && b.length) books = b;
-        if(u && typeof u === 'object') userData = u;
-        if(c) currentUser = c;
-      }catch(e){ /* ignore */ }
-    };
-
-    /**********************
-     * Seed (first run only)
-     **********************/
-    const seedBooks = () => ([
-      {
-        id: 1,
-        title: "The Body Keeps the Score",
-        author: "Bessel van der Kolk",
-        genre: "professional",
-        recommender: "Dr. Sarah Johnson",
-        description: "Essential reading for understanding trauma's impact on the brain and body. Directly applicable to our work with clients.",
-        rating: 5,
-        image: "",
-        postLikes: 8,
-        postLikedBy: ["Mike","Jennifer","Tom","Lisa","David","Maria","Alex","Chris"],
-        comments: [
-          { id: 101, commenter: "Mike Rodriguez", rating: 5, text: "Changed how I approach trauma-informed supervision.", likes: 3, likedBy: ["Sarah","Jennifer","Tom"] },
-          { id: 102, commenter: "Jennifer Martinez", rating: 4, text: "Dense but worth it. I refer back to chapters regularly.", likes: 2, likedBy: ["Mike","Sarah"] }
-        ]
-      },
-      {
-        id: 2,
-        title: "Just Mercy",
-        author: "Bryan Stevenson",
-        genre: "professional",
-        recommender: "Chief Probation Officer Williams",
-        description: "A powerful examination of justice and mercy in the criminal justice system.",
-        rating: 5,
-        image: "",
-        postLikes: 12,
-        postLikedBy: ["Sarah","Mike","Jennifer","Tom","Lisa","David","Maria","Alex","Chris","Pat","Jordan","Sam"],
-        comments: [
-          { id: 201, commenter: "Lisa Chen", rating: 5, text: "Should be required reading for everyone in criminal justice.", likes: 7, likedBy: ["Sarah","Mike","Jennifer","Tom","David","Maria","Alex"] }
-        ]
-      },
-      {
-        id: 3,
-        title: "Where the Crawdads Sing",
-        author: "Delia Owens",
-        genre: "fiction",
-        recommender: "Jennifer Martinez",
-        description: "Beautiful writing and a compelling mystery—great fiction pick!",
-        rating: 4,
-        image: "",
-        postLikes: 6,
-        postLikedBy: ["Sarah","Mike","Tom","Lisa","Maria","Alex"],
-        comments: [
-          { id: 301, commenter: "Tom Wilson", rating: 4, text: "Loved the setting. The mystery kept me guessing.", likes: 2, likedBy: ["Jennifer","Sarah"] }
-        ]
-      }
-    ]);
-
-    /*************
-     * Auth flows
-     *************/
-    const requireUser = () => {
-      if(!currentUser){
-        showToast('Please log in first.');
-        return false;
-      }
-      return true;
-    };
-
-    const initUserIfNeeded = (name) => {
-      if(!userData[name]){
-        userData[name] = { readList:[], wishList:[], currentReading:[] };
-      }
-    };
-
-    const login = (name) => {
-      currentUser = name.trim();
-      initUserIfNeeded(currentUser);
-      $('#login-section').style.display = 'none';
-      $('#main-app').style.display = 'block';
-      $('#user-info').style.display = 'flex';
-      $('#current-user-name').textContent = currentUser;
-      saveState();
-      updateStats();
-      renderBooks();
-      renderMyLists();
-    };
-
-    const logout = () => {
-      currentUser = '';
-      saveState();
-      $('#login-section').style.display = 'block';
-      $('#main-app').style.display = 'none';
-      $('#user-info').style.display = 'none';
-      $('#username-input').value = '';
-    };
-
-    /**********************
-     * Navigation & Sections
-     **********************/
-    const showSection = (id, buttonEl) => {
-      $$('.section').forEach(s => s.classList.remove('active'));
-      $$('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      buttonEl.classList.add('active');
-
-      if(id === 'my-books') renderMyLists();
-      if(id === 'professional') renderProfessionalBooks();
-    };
-
-    /*****************
-     * Rating (form)
-     *****************/
-    const updateFormStarDisplay = () => {
-      const stars = $$('#rating-stars .star');
-      stars.forEach((btn, i) => {
-        const filled = i < currentRating;
-        btn.classList.toggle('filled', filled);
-        btn.setAttribute('aria-pressed', String(filled && i === currentRating-1));
-      });
-    };
-
-    /*****************
-     * Stats & Helpers
-     *****************/
-    const formatStars = (n) => '★'.repeat(n) + '☆'.repeat(5-n);
-
-    const getCurrentUserData = () =>
-      userData[currentUser] || { readList:[], wishList:[], currentReading:[] };
-
-    const updateStats = () => {
-      const totalBooks = books.length;
-      const totalComments = books.reduce((s,b)=> s + (b.comments?.length||0), 0);
-      const avg = totalBooks ? (books.reduce((s,b)=> s + (b.rating||0), 0) / totalBooks) : 0;
-      const readCount = getCurrentUserData().readList.length;
-      $('#total-books').textContent = String(totalBooks);
-      $('#total-reviews').textContent = String(totalComments);
-      $('#avg-rating').textContent = avg.toFixed(1);
-      $('#books-read').textContent = String(readCount);
+    /******************
+     * Storage Keys
+     ******************/
+    const LS = {
+      books:'bookclub_books',
+      users:'bookclub_userData',
+      current:'bookclub_currentUser',
+      activity:'bookclub_activity'
     };
 
     /******************
-     * Render functions
+     * State
      ******************/
-    const bookCoverBlock = (book) => {
-      // Render both img and placeholder; swap to placeholder on error.
-      return `
-        ${book.image ? `
-          <img class="book-cover" loading="lazy" alt="Cover of ${escapeHtml(book.title)}" src="${escapeAttr(book.image)}" />
-          <div class="book-cover-placeholder" style="display:none" aria-hidden="true">No Cover</div>
-        ` : `<div class="book-cover-placeholder" aria-hidden="true">No Cover</div>`}
-      `;
+    let currentUser='';
+    let books=[];
+    let userData={};
+    let activity=[];
+    let currentBooks=[];
+    let currentRating=5;
+    const commentRatings=new Map();
+    let finishContext=null; // {bookId, rating}
+
+    /******************
+     * Helpers
+     ******************/
+    const $=(s,root=document)=>root.querySelector(s);
+    const $$=(s,root=document)=>Array.from(root.querySelectorAll(s));
+    const now=()=>new Date().toISOString();
+    const timeAgo=(iso)=>{
+      const d=new Date(iso); const sec=(Date.now()-d)/1000;
+      if(sec<60) return `${Math.floor(sec)}s ago`;
+      const m=sec/60; if(m<60) return `${Math.floor(m)}m ago`;
+      const h=m/60; if(h<24) return `${Math.floor(h)}h ago`;
+      const days=h/24; return `${Math.floor(days)}d ago`;
+    };
+    const escapeHtml=(s='')=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+    const escapeAttr=(s='')=>escapeHtml(s).replaceAll('"','&quot;');
+    const showToast=(msg)=>{ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(showToast._t); showToast._t=setTimeout(()=>t.classList.remove('show'),1700); };
+    const save=()=>{ localStorage.setItem(LS.books,JSON.stringify(books)); localStorage.setItem(LS.users,JSON.stringify(userData)); localStorage.setItem(LS.current,currentUser); localStorage.setItem(LS.activity,JSON.stringify(activity)); };
+    const load=()=>{
+      try{
+        books=JSON.parse(localStorage.getItem(LS.books)||'[]'); if(!Array.isArray(books)) books=[];
+        userData=JSON.parse(localStorage.getItem(LS.users)||'{}')||{};
+        currentUser=localStorage.getItem(LS.current)||'';
+        activity=JSON.parse(localStorage.getItem(LS.activity)||'[]'); if(!Array.isArray(activity)) activity=[];
+      }catch{ /* noop */ }
     };
 
-    const escapeHtml = (s='') => String(s)
-      .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+    const seedBooks=()=>([
+      { id:1,title:"The Body Keeps the Score",author:"Bessel van der Kolk",genre:"professional",recommender:"Dr. Sarah Johnson",description:"Essential reading for understanding trauma's impact on the brain and body. Directly applicable to our work with clients.",rating:5,image:"",postLikes:8,postLikedBy:["Mike","Jennifer","Tom","Lisa","David","Maria","Alex","Chris"],comments:[
+        {id:101,commenter:"Mike Rodriguez",rating:5,text:"Changed how I approach trauma-informed supervision.",likes:3,likedBy:["Sarah","Jennifer","Tom"]},
+        {id:102,commenter:"Jennifer Martinez",rating:4,text:"Dense but worth it. I refer back to chapters regularly.",likes:2,likedBy:["Mike","Sarah"]}
+      ]},
+      { id:2,title:"Just Mercy",author:"Bryan Stevenson",genre:"professional",recommender:"Chief Probation Officer Williams",description:"A powerful examination of justice and mercy in the criminal justice system.",rating:5,image:"",postLikes:12,postLikedBy:["Sarah","Mike","Jennifer","Tom","Lisa","David","Maria","Alex","Chris","Pat","Jordan","Sam"],comments:[
+        {id:201,commenter:"Lisa Chen",rating:5,text:"Should be required reading for everyone in criminal justice.",likes:7,likedBy:["Sarah","Mike","Jennifer","Tom","David","Maria","Alex"]}
+      ]},
+      { id:3,title:"Where the Crawdads Sing",author:"Delia Owens",genre:"fiction",recommender:"Jennifer Martinez",description:"Beautiful writing and a compelling mystery—great fiction pick!",rating:4,image:"",postLikes:6,postLikedBy:["Sarah","Mike","Tom","Lisa","Maria","Alex"],comments:[
+        {id:301,commenter:"Tom Wilson",rating:4,text:"Loved the setting. The mystery kept me guessing.",likes:2,likedBy:["Jennifer","Sarah"]}
+      ]}
+    ]);
 
-    const escapeAttr = (s='') => escapeHtml(s).replaceAll('"','&quot;');
+    const ensureUser=(name)=>{ if(!userData[name]) userData[name]={readList:[],wishList:[],currentReading:[]}; };
+    const me=()=> userData[currentUser] || {readList:[],wishList:[],currentReading:[]};
+    const requireUser=()=>{ if(!currentUser){ showToast('Please log in first.'); return false; } return true; };
+    const formatStars=(n)=>'★'.repeat(n)+'☆'.repeat(5-n);
 
-    const bookCard = (book) => {
-      const liked = currentUser && book.postLikedBy.includes(currentUser);
+    /******************
+     * Activity
+     ******************/
+    const postActivity=(type,payload)=>{
+      const entry={ id:Date.now(), type, payload, at:now() };
+      activity.unshift(entry);
+      // limit feed
+      if(activity.length>200) activity.length=200;
+      save();
+      renderActivity();
+    };
+
+    const activityIcon=(type)=>{
+      if(type==='share') return '📣';
+      if(type==='finish') return '🏁';
+      if(type==='finish-5') return '🏆';
+      return '📝';
+    };
+
+    const renderActivity=()=>{
+      const list=$('#activity-list');
+      if(!activity.length){ list.innerHTML='<div class="activity-item"><div class="activity-badge">👋</div><div>Welcome! Share a book to kick off the activity feed.</div></div>'; return; }
+      list.innerHTML=activity.slice(0,10).map(a=>{
+        const {type,payload,at}=a;
+        let text='';
+        if(type==='share'){
+          text=`<strong>${escapeHtml(payload.user)}</strong> shared <em>${escapeHtml(payload.title)}</em> by ${escapeHtml(payload.author)} (${payload.rating}★).`;
+        }else if(type==='finish' || type==='finish-5'){
+          text=`<strong>${escapeHtml(payload.user)}</strong> finished <em>${escapeHtml(payload.title)}</em> and rated it ${payload.rating}★.`;
+        }else{
+          text=escapeHtml(payload.text||'Updated');
+        }
+        return `
+          <div class="activity-item">
+            <div class="activity-badge">${activityIcon(type)}</div>
+            <div>
+              <div>${text}</div>
+              <div class="activity-meta">${timeAgo(at)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    };
+
+    /******************
+     * Rendering
+     ******************/
+    const bookCoverBlock=(book)=> book.image
+      ? `<img class="book-cover" loading="lazy" alt="Cover of ${escapeHtml(book.title)}" src="${escapeAttr(book.image)}"/>`
+      : `<div class="book-cover-placeholder" aria-hidden="true">No Cover</div>`;
+
+    const bookCard=(book)=>{
+      const liked=currentUser && book.postLikedBy.includes(currentUser);
       return `
         <article class="book-post" data-id="${book.id}">
           <div class="post-header">
@@ -534,23 +478,17 @@
           <p class="book-description">${escapeHtml(book.description)}</p>
 
           <div class="post-actions">
-            <button class="action-btn ${liked ? 'active':''}" type="button" data-action="like" data-id="${book.id}">
+            <button class="action-btn ${liked?'active':''}" type="button" data-action="like" data-id="${book.id}">
               👍 <span data-like-count>${book.postLikes}</span> Likes
             </button>
-            <button class="action-btn" type="button" data-action="wish" data-id="${book.id}">
-              📚 Want to Read
-            </button>
-            <button class="action-btn" type="button" data-action="reading" data-id="${book.id}">
-              📖 Currently Reading
-            </button>
-            <button class="action-btn" type="button" data-action="read" data-id="${book.id}">
-              ✅ Mark as Read
-            </button>
+            <button class="action-btn" type="button" data-action="wish" data-id="${book.id}">📚 Want to Read</button>
+            <button class="action-btn" type="button" data-action="reading" data-id="${book.id}">📖 Currently Reading</button>
+            <button class="action-btn" type="button" data-action="read" data-id="${book.id}">✅ Mark as Read</button>
           </div>
 
           <div class="comments-section">
             <strong>Comments (${book.comments.length}):</strong>
-            ${book.comments.map(c => `
+            ${book.comments.map(c=>`
               <div class="comment" data-comment-id="${c.id}">
                 <div class="comment-header">
                   <span class="commenter-name">${escapeHtml(c.commenter)}</span>
@@ -558,9 +496,7 @@
                 </div>
                 <div class="comment-text">${escapeHtml(c.text)}</div>
                 <div class="comment-actions">
-                  <button class="like-comment-btn ${currentUser && c.likedBy.includes(currentUser) ? 'liked':''}" type="button" data-action="like-comment" data-id="${book.id}" data-cid="${c.id}">
-                    👍 ${c.likes}
-                  </button>
+                  <button class="like-comment-btn ${currentUser && c.likedBy.includes(currentUser)?'liked':''}" type="button" data-action="like-comment" data-id="${book.id}" data-cid="${c.id}">👍 ${c.likes}</button>
                 </div>
               </div>
             `).join('')}
@@ -568,9 +504,9 @@
             <div class="add-comment">
               <div class="comment-form" data-id="${book.id}">
                 <div class="comment-input-row">
-                  <input type="text" placeholder="Your name" class="comment-input" data-field="name" />
+                  <input type="text" placeholder="Your name" class="comment-input" data-field="name" value="${escapeAttr(currentUser)}"/>
                   <div class="stars comment-stars" role="radiogroup" aria-label="Comment rating" data-role="comment-stars" data-id="${book.id}">
-                    ${[1,2,3,4,5].map(n => `<button class="star ${n<= (commentRatings.get(book.id) || 5) ? 'filled':''}" type="button" data-action="comment-rating" data-id="${book.id}" data-rating="${n}" aria-label="${n} star">★</button>`).join('')}
+                    ${[1,2,3,4,5].map(n=>`<button class="star ${n<= (commentRatings.get(book.id)||5)?'filled':''}" type="button" data-action="comment-rating" data-id="${book.id}" data-rating="${n}" aria-label="${n} star">★</button>`).join('')}
                   </div>
                 </div>
                 <textarea placeholder="Write your comment..." class="comment-textarea" data-field="text"></textarea>
@@ -582,344 +518,390 @@
       `;
     };
 
-    const attachImageFallbacks = (rootEl) => {
-      $$('.book-cover', rootEl).forEach(img => {
-        img.addEventListener('error', () => {
-          const ph = img.nextElementSibling;
-          if(ph && ph.classList.contains('book-cover-placeholder')){
-            ph.style.display = 'flex';
-          }
-          img.remove();
-        }, { once:true });
-      });
-    };
-
-    const renderBooks = () => {
-      const container = $('#books-feed');
+    const renderBooks=()=>{
+      const container=$('#books-feed');
       if(!currentBooks.length){
-        container.innerHTML = `
+        container.innerHTML=`
           <div class="empty-state">
             <h3>No books found</h3>
-            <p>Try adjusting your search or add a new recommendation!</p>
+            <p>Try adjusting search/filters or add a new recommendation!</p>
           </div>`;
+        $('#result-count').textContent='0 results';
         return;
       }
-      container.innerHTML = currentBooks.map(bookCard).join('');
-      // default comment rating to 5 for visible books
-      currentBooks.forEach(b => commentRatings.set(b.id, 5));
-      attachImageFallbacks(container);
+      container.innerHTML=currentBooks.map(bookCard).join('');
+      currentBooks.forEach(b=>commentRatings.set(b.id,5));
+      $('#result-count').textContent = `${currentBooks.length} result${currentBooks.length===1?'':'s'}`;
     };
 
-    const renderProfessionalBooks = () => {
-      const list = books.filter(b => b.genre === 'professional');
-      const container = $('#professional-books');
-      if(!list.length){
-        container.innerHTML = `
-          <div class="empty-state">
-            <h3>No professional books yet</h3>
-            <p>Be the first to recommend a professional development book!</p>
-          </div>`;
-        return;
-      }
-      container.innerHTML = list.map(bookCard).join('');
-      list.forEach(b => commentRatings.set(b.id, 5));
-      attachImageFallbacks(container);
+    const renderProfessionalBooks=()=>{
+      const list=books.filter(b=>b.genre==='professional');
+      const container=$('#professional-books');
+      if(!list.length){ container.innerHTML=`<div class="empty-state"><h3>No professional books yet</h3><p>Be the first to recommend one!</p></div>`; return; }
+      container.innerHTML=list.map(bookCard).join('');
+      list.forEach(b=>commentRatings.set(b.id,5));
     };
 
-    const renderMyLists = () => {
-      const data = getCurrentUserData();
-
-      const renderList = (arr, actions) => {
+    const renderMyLists=()=>{
+      const data=me();
+      const renderList=(arr, actions)=>{
         if(!arr.length) return `<p style="color:#999;font-style:italic">Nothing here yet</p>`;
-        return arr.map(book => `
+        return arr.map(book=>`
           <div class="list-item" data-id="${book.id}">
             <div>
               <strong>${escapeHtml(book.title)}</strong> by ${escapeHtml(book.author)}
               <div style="color:#666;font-size:.9rem">Recommended by ${escapeHtml(book.recommender)}</div>
             </div>
-            <div>
-              ${actions(book)}
-            </div>
+            <div>${actions(book)}</div>
           </div>
         `).join('');
       };
-
-      $('#current-reading').innerHTML = renderList(data.currentReading, (b)=>`
+      $('#current-reading').innerHTML=renderList(data.currentReading,(b)=>`
         <button class="btn btn-small" type="button" data-action="read" data-id="${b.id}">Mark as Read</button>
         <button class="btn btn-small btn-danger" type="button" data-action="remove-current" data-id="${b.id}">Remove</button>
       `);
-
-      $('#wish-list').innerHTML = renderList(data.wishList, (b)=>`
+      $('#wish-list').innerHTML=renderList(data.wishList,(b)=>`
         <button class="btn btn-small" type="button" data-action="reading" data-id="${b.id}">Start Reading</button>
         <button class="btn btn-small btn-danger" type="button" data-action="remove-wish" data-id="${b.id}">Remove</button>
       `);
-
-      $('#read-list').innerHTML = renderList(data.readList, (b)=>`
+      $('#read-list').innerHTML=renderList(data.readList,(b)=>`
         <button class="btn btn-small btn-danger" type="button" data-action="remove-read" data-id="${b.id}">Remove</button>
       `);
     };
 
-    /***********************
-     * CRUD-like operations
-     ***********************/
-    const addBook = (payload) => {
-      const newBook = {
-        id: Date.now(),
-        title: payload.title,
-        author: payload.author,
-        genre: payload.genre,
-        recommender: payload.recommender,
-        description: payload.description,
-        rating: payload.rating,
-        image: payload.image || "",
-        postLikes: 0,
-        postLikedBy: [],
-        comments: []
-      };
-      books.unshift(newBook);
-      saveState();
-      updateStats();
-      filterBooks(); // respect current search/filter
-      showSection('feed', $('#feed-btn'));
+    /******************
+     * Stats
+     ******************/
+    const updateStats=()=>{
+      const totalBooks=books.length;
+      const totalComments=books.reduce((s,b)=>s+(b.comments?.length||0),0);
+      const avg=totalBooks?(books.reduce((s,b)=>s+(b.rating||0),0)/totalBooks):0;
+      const readCount=me().readList.length;
+      $('#total-books').textContent=String(totalBooks);
+      $('#total-reviews').textContent=String(totalComments);
+      $('#avg-rating').textContent=avg.toFixed(1);
+      $('#books-read').textContent=String(readCount);
+    };
+
+    /******************
+     * Filters / Sort
+     ******************/
+    const applyFilters=()=>{
+      const term=$('#search-input').value.trim().toLowerCase();
+      const cat=$('#category-filter').value;
+      const min=parseInt($('#min-rating').value,10)||0;
+      const sort=$('#sort-by').value;
+
+      currentBooks=books.filter(b=>{
+        const inSearch=!term || [b.title,b.author,b.recommender].some(x=>x.toLowerCase().includes(term));
+        const inCat=!cat || b.genre===cat;
+        const inRating=(b.rating||0)>=min;
+        return inSearch && inCat && inRating;
+      });
+
+      if(sort==='new') currentBooks.sort((a,b)=>b.id-a.id);
+      else if(sort==='likes') currentBooks.sort((a,b)=> (b.postLikes||0)-(a.postLikes||0));
+      else if(sort==='rating') currentBooks.sort((a,b)=> (b.rating||0)-(a.rating||0));
+      else if(sort==='title') currentBooks.sort((a,b)=> a.title.localeCompare(b.title));
+
+      renderBooks();
+    };
+    const debounce=(fn,ms=300)=>{ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),ms); }; };
+
+    /******************
+     * CRUD
+     ******************/
+    const addBook=(payload)=>{
+      const book={ id:Date.now(), title:payload.title, author:payload.author, genre:payload.genre, recommender:payload.recommender, description:payload.description, rating:payload.rating, image:payload.image||"", postLikes:0, postLikedBy:[], comments:[] };
+      books.unshift(book);
+      save(); updateStats(); applyFilters();
+      postActivity('share',{user:currentUser||payload.recommender,title:book.title,author:book.author,rating:book.rating});
       showToast('Book shared!');
     };
 
-    const togglePostLike = (bookId) => {
+    const togglePostLike=(bookId)=>{
       if(!requireUser()) return;
-      const book = books.find(b => b.id === bookId);
-      if(!book) return;
-      const idx = book.postLikedBy.indexOf(currentUser);
-      if(idx >= 0){
-        book.postLikedBy.splice(idx,1);
-        book.postLikes = Math.max(0, book.postLikes - 1);
-      } else {
-        book.postLikedBy.push(currentUser);
-        book.postLikes += 1;
-      }
-      saveState();
-      filterBooks(); // re-render current view
+      const book=books.find(b=>b.id===bookId); if(!book) return;
+      const i=book.postLikedBy.indexOf(currentUser);
+      if(i>=0){ book.postLikedBy.splice(i,1); book.postLikes=Math.max(0,book.postLikes-1); }
+      else { book.postLikedBy.push(currentUser); book.postLikes+=1; }
+      save(); applyFilters();
     };
 
-    const toggleCommentLike = (bookId, commentId) => {
+    const toggleCommentLike=(bookId,cid)=>{
       if(!requireUser()) return;
-      const book = books.find(b => b.id === bookId);
-      if(!book) return;
-      const c = book.comments.find(c => c.id === commentId);
-      if(!c) return;
-      const i = c.likedBy.indexOf(currentUser);
-      if(i >= 0){ c.likedBy.splice(i,1); c.likes = Math.max(0,c.likes-1); }
-      else { c.likedBy.push(currentUser); c.likes += 1; }
-      saveState();
-      filterBooks();
+      const book=books.find(b=>b.id===bookId); if(!book) return;
+      const c=book.comments.find(x=>x.id===cid); if(!c) return;
+      const i=c.likedBy.indexOf(currentUser);
+      if(i>=0){ c.likedBy.splice(i,1); c.likes=Math.max(0,c.likes-1); }
+      else { c.likedBy.push(currentUser); c.likes+=1; }
+      save(); applyFilters();
     };
 
-    const addComment = (bookId, name, text, rating) => {
+    const addComment=(bookId,name,text,rating)=>{
       if(!requireUser()) return;
-      const book = books.find(b => b.id === bookId);
-      if(!book) return;
+      const book=books.find(b=>b.id===bookId); if(!book) return;
       if(!name || !text){ showToast('Enter your name and comment'); return; }
-      book.comments.push({
-        id: Date.now(),
-        commenter: name.trim(),
-        rating: rating || 5,
-        text: text.trim(),
-        likes: 0,
-        likedBy: []
-      });
-      saveState();
-      updateStats();
-      filterBooks();
-      showToast('Comment added!');
+      book.comments.push({ id:Date.now(), commenter:name.trim(), rating:rating||5, text:text.trim(), likes:0, likedBy:[] });
+      save(); updateStats(); applyFilters(); showToast('Comment added!');
     };
 
-    // User lists
-    const addToWishList = (bookId) => {
+    const addToWishList=(bookId)=>{
       if(!requireUser()) return;
-      const book = books.find(b => b.id === bookId);
-      const data = getCurrentUserData();
-      if(!data.wishList.find(i => i.id === bookId)){
-        data.wishList.push(book);
-        saveState();
-        showToast(`"${book.title}" added to Wish List`);
-      } else showToast('Already in Wish List');
+      const book=books.find(b=>b.id===bookId);
+      const d=me();
+      if(!d.wishList.find(i=>i.id===bookId)){ d.wishList.push(book); save(); showToast(`"${book.title}" added to Wish List`); }
+      else showToast('Already in Wish List');
     };
 
-    const addToCurrentReading = (bookId) => {
+    const addToCurrentReading=(bookId)=>{
       if(!requireUser()) return;
-      const book = books.find(b => b.id === bookId);
-      const data = getCurrentUserData();
-      if(!data.currentReading.find(i => i.id === bookId)){
-        data.currentReading.push(book);
-        data.wishList = data.wishList.filter(i => i.id !== bookId);
-        saveState();
-        renderMyLists();
-        showToast(`"${book.title}" added to Currently Reading`);
+      const book=books.find(b=>b.id===bookId);
+      const d=me();
+      if(!d.currentReading.find(i=>i.id===bookId)){
+        d.currentReading.push(book);
+        d.wishList=d.wishList.filter(i=>i.id!==bookId);
+        save(); renderMyLists(); showToast(`"${book.title}" added to Currently Reading`);
       } else showToast('Already in Currently Reading');
     };
 
-    const markAsRead = (bookId) => {
+    // Finish flow with rating modal
+    const openFinishModal=(book)=>{
+      finishContext={ bookId:book.id, rating:5 };
+      $('#finish-title').textContent=`${book.title} — ${book.author}`;
+      $$('#finish-stars .star').forEach(s=> s.classList.toggle('filled', parseInt(s.dataset.rating,10)<=5));
+      $('#finish-modal').style.display='flex';
+      $('#finish-modal').setAttribute('aria-hidden','false');
+    };
+    const closeFinishModal=()=>{
+      $('#finish-modal').style.display='none';
+      $('#finish-modal').setAttribute('aria-hidden','true');
+      finishContext=null;
+    };
+
+    const markAsReadFlow=(bookId)=>{
       if(!requireUser()) return;
-      const book = books.find(b => b.id === bookId);
-      const data = getCurrentUserData();
-      if(!data.readList.find(i => i.id === bookId)){
-        data.readList.push(book);
-        data.wishList = data.wishList.filter(i => i.id !== bookId);
-        data.currentReading = data.currentReading.filter(i => i.id !== bookId);
-        saveState();
-        updateStats();
-        renderMyLists();
-        showToast(`Marked "${book.title}" as read`);
+      const book=books.find(b=>b.id===bookId); if(!book) return;
+      openFinishModal(book);
+    };
+
+    const completeMarkAsRead=()=>{
+      if(!finishContext) return;
+      const {bookId,rating}=finishContext;
+      const d=me();
+      const book=books.find(b=>b.id===bookId);
+      if(!d.readList.find(i=>i.id===bookId)){
+        d.readList.push(book);
+        d.wishList=d.wishList.filter(i=>i.id!==bookId);
+        d.currentReading=d.currentReading.filter(i=>i.id!==bookId);
+        save(); updateStats(); renderMyLists();
+        const type = (rating===5)?'finish-5':'finish';
+        postActivity(type,{user:currentUser,title:book.title,rating});
+        showToast(`Marked "${book.title}" as read (${rating}★)`);
       } else showToast('Already marked as read');
+      closeFinishModal();
     };
 
-    const removeFromList = (listName, bookId) => {
+    const removeFromList=(listName,bookId)=>{
       if(!requireUser()) return;
-      const data = getCurrentUserData();
-      data[listName] = data[listName].filter(i => i.id !== bookId);
-      saveState();
-      if(listName === 'readList') updateStats();
-      renderMyLists();
+      const d=me();
+      d[listName]=d[listName].filter(i=>i.id!==bookId);
+      save(); if(listName==='readList') updateStats(); renderMyLists();
     };
 
-    /*****************
-     * Search & Filter
-     *****************/
-    const filterBooks = () => {
-      const term = $('#search-input').value.trim().toLowerCase();
-      const cat = $('#category-filter').value;
-      currentBooks = books.filter(b => {
-        const inSearch = !term || [b.title,b.author,b.recommender].some(x => x.toLowerCase().includes(term));
-        const inCat = !cat || b.genre === cat;
-        return inSearch && inCat;
-      });
-      renderBooks();
+    /******************
+     * External book search (Open Library)
+     ******************/
+    const olCover=(cover_i)=> cover_i ? `https://covers.openlibrary.org/b/id/${cover_i}-M.jpg` : '';
+    const searchOpenLibrary=async(q)=>{
+      const url=`https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=10`;
+      const res=await fetch(url); if(!res.ok) return [];
+      const data=await res.json();
+      return (data.docs||[]).slice(0,10).map(d=>({
+        title:d.title,
+        author:(d.author_name && d.author_name[0])||'',
+        cover:olCover(d.cover_i)
+      }));
+    };
+    const showResults=(items)=>{
+      const box=$('#book-results');
+      if(!items.length){ box.style.display='none'; box.innerHTML=''; return; }
+      box.style.display='block';
+      box.innerHTML=items.map(it=>`
+        <div class="result-item" data-title="${escapeAttr(it.title)}" data-author="${escapeAttr(it.author)}" data-cover="${escapeAttr(it.cover)}">
+          <img class="result-cover" src="${escapeAttr(it.cover)||''}" alt="" onerror="this.style.visibility='hidden'"/>
+          <div>
+            <div><strong>${escapeHtml(it.title)}</strong></div>
+            <div style="color:#666;font-size:.9rem">${escapeHtml(it.author)}</div>
+          </div>
+        </div>
+      `).join('');
     };
 
-    /*****************
-     * Event Listeners
-     *****************/
-    document.addEventListener('DOMContentLoaded', () => {
-      // Boot
-      books = seedBooks();
-      loadState();
-      if(!books || !books.length){ books = seedBooks(); }
-      currentBooks = books.slice();
+    /******************
+     * Auth / Nav
+     ******************/
+    const login=(name)=>{
+      currentUser=name.trim();
+      if(!currentUser){ showToast('Enter your first name'); return; }
+      ensureUser(currentUser);
+      $('#login-section').style.display='none';
+      $('#main-app').style.display='block';
+      $('#user-info').style.display='flex';
+      $('#current-user-name').textContent=currentUser;
+      // default name fields
+      $('#recommender').value=currentUser;
+      save(); updateStats(); applyFilters(); renderMyLists();
+    };
+    const logout=()=>{
+      currentUser=''; save();
+      $('#login-section').style.display='block';
+      $('#main-app').style.display='none';
+      $('#user-info').style.display='none';
+      $('#username-input').value='';
+    };
 
-      // Restore session
+    const showSection=(id,btn)=>{
+      $$('.section').forEach(s=>s.classList.remove('active'));
+      $$('.nav-btn').forEach(b=>b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      btn.classList.add('active');
+      if(id==='my-books') renderMyLists();
+      if(id==='professional') renderProfessionalBooks();
+    };
+
+    const updateFormStarDisplay=()=>{
+      const stars=$$('#rating-stars .star');
+      stars.forEach((b,i)=>{ const filled=i<currentRating; b.classList.toggle('filled',filled); b.setAttribute('aria-pressed', String(filled && i===currentRating-1)); });
+    };
+
+    /******************
+     * Init
+     ******************/
+    document.addEventListener('DOMContentLoaded',()=>{
+      // initial data
+      if(!localStorage.getItem(LS.books)){ books=seedBooks(); }
+      load();
+      if(!Array.isArray(books) || !books.length){ books=seedBooks(); }
+      currentBooks=books.slice();
+
+      // session
       if(currentUser){
-        initUserIfNeeded(currentUser);
-        $('#login-section').style.display = 'none';
-        $('#main-app').style.display = 'block';
-        $('#user-info').style.display = 'flex';
-        $('#current-user-name').textContent = currentUser;
+        ensureUser(currentUser);
+        $('#login-section').style.display='none';
+        $('#main-app').style.display='block';
+        $('#user-info').style.display='flex';
+        $('#current-user-name').textContent=currentUser;
+        $('#recommender').value=currentUser;
       }
 
-      // Initial renders
-      updateStats();
-      renderBooks();
-      updateFormStarDisplay();
+      // initial renders
+      updateStats(); renderActivity(); applyFilters(); updateFormStarDisplay();
 
-      // Auth handlers
-      $('#login-form').addEventListener('submit', (e)=>{
-        e.preventDefault();
-        const name = $('#username-input').value;
-        if(!name.trim()){ showToast('Enter your first name'); return; }
-        login(name);
-      });
-      $('#logout-btn').addEventListener('click', logout);
+      // auth
+      $('#login-form').addEventListener('submit',e=>{ e.preventDefault(); login($('#username-input').value); });
+      $('#logout-btn').addEventListener('click',logout);
 
-      // Nav
-      $('#feed-btn').addEventListener('click', (e)=> showSection('feed', e.currentTarget));
-      $('#add-btn').addEventListener('click', (e)=> showSection('add', e.currentTarget));
-      $('#my-books-btn').addEventListener('click', (e)=> {
-        if(!requireUser()) return;
-        showSection('my-books', e.currentTarget);
-      });
-      $('#professional-btn').addEventListener('click', (e)=> showSection('professional', e.currentTarget));
+      // nav
+      $('#feed-btn').addEventListener('click',e=>showSection('feed',e.currentTarget));
+      $('#add-btn').addEventListener('click',e=>showSection('add',e.currentTarget));
+      $('#my-books-btn').addEventListener('click',e=>{ if(!requireUser()) return; showSection('my-books',e.currentTarget); });
+      $('#professional-btn').addEventListener('click',e=>showSection('professional',e.currentTarget));
 
-      // Search/filter
-      $('#search-input').addEventListener('input', filterBooks);
-      $('#category-filter').addEventListener('change', filterBooks);
+      // search/filter/sort
+      $('#search-input').addEventListener('input',debounce(applyFilters,250));
+      $('#category-filter').addEventListener('change',applyFilters);
+      $('#min-rating').addEventListener('change',applyFilters);
+      $('#sort-by').addEventListener('change',applyFilters);
 
-      // Add Book: rating stars
-      $('#rating-stars').addEventListener('click', (e)=>{
-        const btn = e.target.closest('.star');
-        if(!btn) return;
-        currentRating = parseInt(btn.dataset.rating,10);
-        updateFormStarDisplay();
+      // add book stars
+      $('#rating-stars').addEventListener('click',e=>{
+        const btn=e.target.closest('.star'); if(!btn) return;
+        currentRating=parseInt(btn.dataset.rating,10); updateFormStarDisplay();
       });
 
-      // Add Book: submit
-      $('#book-form').addEventListener('submit', (e)=>{
-        e.preventDefault();
-        if(!requireUser()) return;
-        const payload = {
-          title: $('#title').value.trim(),
-          author: $('#author').value.trim(),
-          genre: $('#genre').value,
-          recommender: $('#recommender').value.trim(),
-          description: $('#description').value.trim(),
-          image: $('#book-image').value.trim(),
-          rating: currentRating
+      // add book form
+      $('#book-form').addEventListener('submit',e=>{
+        e.preventDefault(); if(!requireUser()) return;
+        const payload={
+          title:$('#title').value.trim(),
+          author:$('#author').value.trim(),
+          genre:$('#genre').value,
+          recommender:$('#recommender').value.trim()||currentUser,
+          description:$('#description').value.trim(),
+          image:$('#book-image').value.trim(),
+          rating:currentRating
         };
-        if(!payload.title || !payload.author || !payload.recommender || !payload.description){
-          showToast('Please fill in all required fields.');
-          return;
-        }
+        if(!payload.title || !payload.author || !payload.recommender || !payload.description){ showToast('Please fill in all required fields.'); return; }
         addBook(payload);
-        e.target.reset();
-        currentRating = 5;
-        updateFormStarDisplay();
+        e.target.reset(); currentRating=5; updateFormStarDisplay();
+        // keep default name after reset
+        $('#recommender').value=currentUser;
       });
 
-      // Feed actions (event delegation): likes, wish/reading/read, comments, comment likes, comment rating
-      const handleFeedClick = (e) => {
-        const btn = e.target.closest('[data-action]');
-        if(!btn) return;
-
-        const action = btn.dataset.action;
-        const id = parseInt(btn.dataset.id,10);
-
-        if(action === 'like'){ togglePostLike(id); return; }
-        if(action === 'wish'){ addToWishList(id); return; }
-        if(action === 'reading'){ addToCurrentReading(id); return; }
-        if(action === 'read'){ markAsRead(id); return; }
-        if(action === 'like-comment'){
-          const cid = parseInt(btn.dataset.cid,10);
-          toggleCommentLike(id, cid);
+      // feed delegation
+      const handleFeed=(e)=>{
+        const btn=e.target.closest('[data-action]'); if(!btn) return;
+        const action=btn.dataset.action; const id=parseInt(btn.dataset.id,10);
+        if(action==='like') return togglePostLike(id);
+        if(action==='wish') return addToWishList(id);
+        if(action==='reading') return addToCurrentReading(id);
+        if(action==='read') return markAsReadFlow(id);
+        if(action==='like-comment'){ const cid=parseInt(btn.dataset.cid,10); return toggleCommentLike(id,cid); }
+        if(action==='add-comment'){
+          const form=btn.closest('.comment-form');
+          const name=$('[data-field="name"]',form).value || currentUser;
+          const text=$('[data-field="text"]',form).value;
+          const rating=commentRatings.get(id)||5;
+          addComment(id,name,text,rating);
+          $('[data-field="text"]',form).value='';
           return;
         }
-        if(action === 'add-comment'){
-          const form = btn.closest('.comment-form');
-          const name = $('[data-field="name"]', form).value;
-          const text = $('[data-field="text"]', form).value;
-          const rating = commentRatings.get(id) || 5;
-          addComment(id, name, text, rating);
-          return;
-        }
-        if(action === 'comment-rating'){
-          const rating = parseInt(btn.dataset.rating,10);
-          const bookId = parseInt(btn.dataset.id,10);
-          commentRatings.set(bookId, rating);
-          // update visual inside that comment star group only
-          const group = btn.closest('[data-role="comment-stars"]');
-          $$('.star', group).forEach(s => s.classList.toggle('filled', parseInt(s.dataset.rating,10) <= rating));
+        if(action==='comment-rating'){
+          const r=parseInt(btn.dataset.rating,10); const bookId=parseInt(btn.dataset.id,10);
+          commentRatings.set(bookId,r);
+          const group=btn.closest('[data-role="comment-stars"]');
+          $$('.star',group).forEach(s=> s.classList.toggle('filled', parseInt(s.dataset.rating,10)<=r));
           return;
         }
       };
-      $('#books-feed').addEventListener('click', handleFeedClick);
-      $('#professional-books').addEventListener('click', handleFeedClick);
-      $('#my-books').addEventListener('click', (e)=>{
-        const btn = e.target.closest('[data-action]');
-        if(!btn) return;
-        const id = parseInt(btn.dataset.id,10);
-        const action = btn.dataset.action;
-        if(action === 'reading'){ addToCurrentReading(id); }
-        else if(action === 'read'){ markAsRead(id); }
-        else if(action === 'remove-current'){ removeFromList('currentReading', id); }
-        else if(action === 'remove-wish'){ removeFromList('wishList', id); }
-        else if(action === 'remove-read'){ removeFromList('readList', id); }
+      $('#books-feed').addEventListener('click',handleFeed);
+      $('#professional-books').addEventListener('click',handleFeed);
+      $('#my-books').addEventListener('click',(e)=>{
+        const btn=e.target.closest('[data-action]'); if(!btn) return;
+        const id=parseInt(btn.dataset.id,10); const action=btn.dataset.action;
+        if(action==='reading') addToCurrentReading(id);
+        else if(action==='read') markAsReadFlow(id);
+        else if(action==='remove-current') removeFromList('currentReading',id);
+        else if(action==='remove-wish') removeFromList('wishList',id);
+        else if(action==='remove-read') removeFromList('readList',id);
       });
+
+      // external book search
+      const runSearch=debounce(async()=>{
+        const q=$('#book-search').value.trim(); if(q.length<3){ $('#book-results').style.display='none'; return; }
+        try{ const results=await searchOpenLibrary(q); showResults(results); }
+        catch{ $('#book-results').style.display='none'; }
+      },350);
+      $('#book-search').addEventListener('input',runSearch);
+      $('#book-results').addEventListener('click',(e)=>{
+        const item=e.target.closest('.result-item'); if(!item) return;
+        $('#title').value=item.dataset.title||'';
+        $('#author').value=item.dataset.author||'';
+        if(item.dataset.cover) $('#book-image').value=item.dataset.cover;
+        $('#book-results').style.display='none';
+      });
+      document.addEventListener('click',(e)=>{ if(!$('#book-results').contains(e.target) && e.target!==$('#book-search')) $('#book-results').style.display='none'; });
+
+      // finish modal
+      $('#finish-stars').addEventListener('click',(e)=>{
+        const b=e.target.closest('.star'); if(!b) return;
+        const r=parseInt(b.dataset.rating,10); finishContext = {...finishContext, rating:r};
+        $$('#finish-stars .star').forEach(s=> s.classList.toggle('filled', parseInt(s.dataset.rating,10)<=r));
+      });
+      $('#finish-save').addEventListener('click',completeMarkAsRead);
+      $('#finish-cancel').addEventListener('click',closeFinishModal);
+      $('#finish-modal').addEventListener('click',e=>{ if(e.target.id==='finish-modal') closeFinishModal(); });
     });
   </script>
 </body>
