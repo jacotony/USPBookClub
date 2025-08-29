@@ -48,11 +48,8 @@
 
   .content{background:#fff;border-radius:14px;padding:16px;box-shadow:var(--shadow)}
 
-  /* landing row: activity + trending side-by-side (pre-login) */
-  .landing-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-
   /* mini activity block */
-  .activity{border:1px solid #eef2ef;border-radius:10px;padding:10px}
+  .activity{border:1px solid #eef2ef;border-radius:10px;padding:10px;margin-bottom:10px}
   .activity-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
   .activity-head h3{font-size:14px;color:#2e3f37}
   .activity-body{max-height:180px;overflow:auto}
@@ -68,10 +65,11 @@
   .nav-btn{background:var(--glass);color:#fff;border:2px solid var(--glass-2);padding:8px 14px;border-radius:22px;cursor:pointer;transition:.2s;backdrop-filter:blur(8px);font-size:13px}
   .nav-btn:hover,.nav-btn.active{background:rgba(255,255,255,.34);transform:translateY(-1px)}
 
-  /* search row smaller/compact */
-  .search{display:grid;grid-template-columns:1.5fr .9fr repeat(3,.9fr);gap:8px;margin:8px 0}
-  .search .input,.search .select{padding:6px 8px;font-size:13px}
-  #search-input{max-width:360px}
+  /* search row smaller */
+  .search{display:grid;grid-template-columns:2fr 1fr repeat(3,1fr);gap:8px;margin:8px 0}
+  /* ONLY shorten the feed search bar (not other forms) */
+  #feed .search{grid-template-columns:minmax(240px,460px) 1fr repeat(3,1fr);}
+
   .chip{background:#e8efe9;border:1px solid #d9e4dc;color:#2e4a3a;padding:5px 10px;border-radius:999px;font-size:12px}
 
   .section{display:none}.section.active{display:block}
@@ -140,7 +138,6 @@
     .leaderboard{grid-template-columns:1fr}
     .search{grid-template-columns:1fr 1fr 1fr}
     .c-form{grid-template-columns:1fr}
-    .landing-row{grid-template-columns:1fr}
   }
 </style>
 </head>
@@ -166,10 +163,8 @@
         </div>
         <div class="stat"><strong id="total-reviews">0</strong> comments</div>
         <div class="stat"><strong id="avg-rating">0.0</strong> avg ★</div>
-        <!-- renamed label -->
-        <div class="stat" title="Total read across everyone">
-          <strong id="books-read">0</strong> read
-        </div>
+        <!-- CHANGED: label now just 'read' -->
+        <div class="stat" title="Your finished books"><strong id="books-read">0</strong> read</div>
         <div class="stat" id="users-chip">
           <strong id="total-users">0</strong> users
         </div>
@@ -193,34 +188,33 @@
     </div>
 
     <main class="content">
-      <!-- Landing row (visible pre-login too): Activity + Trending side-by-side -->
-      <div class="landing-row">
-        <!-- Activity (compact) -->
-        <section class="activity compact" id="activity-block">
-          <div class="activity-head">
-            <h3>Activity</h3>
-            <div style="display:flex;gap:8px;align-items:center">
-              <select id="activity-filter" class="select" style="padding:4px 8px;font-size:12px;min-width:auto">
-                <option value="">All</option>
-                <option value="share">New Books</option>
-                <option value="list">List Actions</option>
-                <option value="finish">Finished</option>
-                <option value="five">5★ Ratings</option>
-                <option value="like">Likes</option>
-                <option value="comment">Comments</option>
-              </select>
-              <button id="activity-toggle" class="pill-btn" type="button">More</button>
-            </div>
+      <!-- Activity (compact) -->
+      <section class="activity compact" id="activity-block">
+        <div class="activity-head">
+          <h3>Activity</h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="activity-filter" class="select" style="padding:4px 8px;font-size:12px;min-width:auto">
+              <option value="">All</option>
+              <option value="share">New Books</option>
+              <option value="list">List Actions</option>
+              <option value="finish">Finished</option>
+              <option value="five">5★ Ratings</option>
+              <option value="like">Likes</option>
+              <option value="comment">Comments</option>
+            </select>
+            <button id="activity-toggle" class="pill-btn" type="button">More</button>
           </div>
-          <div id="activity-list" class="activity-body"></div>
-        </section>
+        </div>
+        <div id="activity-list" class="activity-body"></div>
+      </section>
 
-        <!-- Trending (landing) -->
-        <section class="lb-card" id="landing-trending-card">
-          <h3>Trending Now</h3>
-          <div id="trending-landing" class="lb-list"></div>
-        </section>
-      </div>
+      <!-- Toolbar under activity -->
+      <nav class="nav">
+        <button class="nav-btn active" id="feed-btn" type="button">Book Feed</button>
+        <button class="nav-btn" id="add-btn" type="button">Add Book</button>
+        <button class="nav-btn" id="my-books-btn" type="button">My Lists</button>
+        <button class="nav-btn" id="prefs-btn" type="button">Preferences</button>
+      </nav>
 
       <!-- LOGIN -->
       <section id="login-section" class="login">
@@ -228,7 +222,7 @@
           <h2>Welcome to Book Club</h2>
           <p class="small" style="margin:6px 0 12px">Enter your first name to use your lists</p>
           <div style="margin-bottom:10px;background:#f7f8f8;padding:8px;border-radius:8px;color:#3c4c45;font-size:12px">
-            This site doesn't auto-log you in on refresh. Type the same name again to see your lists.
+            This site doesn’t auto-log you in on refresh. Type the same name again to see your lists.
           </div>
           <input class="input" type="text" id="username-input" placeholder="Your first name" required style="text-align:center"/>
           <div style="height:8px"></div>
@@ -238,17 +232,13 @@
 
       <!-- APP -->
       <section id="main-app" style="display:none">
-        <!-- Tabs bar shown after login -->
-        <nav class="nav" id="main-nav">
-          <button class="nav-btn active" id="feed-btn" type="button">Book Feed</button>
-          <button class="nav-btn" id="add-btn" type="button">Add Book</button>
-          <button class="nav-btn" id="my-books-btn" type="button">My Lists</button>
-          <button class="nav-btn" id="prefs-btn" type="button">Preferences</button>
-        </nav>
-
         <!-- FEED -->
         <section id="feed" class="section active">
-          <!-- Trending (inside app) - REMOVED THIS DUPLICATE -->
+          <!-- Trending -->
+          <div class="lb-card" style="margin-bottom:10px">
+            <h3>Trending Now</h3>
+            <div id="trending" class="lb-list"></div>
+          </div>
 
           <div class="search">
             <input type="text" class="input" placeholder="Search title, author, recommender…" id="search-input"/>
@@ -266,11 +256,10 @@
               <option value="3">3★+</option>
             </select>
           </div>
-          <!-- keep on one line -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 8px;flex-wrap:nowrap">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 8px">
             <span class="chip" id="result-count"></span>
-            <div style="display:flex;gap:6px;align-items:center;white-space:nowrap">
-              <label class="small" style="white-space:nowrap"><input type="checkbox" id="collapse-all"> Collapse all comments</label>
+            <div style="display:flex;gap:6px;align-items:center">
+              <label class="small"><input type="checkbox" id="collapse-all"> Collapse all comments</label>
               <select class="select" id="sort-by" style="max-width:180px">
                 <option value="new">Newest</option>
                 <option value="likes">Most Likes</option>
@@ -398,7 +387,7 @@
                 <li>Tap <strong>Share</strong> → <strong>Add to Home Screen</strong>.</li>
                 <li>Tap <strong>Add</strong>.</li>
               </ol>
-              <p class="small">On iOS Chrome: Share → "Add to Home Screen".</p>
+              <p class="small">On iOS Chrome: Share → “Add to Home Screen”.</p>
             </details>
           </div>
 
@@ -495,7 +484,7 @@ let deferredPrompt=null; // PWA
 
 /* ========= Utilities ========= */
 const $  = (sel, root=document) => root.querySelector(sel);
-const $ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 const now=()=>new Date().toISOString();
 const timeAgo=(iso)=>{const d=new Date(iso);const s=(Date.now()-d)/1000;if(s<60)return`${Math.floor(s)}s`;const m=s/60;if(m<60)return`${Math.floor(m)}m`;const h=m/60;if(h<24)return`${Math.floor(h)}h`;return`${Math.floor(h/24)}d`};
 const escapeHtml=(s='')=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
@@ -503,11 +492,6 @@ const escapeAttr=(s='')=>escapeHtml(s).replaceAll('"','&quot;');
 const truncate=(s,n=300)=> s && s.length>n ? s.slice(0,n-1)+'…' : s;
 const setLoading=(el,loading)=>{if(!el)return;el.classList.toggle('loading',loading);if(loading&&!el.querySelector('.spinner')){const span=document.createElement('span');span.className='spinner';el.prepend(span);}else if(!loading){const sp=el.querySelector('.spinner');sp&&sp.remove();}};
 const showToast=(msg,isError=false)=>{const t=$('#toast');t.textContent=msg;t.classList.toggle('error',isError);t.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove('show'),isError?3200:1800);};
-
-/* Dates */
-const toDate = (v)=>{ if(typeof v==='number' && !Number.isNaN(v)) return new Date(v); const n=Number(v); if(!Number.isNaN(n)) return new Date(n); const p=Date.parse(v); return new Date(Number.isNaN(p)?Date.now():p); };
-const formatDate = (v)=> toDate(v).toLocaleDateString();
-const humanRecDate = (v)=>{ const d=toDate(v).getTime(); return (Date.now()-d)<90000 ? 'Just now' : new Date(d).toLocaleDateString(); };
 
 /* ========= Local & Remote Persistence ========= */
 async function loadAll(){
@@ -557,7 +541,7 @@ const me=()=>userData[currentUser]||defaultUser();
 
 /* ========= PWA setup ========= */
 function setupPWA(){
-  const manifest={name:"Book Club",short_name:"Book Club",start_url:".",display:"standalone",background_color:"#ffffff",theme_color:"#2f4a3e",icons:[{src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAAAAABQFZ1hAAAAC0lEQVR42u3BAQ0AAADCoPdPbQ43oAAAAAB4p1nNAAE=",sizes:"192x192",type:"image/png"}]};
+  const manifest={name:"Book Club",short_name:"Book Club",start_url:".",display:"standalone",background_color:"#ffffff",theme_color:"#2f4a3e",icons:[{src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAAAAABQFZ1hAAAAC0lEQVR42u3BAQ0AAADCoPdPbQ43oAAAAAB4p1nNAAE=",sizes:"192x192",type:"image/png"}]}};
   const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
   const url=URL.createObjectURL(blob);
   const link=$('#app-manifest'); if(link) link.href=url;
@@ -687,7 +671,6 @@ function bookCard(book){
         <div class="title">${escapeHtml(book.title)}</div>
         <div class="author">by ${escapeHtml(book.author)}</div>
         <div class="recommender">Recommended by ${escapeHtml(book.recommender)}</div>
-        <div class="small" style="color:#6d7a73">Recommended on ${humanRecDate(book.id)}</div>
         <div class="rating-line">
           <div class="stars">${'★'.repeat(rounded)}${'☆'.repeat(5-rounded)}</div>
           <span class="small">(${avg.toFixed(1)}/5 • ${count} rating${count===1?'':'s'})</span>
@@ -711,14 +694,13 @@ function bookCard(book){
     <div class="comments">
       <div class="c-head">
         <span class="c-title">Comments <span class="small">(${(book.comments||[]).length})</span></span>
-        <button class="c-toggle" type="button" data-action="toggle-comments" data-id="${book.id}">See Comments</button>
+        <button class="c-toggle" type="button" data-action="toggle-comments" data-id="${book.id}">Toggle</button>
       </div>
       <div class="c-list" ${sysCollapsed} data-list="${book.id}">
         ${(book.comments||[]).map(c=>`
           <div class="c-item ${c.system?'system':''}" data-comment-id="${c.id}">
             <div class="c-headline">
               <span class="c-name">${escapeHtml(c.commenter||'Anonymous')}</span>
-              <div class="small" style="margin-left:auto;margin-right:8px;color:#6d7a73">${formatDate(c.at||c.id)}</div>
               <button class="c-like ${(c.likedBy||[]).includes(currentUser)?'liked':''}" type="button" data-action="like-comment" data-id="${book.id}" data-cid="${c.id}">👍 ${c.likes||0}</button>
             </div>
             <div class="c-text">${escapeHtml(c.text||'')}</div>
@@ -793,8 +775,7 @@ function updateStats(){
   const totalBooks=books.length;
   const totalComments=books.reduce((s,b)=>s+(b.comments?.length||0),0);
   const globalAvg=n?(sum/n):0;
-  // total read across all users
-  const readCount=Object.values(userData||{}).reduce((s,u)=>s+(u.readList?.length||0),0);
+  const readCount=me().readList.length;
   const usersCount=Object.keys(userData||{}).length;
   $('#total-books').textContent=String(totalBooks);
   $('#total-reviews').textContent=String(totalComments);
@@ -807,7 +788,7 @@ function updateStats(){
   $('#users-pop').innerHTML=list.map(n=>`<div>${escapeHtml(n)}</div>`).join('');
 
   renderLB();
-  renderTrending(); // updates both trending blocks
+  renderTrending();
 }
 function renderLB(){
   const addRows=(container,arr,unit,empty)=>{
@@ -819,20 +800,20 @@ function renderLB(){
       </div>`).join('');
   };
   // Top Recommenders
-  const recs={}; books.forEach(b=>{const n=b.recommender; if(n && n!=='System') recs[n]=(recs[n]||0)+1;});
+  const recs={}; books.forEach(b=>{const n=b.recommender; if(n) recs[n]=(recs[n]||0)+1;});
   const recsSorted=Object.entries(recs).sort((a,b)=>b[1]-a[1]).slice(0,3);
   addRows($('#lb-recommenders'),recsSorted,'book'+(recsSorted[0]?.[1]===1?'':'s'),'No shares yet');
 
   // Top Readers
-  const reads={}; Object.entries(userData||{}).forEach(([n,d])=>{ if(n!=='System') reads[n]=(d.readList||[]).length;});
+  const reads={}; Object.entries(userData||{}).forEach(([n,d])=>{reads[n]=(d.readList||[]).length;});
   const readsSorted=Object.entries(reads).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]).slice(0,3);
   addRows($('#lb-readers'),readsSorted,'read','No finished books yet');
 
-  // Most Active (posts + comments + likes + list actions)
+  // Most Active (posts + comments + likes)
   const active={};
-  Object.entries(userData||{}).forEach(([n,d])=>{ if(n!=='System') active[n]=(d.readList?.length||0)+(d.currentReading?.length||0)+(d.wishList?.length||0);});
-  books.forEach(b=>(b.comments||[]).forEach(c=>{const n=c.commenter||'Anonymous'; if(n!=='System') active[n]=(active[n]||0)+1;}));
-  books.forEach(b=>{(b.postLikedBy||[]).forEach(n=>{ if(n!=='System') active[n]=(active[n]||0)+1;});});
+  Object.entries(userData||{}).forEach(([n,d])=>{active[n]=(d.readList?.length||0)+(d.currentReading?.length||0)+(d.wishList?.length||0);});
+  books.forEach(b=>(b.comments||[]).forEach(c=>{const n=c.commenter||'Anonymous';active[n]=(active[n]||0)+1;}));
+  books.forEach(b=>{(b.postLikedBy||[]).forEach(n=>active[n]=(active[n]||0)+1);});
   const actSorted=Object.entries(active).sort((a,b)=>b[1]-a[1]).slice(0,3);
   addRows($('#lb-active'),actSorted,'actions','No activity yet');
 }
@@ -843,8 +824,10 @@ function trendingScore(b){
   return comments*2+likes*1.5+ratings;
 }
 function renderTrending(){
-  const top=[...books].sort((a,b)=>trendingScore(b)-trendingScore(a)).slice(0,3);
-  const html = top.length ? top.map(b=>`
+  const top=[...books].sort((a,b)=>trendingScore(b)-trendingScore(a)).slice(0,3); // max 3
+  const c=$('#trending');
+  if(!top.length){c.innerHTML=`<div class="small" style="color:#7a857f">No activity yet</div>`;return;}
+  c.innerHTML=top.map(b=>`
     <div class="lb-row" data-jump="${b.id}">
       <div style="display:flex;align-items:center;gap:8px">
         ${b.image?`<img src="${escapeAttr(b.image)}" alt="" style="width:28px;height:42px;border-radius:6px;border:1px solid #e6ece8;object-fit:cover">`:`<div style="width:28px;height:42px;border-radius:6px;background:#e9ecef"></div>`}
@@ -854,8 +837,7 @@ function renderTrending(){
         </div>
       </div>
       <span class="lb-count">${trendingScore(b)} actions</span>
-    </div>`).join('') : `<div class="small" style="color:#7a857f">No activity yet</div>`;
-  const c2=$('#trending-landing'); if(c2) c2.innerHTML=html;
+    </div>`).join('');
 }
 
 /* ========= Search/Filter ========= */
@@ -974,8 +956,8 @@ function exportCsvs(){
   const booksRows = books.map(b=>toCsvRow([b.id,b.title,b.author,b.genre,b.recommender,b.image||'',averageRatingForBook(b).toFixed(2),ratingCount(b),(b.tags||[]).join('|'),(b.synopsis||''),(b.reason||'')]));
   download('books.csv',[booksHeader,...booksRows].join('\n'));
 
-  const commentsHeader = toCsvRow(['book_id','book_title','comment_id','commenter','likes','text','system','at']);
-  const commentsRows = books.flatMap(b=>(b.comments||[]).map(c=>toCsvRow([b.id,b.title,c.id,c.commenter||'',c.likes||0,c.text||'',c.system?1:0,(c.at||'')])));
+  const commentsHeader = toCsvRow(['book_id','book_title','comment_id','commenter','likes','text','system']);
+  const commentsRows = books.flatMap(b=>(b.comments||[]).map(c=>toCsvRow([b.id,b.title,c.id,c.commenter||'',c.likes||0,c.text||'',c.system?1:0])));
   download('comments.csv',[commentsHeader,...commentsRows].join('\n'));
 }
 function exportJson(){
@@ -1002,7 +984,7 @@ function openFinishModal(book){
   finishContext = {bookId: book.id};
   currentRating = 0;
   $('#finish-title').textContent = `${book.title} — ${book.author}`;
-  $('#finish-stars .star').forEach(star=>star.classList.remove('filled'));
+  $$('#finish-stars .star').forEach(star=>star.classList.remove('filled'));
   const m=$('#finish-modal'); m.classList.add('show');
 }
 function closeFinishModal(){ $('#finish-modal').classList.remove('show'); finishContext=null; currentRating=0; }
@@ -1014,7 +996,7 @@ function localReason({title,author,genre,synopsis,tone,tags}){
   const hook = s ? s.split(/(?<=[.!?])\s+/).slice(0,1).join(' ') : '';
   if(tone==='punchy'){ bits.push(`If you want a ${genre} that actually delivers, ${title} hits the spot.`); }
   else if(tone==='professional'){ bits.push(`${title} distills ${genre} ideas into clear, practical takeaways.`); }
-  else if(tone==='concise'){ bits.push(`${title} is a sharp ${genre} that's worth your time.`); }
+  else if(tone==='concise'){ bits.push(`${title} is a sharp ${genre} that’s worth your time.`); }
   else { bits.push(`I loved how ${title} by ${author} blends ${genre} themes into something memorable.`); }
   if(hook) bits.push(hook);
   if(tags) bits.push(`Great for fans of ${tags}.`);
@@ -1059,7 +1041,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#users-chip').addEventListener('mouseenter', ()=>{ const p=$('#users-pop'); p.style.display='block'; const r=$('#users-chip').getBoundingClientRect(); p.style.position='fixed'; p.style.left=(r.left)+'px'; p.style.top=(r.bottom+6)+'px'; });
   $('#users-pop').addEventListener('mouseleave', ()=>$('#users-pop').style.display='none');
 
-  /* Nav (inside main-app) */
+  /* Nav */
   $('#feed-btn').addEventListener('click', ()=>{ openSection('feed'); applyFilters(); });
   $('#add-btn').addEventListener('click', ()=> openSection('add'));
   $('#my-books-btn').addEventListener('click', ()=>{ openSection('my-books'); renderMyLists(); });
@@ -1075,14 +1057,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#user-bar').style.display='flex';
     $('#login-section').style.display='none';
     $('#main-app').style.display='block';
-    $('.landing-row').style.display='none';  // Hide pre-login content - FIX #2
     $('#recommender').value=currentUser;
     renderMyLists(); updateStats(); applyFilters(); renderActivity();
   });
   $('#logout-btn').addEventListener('click', ()=>{
     currentUser=''; $('#user-bar').style.display='none';
     $('#main-app').style.display='none'; $('#login-section').style.display='block';
-    $('.landing-row').style.display='grid'; // Show pre-login content again
   });
 
   /* Filters / search */
@@ -1115,13 +1095,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('click',(e)=>{ const t=e.target.closest('[data-tagpick]'); if(t){ addTag(t.getAttribute('data-tagpick')); $('#tag-suggestions').style.display='none'; } });
 
   /* Add: Rating stars (share form) */
-  $('#rating-stars .star').forEach(star=>{
-    star.addEventListener('click', ()=>{ const val=Number(star.getAttribute('data-rating')); currentRating=val; $('#rating-stars .star').forEach(s=> s.classList.toggle('filled', Number(s.getAttribute('data-rating'))<=val)); $('#rating-feedback').textContent=`You selected ${val} star${val===1?'':'s'}.`; });
+  $$('#rating-stars .star').forEach(star=>{
+    star.addEventListener('click', ()=>{ const val=Number(star.getAttribute('data-rating')); currentRating=val; $$('#rating-stars .star').forEach(s=> s.classList.toggle('filled', Number(s.getAttribute('data-rating'))<=val)); $('#rating-feedback').textContent=`You selected ${val} star${val===1?'':'s'}.`; });
   });
 
   /* Finish modal stars */
-  $('#finish-stars .star').forEach(star=>{
-    star.addEventListener('click', ()=>{ const val=Number(star.getAttribute('data-rating')); currentRating=val; $('#finish-stars .star').forEach(s=> s.classList.toggle('filled', Number(s.getAttribute('data-rating'))<=val)); });
+  $$('#finish-stars .star').forEach(star=>{
+    star.addEventListener('click', ()=>{ const val=Number(star.getAttribute('data-rating')); currentRating=val; $$('#finish-stars .star').forEach(s=> s.classList.toggle('filled', Number(s.getAttribute('data-rating'))<=val)); });
   });
   $('#finish-save').addEventListener('click', ()=>{
     if(!finishContext) return closeFinishModal();
@@ -1168,7 +1148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // reset form
     $('#book-form').reset(); currentTags=[]; renderTagsDisplay();
-    currentRating=0; $('#rating-stars .star').forEach(s=>s.classList.remove('filled')); $('#rating-feedback').textContent='Click stars to rate (required)'; $('#book-results').style.display='none';
+    currentRating=0; $$('#rating-stars .star').forEach(s=>s.classList.remove('filled')); $('#rating-feedback').textContent='Click stars to rate (required)'; $('#book-results').style.display='none';
 
     saveAll(); populateRecommenderFilter(); applyFilters(); updateStats(); showToast('Book shared!');
   });
@@ -1256,7 +1236,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const wrap=btn.closest('.c-form'); if(!wrap) return;
       const name=wrap.querySelector('[data-field="name"]').value.trim()||currentUser||'Anonymous';
       const text=wrap.querySelector('[data-field="text"]').value.trim(); if(!text){ showToast('Comment cannot be empty.',true); return; }
-      const b=findBook(bookId); if(!b) return; b.comments=b.comments||[]; b.comments.push({id:Date.now()+Math.random(),commenter:name,text,likes:0,likedBy:[],system:false,at:now()});
+      const b=findBook(bookId); if(!b) return; b.comments=b.comments||[]; b.comments.push({id:Date.now()+Math.random(),commenter:name,text,likes:0,likedBy:[],system:false});
       mergeOrPostActivity({type:'comment',payload:{user:name,title:b.title}}); saveAll(); applyFilters(); showToast('Comment added!'); return;
     }
 
@@ -1265,4 +1245,27 @@ document.addEventListener('DOMContentLoaded', async () => {
       const b=findBook(bookId); if(!b) return; const c=(b.comments||[]).find(x=>String(x.id)===String(cid)); if(!c) return;
       c.likedBy=c.likedBy||[];
       if(c.likedBy.includes(currentUser)){ c.likedBy=c.likedBy.filter(n=>n!==currentUser); c.likes=Math.max(0,(c.likes||0)-1); }
-      else { c.likedBy.push(currentUser);
+      else { c.likedBy.push(currentUser); c.likes=(c.likes||0)+1; }
+      saveAll(); applyFilters(); return;
+    }
+  });
+
+  // global jump from trending items
+  $('#trending').addEventListener('click',(e)=>{ const r=e.target.closest('[data-jump]'); if(!r) return; const id=r.getAttribute('data-jump'); const el=$(`#book-${id}`); if(el){ openSection('feed'); el.scrollIntoView({behavior:'smooth',block:'start'}); } });
+});
+
+/* Helpers */
+function openSection(id){
+  $$('.section').forEach(s=>s.classList.remove('active')); $('#'+id).classList.add('active');
+  $$('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(id==='feed') $('#feed-btn').classList.add('active');
+  if(id==='add') $('#add-btn').classList.add('active');
+  if(id==='my-books') $('#my-books-btn').classList.add('active');
+  if(id==='prefs') $('#prefs-btn').classList.add('active');
+}
+function addSystemComment(book, text){
+  book.comments=book.comments||[]; book.comments.unshift({id:Date.now()+Math.random(), commenter:'System', text, likes:0, likedBy:[], system:true});
+}
+</script>
+</body>
+</html>
