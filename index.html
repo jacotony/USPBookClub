@@ -308,8 +308,8 @@
 <script>
 /* ========= JSONBin Storage & State ========= */
 const JSONBIN_API = 'https://api.jsonbin.io/v3';
-const BIN_ID = '676a2bb6ad19ca34f8d7ba7f';   // Create a new bin at jsonbin.io
-const API_KEY = '$2a$10$mNoiDz9pmi1CAop9lb5yCudKwJeWZeNtdMW/MezkG3J.qchnkMLoy'; // Your API key
+const BIN_ID = '681dc30ae596e708fdb3ff1';   // Your actual bin ID
+const API_KEY = '$2a$10$LVh6eQns1sOKv23ek6kbD.7UJoIW.UclGVfzMvSeD2eSLfshtVOZi'; // X-MASTER-KEY should work
 
 let currentUser=''; 
 let books=[]; 
@@ -352,34 +352,52 @@ async function loadAll(){
     console.error('Failed to load local cache:', e);
   }
 
-  // Then sync with JSONBin
+  // Then sync with JSONBin - try both keys
   try{
-    const response = await fetch(`${JSONBIN_API}/b/${BIN_ID}/latest`, {
+    console.log('Attempting to load from JSONBin...');
+    let response = await fetch(`${JSONBIN_API}/b/${BIN_ID}/latest`, {
       method: 'GET',
       headers: {
         'X-Master-Key': API_KEY,
-        'X-Access-Key': API_KEY
+        'Content-Type': 'application/json'
       }
     });
     
+    if(!response.ok && response.status === 401) {
+      // Try with Access Key if Master Key fails
+      console.log('Master key failed, trying Access key...');
+      response = await fetch(`${JSONBIN_API}/b/${BIN_ID}/latest`, {
+        method: 'GET',
+        headers: {
+          'X-Access-Key': '$2a$10$NtOiloGyBsDjGUeS6fln1e9MM74lC3pKTeTkv8rsGtrut5GJlDbfm',
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+    
     if(!response.ok){
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('JSONBin error:', response.status, errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
     
     const data = await response.json();
+    console.log('JSONBin response:', data);
     const record = data.record || {};
     
-    books = record.books || books;
-    userData = record.userData || userData;
-    activity = record.activity || activity;
-    sitePrefs = Object.assign(sitePrefs, record.sitePrefs || {});
+    books = record.books || [];
+    userData = record.userData || {};
+    activity = record.activity || [];
+    sitePrefs = Object.assign({teamsWebhook:'',postNew:true,postFinish:true,postFive:true}, record.sitePrefs || {});
     
     // Cache locally
     localStorage.setItem('bookclub_payload', JSON.stringify({books, userData, activity, sitePrefs}));
     
+    showToast('Data synced successfully!');
+    
   }catch(e){
     console.error('Failed to sync with JSONBin:', e);
-    showToast('Using local data - sync failed. Check connection.', true);
+    showToast(`Sync failed: ${e.message}`, true);
   }
   
   isLoading = false;
@@ -402,15 +420,17 @@ async function saveAll(){
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'X-Master-Key': API_KEY,
-        'X-Access-Key': API_KEY
+        'X-Master-Key': API_KEY
       },
       body: JSON.stringify(payload)
     });
     
     if(!response.ok){
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
+    
+    console.log('Data saved to JSONBin successfully');
     
   }catch(e){
     console.error('Failed to save to JSONBin:', e);
