@@ -4,130 +4,147 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Book Club</title>
+
+<!-- Minimal PWA-ish meta for iOS standalone look -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Book Club">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512'><rect width='100%' height='100%' fill='%233e5a4c'/><text x='50%' y='56%' font-size='240' text-anchor='middle' fill='white' font-family='Arial'>📚</text></svg>">
+
 <style>
   :root{
     --pine:#2f4a3e; --spruce:#3e5a4c; --sage:#8ca093; --silver:#c2c7c9;
     --mist:#efe6db; --accent:#d59a63; --ink:#2a2f2d; --muted:#5f6b64;
     --line:#dfe5e1; --gold:#b8860b; --glass:rgba(255,255,255,.18);
-    --glass-2:rgba(255,255,255,.28); --shadow:0 20px 40px rgba(0,0,0,.10)
+    --glass-2:rgba(255,255,255,.28); --shadow:0 10px 24px rgba(0,0,0,.10)
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;background:linear-gradient(135deg,var(--spruce) 0%,var(--pine) 45%,var(--sage) 100%);min-height:100vh;padding:16px;color:var(--ink)}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;background:linear-gradient(135deg,var(--spruce) 0%,var(--pine) 45%,var(--sage) 100%);min-height:100vh;padding:18px;color:var(--ink)}
   .container{max-width:1100px;margin:0 auto}
-  .header{color:#fff;text-align:center;margin-bottom:12px}
-  .header h1{font-size:1.8rem;margin-bottom:4px;text-shadow:0 2px 4px rgba(0,0,0,.3)}
-  .header p{opacity:.95;font-size:.92rem}
+  .header{color:#fff;text-align:center;margin-bottom:16px}
+  .header h1{font-size:2rem;margin-bottom:6px;text-shadow:0 2px 4px rgba(0,0,0,.3)}
+  .header p{opacity:.95;font-size:.95rem}
 
-  .user-info{display:none;justify-content:space-between;align-items:center;background:var(--glass);padding:6px 10px;border-radius:12px;color:#fff;margin-bottom:10px;backdrop-filter:blur(12px);border:1px solid var(--glass-2);font-size:13px}
-  .pill-btn{background:none;border:1px solid #fff;color:#fff;padding:4px 10px;border-radius:14px;cursor:pointer;font-size:12px}
+  /* user bar */
+  .user-info{display:none;justify-content:space-between;align-items:center;background:var(--glass);padding:6px 12px;border-radius:14px;color:#fff;margin-bottom:10px;backdrop-filter:blur(10px);border:1px solid var(--glass-2);font-size:.9rem}
+  .toolbar{display:flex;gap:6px}
+  .pill-btn{background:none;border:1px solid #fff;color:#fff;padding:4px 10px;border-radius:999px;cursor:pointer;font-size:12px}
   .pill-btn:hover{background:rgba(255,255,255,.18)}
 
-  /* Compact stats */
-  .stats-bar{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:8px;margin-bottom:10px}
-  .stat-card{background:var(--glass);padding:8px 10px;border-radius:10px;color:#fff;text-align:center;border:1px solid var(--glass-2);backdrop-filter:blur(15px);cursor:pointer}
-  .stat-number{font-size:1.15rem;font-weight:800;display:block}
-  .stat-label{font-size:.72rem;opacity:.9}
-  .stat-card:hover{background:rgba(255,255,255,.28)}
+  /* quick stats + small activity header row (very compact) */
+  .top-row{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;margin-bottom:10px}
+  .stats-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .stat-card{background:var(--glass);padding:8px 12px;border-radius:12px;color:#fff;border:1px solid var(--glass-2);backdrop-filter:blur(10px);transition:.2s;cursor:pointer}
+  .stat-card:hover{transform:translateY(-1px);background:rgba(255,255,255,.28)}
+  .stat-number{font-size:1.15rem;font-weight:800;display:block;line-height:1}
+  .stat-label{font-size:.75rem;opacity:.9}
 
-  .nav{display:flex;gap:8px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
-  .nav-btn{background:var(--glass);color:#fff;border:2px solid var(--glass-2);padding:8px 14px;border-radius:18px;cursor:pointer;font-size:13px}
-  .nav-btn:hover,.nav-btn.active{background:rgba(255,255,255,.34)}
+  .mini-activity{background:var(--glass);padding:8px 12px;border-radius:12px;border:1px solid var(--glass-2);color:#fff;flex:1 1 240px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .mini-activity-controls{display:flex;gap:6px;align-items:center}
 
-  .content{background:rgba(255,255,255,.98);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
-  .login-screen{text-align:center;padding:28px 14px}
-  .login-form{background:#fff;padding:18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.1);max-width:420px;margin:0 auto}
+  /* NAV tabs (small) */
+  .nav{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+  .nav-btn{background:var(--glass);color:#fff;border:1px solid var(--glass-2);padding:6px 12px;border-radius:999px;cursor:pointer;transition:.15s;backdrop-filter:blur(8px);font-size:.9rem}
+  .nav-btn:hover,.nav-btn.active{background:rgba(255,255,255,.34);transform:translateY(-1px)}
+
+  .content{background:#fff;border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+  .login-screen{text-align:center;padding:36px 14px}
+  .login-form{background:#fff;padding:22px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.1);max-width:420px;margin:0 auto}
   .login-form h2{color:var(--spruce);margin-bottom:6px}
 
   .section{display:none}.section.active{display:block}
 
-  /* Compact panels (leaderboards/trending) */
-  .reading-list{background:#fff;border-radius:10px;padding:10px;margin-bottom:10px;box-shadow:0 5px 15px rgba(0,0,0,.06)}
-  .reading-list h3{color:#3e5a4c;margin-bottom:6px;font-size:1rem}
-  .list-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f1f1f1}
-  .list-item:last-child{border-bottom:none}
-  .chip{background:#e8efe9;border:1px solid #d9e4dc;color:#2e4a3a;padding:4px 8px;border-radius:999px;font-size:12px}
-
-  /* Small activity */
-  .activity{background:#fff;border-radius:10px;padding:8px 10px;margin-bottom:10px;border-left:4px solid var(--accent);box-shadow:0 6px 18px rgba(0,0,0,.08)}
-  .activity-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-  .activity h3{color:#6b765f;font-size:13px;margin:0}
-  .activity-body{max-height:100px;overflow:auto}
-  .activity.expanded .activity-body{max-height:220px}
-  .activity-item{display:flex;gap:8px;align-items:flex-start;padding:4px 0;border-bottom:1px solid #f3f3f3;font-size:12px}
-  .activity-item:last-child{border-bottom:none}
-  .activity-badge{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f3eee4;font-size:12px}
-  .activity-meta{font-size:10px;color:#888}
-
-  .search-filter{
-    display:grid;
-    grid-template-columns:minmax(220px,2fr) minmax(160px,1fr) repeat(4,minmax(130px,1fr)) auto;
-    gap:8px;margin-bottom:8px;align-items:center
-  }
-
-  .book-feed{display:flex;flex-direction:column;gap:12px}
-  .book-post{background:#fff;border-radius:10px;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,.08);border-left:4px solid var(--pine)}
-  .book-post.highlight{outline:2px solid var(--accent);box-shadow:0 0 0 2px rgba(213,154,99,.18) inset;animation:fadehl 1.6s ease-out 1}
-  @keyframes fadehl{from{outline-color:var(--accent)} to{outline-color:transparent}}
-  .post-header{display:flex;gap:12px;margin-bottom:8px;align-items:flex-start}
-  .book-cover{width:78px;height:112px;object-fit:cover;border-radius:8px;border:2px solid var(--line);flex-shrink:0}
-  .book-cover-placeholder{width:78px;height:112px;background:linear-gradient(135deg,#e9ecef 0%,#dee2e6 100%);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#6c757d;flex-shrink:0}
-  .book-info{flex:1}
-  .book-genre{background:var(--pine);color:#fff;padding:2px 8px;border-radius:12px;font-size:.65rem;font-weight:700;text-transform:uppercase;display:inline-block;margin-bottom:4px}
-  .book-title{font-size:1.05rem;font-weight:800;color:var(--ink);margin-bottom:2px}
-  .book-author{color:#5b6660;margin-bottom:4px;font-style:italic;font-size:.9rem}
-  .book-recommender{font-size:.86rem;color:#3e5a4c;font-weight:700;margin-bottom:4px}
-  .book-rating{display:flex;align-items:center;gap:6px;margin-bottom:4px}
-  .stars{display:flex;gap:2px}
-  .star{font-size:16px;color:#ddd;cursor:pointer;background:none;border:none;padding:1px}
-  .star.filled{color:var(--gold)}
-  .tag{display:inline-block;background:#eef4ef;border:1px solid #dbe7df;color:#2e4a3a;padding:2px 6px;border-radius:999px;font-size:.7rem;margin:2px 6px 0 0}
-
-  .block-title{font-weight:700;color:#3c4e44;margin-bottom:2px}
-  .book-synopsis,.book-reason{color:#555;line-height:1.4;margin-bottom:6px;font-size:.92rem}
-
-  .post-actions{display:flex;gap:6px;align-items:center;padding:6px 0;border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;margin-bottom:6px;flex-wrap:wrap}
-  .action-btn{background:none;border:1px solid var(--pine);color:var(--pine);padding:5px 10px;border-radius:16px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:6px}
-  .action-btn:hover,.action-btn.active{background:var(--pine);color:#fff}
-  .liked-by{font-size:.78rem;color:#3f4e46;margin:2px 0 6px}
-
-  /* Comments — compact + collapsible; user vs system */
-  .comments-section{margin-top:6px}
-  .comments-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-  .toggle-comments-btn{background:none;border:none;color:var(--pine);font-weight:800;font-size:.95rem;cursor:pointer;padding:0}
-  .comments-body{display:block}
-  .comments-section.collapsed .comments-body{display:none}
-  .comment{background:#f6faf7;padding:8px;border-radius:9px;margin-bottom:8px;border:1px solid #e0ebe4}
-  .comment.user{background:#eefbf3;border-color:#d5efe0}
-  .comment.sys{background:#f9fbf9;border:1px dashed #e4eee6;color:#5f6b64}
-  .comment-header{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:3px}
-  .commenter-name{font-weight:700;color:#2f4a3e;font-size:.9rem}
-  .comment-badge{margin-left:8px;font-size:.65rem;background:#e8efe9;border:1px solid #dfe8e1;padding:2px 6px;border-radius:999px;text-transform:uppercase;letter-spacing:.02em;color:#3a5b49}
-  .comment-text{color:#455;line-height:1.35}
-  .like-comment-btn{background:none;border:none;color:#8aa099;font-size:12px;cursor:pointer}
-  .like-comment-btn.liked,.like-comment-btn:hover{color:#3e5a4c}
-  .add-comment{margin-top:6px;background:#fff;padding:10px;border:1px solid #dee2e6;border-radius:9px}
-  .comment-form{display:flex;flex-direction:column;gap:6px}
-  .comment-input,.comment-textarea{padding:8px 9px;border:1px solid #dee2e6;border-radius:6px;font-size:13px}
-  .comment-textarea{min-height:48px}
-
-  /* Add book form */
-  .add-book-form{background:linear-gradient(135deg,var(--mist) 0%,#e9e1d2 100%);padding:14px;border-radius:12px;margin-bottom:10px;border-left:4px solid var(--pine)}
+  /* ADD form */
+  .add-book-form{background:linear-gradient(135deg,var(--mist) 0%,#e9e1d2 100%);padding:16px;border-radius:12px;margin-bottom:14px;border-left:3px solid var(--pine)}
   .form-row{display:flex;gap:10px;flex-wrap:wrap}
   .form-group{flex:1 1 240px;margin-bottom:10px}
-  .form-group label{display:block;margin-bottom:6px;font-weight:600;color:var(--ink);font-size:13px}
-  .input,.select,.textarea{width:100%;padding:9px;border:2px solid var(--line);border-radius:8px;font-size:14px}
-  .textarea{resize:vertical;min-height:88px}
-  .btn{background:linear-gradient(135deg,var(--pine) 0%,var(--spruce) 100%);color:#fff;border:none;padding:9px 14px;border-radius:20px;cursor:pointer;font-size:14px;font-weight:600}
-  .btn-small{padding:6px 9px;font-size:12px;margin:2px}
+  .form-group label{display:block;margin-bottom:6px;font-weight:600;color:var(--ink);font-size:.9rem}
+  .input,.select,.textarea{width:100%;padding:10px;border:2px solid var(--line);border-radius:8px;font-size:15px;transition:.15s border-color}
+  .textarea{resize:vertical;min-height:90px}
+  .input:focus,.select:focus,.textarea:focus{outline:none;border-color:var(--pine)}
+  .btn{background:linear-gradient(135deg,var(--pine) 0%,var(--spruce) 100%);color:#fff;border:none;padding:10px 16px;border-radius:999px;cursor:pointer;font-size:15px;font-weight:700;transition:.15s}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 5px 10px rgba(47,74,62,.3)}
+  .btn-small{padding:6px 10px;font-size:12px;margin:2px}
   .btn-danger{background:#b74a4a}
 
-  .dropdown{position:relative}
-  .results{position:absolute;z-index:40;top:100%;left:0;right:0;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.12);margin-top:6px;max-height:280px;overflow:auto}
-  .result-item{padding:10px 12px;display:flex;gap:10px;align-items:center;cursor:pointer}
-  .result-item:hover{background:#f4f7f5}
-  .result-cover{width:32px;height:48px;border-radius:6px;object-fit:cover;background:#e9ecef}
+  /* Search/filter row (compact, not full width) */
+  .search-filter{display:grid;grid-template-columns:1.2fr .9fr .7fr .9fr .7fr .7fr auto;gap:8px;align-items:center;margin:6px 0 10px}
+  .chip{background:#e8efe9;border:1px solid #d9e4dc;color:#2e4a3a;padding:5px 8px;border-radius:999px;font-size:12px}
 
-  .tags-input-container{position:relative;border:2px solid var(--line);border-radius:8px;padding:8px;min-height:46px;background:#fff;cursor:text}
+  /* Activity block (compact) */
+  .activity{background:#fff;border-radius:10px;padding:10px;margin-bottom:10px;border-left:3px solid var(--accent);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+  .activity-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .activity h3{color:#6b765f;font-size:1rem}
+  .activity-body{max-height:160px;overflow:auto}
+  .activity.expanded .activity-body{max-height:320px}
+  .activity-item{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid #f3f3f3;font-size:.9rem}
+  .activity-item:last-child{border-bottom:none}
+  .activity-badge{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f3eee4;font-size:14px}
+  .activity-meta{font-size:11px;color:#888}
+  .activity-actions{display:flex;align-items:center;gap:6px;margin-top:4px}
+  .liked-by-line{font-size:.8rem;color:#3f4e46;margin-top:2px}
+
+  /* Trending + Leaderboard (horizontal, small) */
+  .row-strip{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+  .micro-card{flex:1 1 220px;background:#fff;border:1px solid #eee;border-left:3px solid var(--pine);border-radius:10px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,.06);min-width:210px}
+  .micro-title{font-weight:800;color:var(--ink);font-size:1rem;margin-bottom:4px}
+  .micro-sub{font-size:.8rem;color:var(--muted)}
+  .micro-list{display:flex;gap:8px}
+  .micro-item{flex:1 0 160px;background:#fafafa;border:1px solid #eee;border-radius:8px;padding:8px;display:flex;gap:8px;align-items:center}
+  .micro-thumb{width:36px;height:54px;border-radius:6px;object-fit:cover;border:1px solid #ddd;background:#eee}
+  .micro-item a{font-size:.85rem;font-weight:700;color:var(--spruce);text-decoration:none}
+  .micro-item a:hover{text-decoration:underline}
+
+  /* Book feed */
+  .book-feed{display:flex;flex-direction:column;gap:12px}
+  .book-post{background:#fff;border-radius:12px;padding:14px;box-shadow:0 8px 18px rgba(0,0,0,.08);transition:.2s;border-left:3px solid var(--pine)}
+  .book-post:hover{transform:translateY(-1px)}
+  .post-header{display:flex;gap:12px;margin-bottom:8px;align-items:flex-start}
+  .book-cover{width:80px;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--line);flex-shrink:0}
+  .book-cover-placeholder{width:80px;height:120px;background:linear-gradient(135deg,#e9ecef 0%,#dee2e6 100%);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#6c757d;flex-shrink:0}
+  .book-info{flex:1}
+  .book-genre{background:var(--pine);color:#fff;padding:2px 8px;border-radius:999px;font-size:.65rem;font-weight:800;display:inline-block;margin-bottom:6px;text-transform:uppercase}
+  .book-title{font-size:1.1rem;font-weight:800;color:var(--ink);margin-bottom:2px}
+  .book-author{color:var(--muted);margin-bottom:4px;font-style:italic;font-size:.9rem}
+  .book-recommender{font-size:.9rem;color:#3e5a4c;font-weight:700;margin-bottom:6px}
+  .stars{display:flex;gap:2px}
+  .book-rating{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:.9rem}
+  .tag{display:inline-block;background:#eef4ef;border:1px solid #dbe7df;color:#2e4a3a;padding:2px 8px;border-radius:999px;font-size:.7rem;margin:2px 6px 0 0}
+
+  .your-status{font-size:.8rem;color:#3f4e46;margin-top:4px;background:#f7faf8;border:1px solid #e0ebe4;padding:6px;border-radius:8px}
+
+  .block-title{font-weight:800;color:#3c4e44;margin-bottom:2px;font-size:.9rem}
+  .book-synopsis,.book-reason{color:#555;line-height:1.55;margin-bottom:8px;font-size:.93rem}
+
+  .post-actions{display:flex;gap:8px;align-items:center;padding:8px 0;border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;margin:6px 0;flex-wrap:wrap}
+  .action-btn{background:none;border:1px solid var(--pine);color:var(--pine);padding:6px 10px;border-radius:999px;cursor:pointer;transition:.15s;font-size:.9rem;display:flex;align-items:center;gap:6px}
+  .action-btn:hover,.action-btn.active{background:var(--pine);color:#fff}
+  .liked-by{font-size:.8rem;color:#3f4e46;margin:3px 0 6px}
+
+  /* Comments (compact + collapsible) */
+  .comments-section{margin-top:6px}
+  .comments-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+  .comment{background:#f9fbfa;padding:8px;border-radius:8px;margin-bottom:6px;border:1px solid #e6eee9}
+  .comment-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .commenter-name{font-weight:800;color:#3e5a4c;font-size:.9rem}
+  .comment-text{color:#333;margin-bottom:4px;font-size:.92rem}
+  .like-comment-btn{background:none;border:none;color:#888;font-size:12px;cursor:pointer}
+  .like-comment-btn.liked,.like-comment-btn:hover{color:#3e5a4c}
+  .comment.system{background:#fff8ef;border:1px dashed #f1cc96}
+  .comment.system .commenter-name{color:#9a6a24}
+  .add-comment{margin-top:6px;background:#fff;padding:8px;border:1px solid #dee2e6;border-radius:8px}
+  .comment-form{display:flex;flex-direction:column;gap:6px}
+  .comment-input{padding:8px 10px;border:1px solid #dee2e6;border-radius:6px;font-size:14px}
+  .comment-textarea{padding:8px 10px;border:1px solid #dee2e6;border-radius:6px;resize:vertical;min-height:52px}
+
+  /* Lists */
+  .reading-list{background:#fff;border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:0 4px 12px rgba(0,0,0,.06)}
+  .reading-list h3{color:#3e5a4c;margin-bottom:6px}
+  .list-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0}
+  .list-item:last-child{border-bottom:none}
+
+  /* Tags input */
+  .tags-input-container{position:relative;border:2px solid var(--line);border-radius:8px;padding:8px;min-height:44px;background:#fff;cursor:text}
   .tags-input-container:focus-within{border-color:var(--pine)}
   .tags-display{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
   .tag-input{border:none;outline:none;flex:1;min-width:100px;padding:4px}
@@ -135,19 +152,24 @@
   .suggestion-item{padding:8px 12px;cursor:pointer;font-size:14px}
   .suggestion-item:hover{background:#f4f7f5}
 
-  .toast{position:fixed;bottom:18px;right:18px;background:#1d1f1e;color:#fff;padding:8px 12px;border-radius:10px;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none;z-index:9999;max-width:70ch;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:14px}
+  /* Toast + Modal */
+  .toast{position:fixed;bottom:18px;right:18px;background:#1d1f1e;color:#fff;padding:8px 12px;border-radius:10px;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none;z-index:9999;max-width:70ch;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:.95rem}
   .toast.show{opacity:1;transform:translateY(0)}
   .toast.error{background:#b74a4a}
+  .loading{opacity:.6;pointer-events:none}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid #ddd;border-radius:50%;border-top-color:#666;animation:spin .8s linear infinite;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
 
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:10000}
-  .modal .card{background:#fff;border-radius:12px;padding:16px;max-width:520px;width:90%;box-shadow:0 12px 36px rgba(0,0,0,.25)}
+  .modal .card{background:#fff;border-radius:12px;padding:16px;max-width:520px;width:92%;box-shadow:0 12px 36px rgba(0,0,0,.25)}
   .modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
 
-  @media (max-width:768px){
-    .content{padding:12px;margin:0 -8px}
-    .stats-bar{grid-template-columns:repeat(3,1fr)}
-    .search-filter{grid-template-columns: 1fr 1fr; gap:6px}
-    .post-header{flex-direction:column;align-items:center;text-align:center;gap:10px}
+  @media (max-width:920px){
+    .search-filter{grid-template-columns:1fr 1fr .8fr 1fr .8fr .8fr auto}
+  }
+  @media (max-width:700px){
+    .search-filter{grid-template-columns:1fr 1fr}
+    .post-header{flex-direction:column;align-items:center;text-align:center;gap:8px}
     .book-info{text-align:center}
     .post-actions{justify-content:center;gap:6px}
   }
@@ -162,35 +184,38 @@
 
     <div id="user-info" class="user-info">
       <span>Welcome, <strong id="current-user-name"></strong>!</span>
-      <button class="pill-btn" id="logout-btn" type="button">Switch User</button>
+      <div class="toolbar">
+        <button class="pill-btn" id="collapse-all-comments" type="button" title="Toggle all comments">Toggle Comments</button>
+        <button class="pill-btn" id="logout-btn" type="button">Switch User</button>
+      </div>
     </div>
 
-    <div class="stats-bar">
-      <div class="stat-card" data-jump="feed"><span class="stat-number" id="total-books">0</span><span class="stat-label">Books</span></div>
-      <div class="stat-card" data-jump="feed"><span class="stat-number" id="total-reviews">0</span><span class="stat-label">Comments</span></div>
-      <div class="stat-card" data-jump="feed"><span class="stat-number" id="avg-rating">0.0</span><span class="stat-label">Avg Rating</span></div>
-      <div class="stat-card" data-jump="feed"><span class="stat-number" id="books-read">0</span><span class="stat-label">Books Read</span></div>
-      <div class="stat-card" id="users-stat"><span class="stat-number" id="total-users">0</span><span class="stat-label">Users</span></div>
+    <!-- Top row: stats + very small activity header -->
+    <div class="top-row">
+      <div class="stats-bar" id="stats-bar">
+        <div class="stat-card" data-jump="feed"><span class="stat-number" id="total-books">0</span><span class="stat-label">Books</span></div>
+        <div class="stat-card" data-jump="feed"><span class="stat-number" id="total-reviews">0</span><span class="stat-label">Comments</span></div>
+        <div class="stat-card" data-jump="feed"><span class="stat-number" id="avg-rating">0.0</span><span class="stat-label">Avg Rating</span></div>
+        <div class="stat-card" data-jump="my-books"><span class="stat-number" id="books-read">0</span><span class="stat-label">Books Read</span></div>
+        <div class="stat-card" id="users-card"><span class="stat-number" id="total-users">0</span><span class="stat-label">Users</span></div>
+      </div>
+      <div class="mini-activity">
+        <div>Activity</div>
+        <div class="mini-activity-controls">
+          <select id="activity-filter" class="select" style="padding:4px 8px;font-size:12px;min-width:auto">
+            <option value="">All</option>
+            <option value="share">New</option>
+            <option value="finish">Finished</option>
+            <option value="five">5★</option>
+            <option value="like">Likes</option>
+            <option value="list">Lists</option>
+          </select>
+          <button id="activity-toggle" class="pill-btn" type="button">Expand</button>
+        </div>
+      </div>
     </div>
 
-    <div id="top-recommenders" class="reading-list">
-      <h3>Top Recommenders</h3>
-      <div id="recommenders-list"></div>
-    </div>
-    <div id="top-readers" class="reading-list">
-      <h3>Top Readers</h3>
-      <div id="readers-list"></div>
-    </div>
-    <div id="top-active" class="reading-list">
-      <h3>Most Active</h3>
-      <div id="most-active-list"></div>
-    </div>
-    <div id="trending" class="reading-list">
-      <h3>Trending Now</h3>
-      <div id="trending-list"></div>
-    </div>
-
-    <nav class="nav">
+    <nav class="nav" id="tabs">
       <button class="nav-btn active" id="feed-btn" type="button">Book Feed</button>
       <button class="nav-btn" id="add-btn" type="button">Add Book</button>
       <button class="nav-btn" id="my-books-btn" type="button">My Lists</button>
@@ -203,8 +228,8 @@
         <form class="login-form" id="login-form">
           <h2>Welcome to Book Club!</h2>
           <p style="margin-bottom:10px;color:var(--muted)">Enter your first name to access your personal reading lists</p>
-          <p style="margin-bottom:12px;color:var(--spruce);font-size:13px;font-weight:600;background:#f8f9fa;padding:10px;border-radius:8px">
-            Important: Your name is your only login. Use the exact same name each time or your lists won't sync!
+          <p style="margin-bottom:12px;color:var(--spruce);font-size:13px;font-weight:600;background:#f8f9fa;padding:8px;border-radius:8px">
+            Important: Your name is your only login. Use the exact same name each time so your lists sync.
           </p>
           <div class="form-group">
             <input class="input" type="text" id="username-input" placeholder="Enter your first name" required style="text-align:center"/>
@@ -215,28 +240,35 @@
 
       <!-- APP -->
       <section id="main-app" style="display:none">
+        <!-- TRENDING + LEADERBOARD (horizontal + compact) -->
+        <div class="row-strip">
+          <div class="micro-card" id="trending-card">
+            <div class="micro-title">Trending</div>
+            <div class="micro-sub">Most activity lately</div>
+            <div class="micro-list" id="trending-list"></div>
+          </div>
+          <div class="micro-card">
+            <div class="micro-title">Leaderboard</div>
+            <div class="micro-sub">Most active users</div>
+            <div id="leaderboard-row" class="micro-list"></div>
+          </div>
+        </div>
+
+        <!-- Small Activity -->
+        <section class="activity" id="activity">
+          <div class="activity-head">
+            <h3>Recent Activity</h3>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span id="activity-count" class="chip"></span>
+            </div>
+          </div>
+          <div id="activity-list" class="activity-body"></div>
+        </section>
+
         <!-- FEED -->
         <section id="feed" class="section active">
-          <div class="activity" id="activity">
-            <div class="activity-head">
-              <h3>Activity</h3>
-              <div style="display:flex;gap:8px;align-items:center">
-                <select id="activity-filter" class="select" style="padding:4px 8px;font-size:12px;min-width:auto">
-                  <option value="">All Activity</option>
-                  <option value="share">New Books</option>
-                  <option value="finish">Finished</option>
-                  <option value="comment">Comments</option>
-                  <option value="like">Likes</option>
-                  <option value="note">Admin Notes</option>
-                </select>
-                <button id="activity-toggle" class="pill-btn" type="button">Show more</button>
-              </div>
-            </div>
-            <div id="activity-list" class="activity-body"></div>
-          </div>
-
           <div class="search-filter">
-            <input type="text" class="input" placeholder="Search title, author, recommender..." id="search-input"/>
+            <input type="text" class="input" placeholder="Search title/author/recommender" id="search-input"/>
             <input type="text" class="input" placeholder="Filter by tag" id="tag-filter"/>
             <select class="select" id="category-filter">
               <option value="">All Categories</option>
@@ -245,6 +277,22 @@
               <option value="non-fiction">Non-Fiction</option>
               <option value="biography">Biography</option>
               <option value="self-help">Self-Help</option>
+              <option value="poetry">Poetry</option>
+              <option value="history">History</option>
+              <option value="science">Science</option>
+              <option value="technology">Technology</option>
+              <option value="philosophy">Philosophy</option>
+              <option value="psychology">Psychology</option>
+              <option value="economics">Economics</option>
+              <option value="business">Business</option>
+              <option value="leadership">Leadership</option>
+              <option value="mystery">Mystery</option>
+              <option value="thriller">Thriller</option>
+              <option value="fantasy">Fantasy</option>
+              <option value="sci-fi">Sci-Fi</option>
+              <option value="romance">Romance</option>
+              <option value="young-adult">Young Adult</option>
+              <option value="graphic-novel">Graphic Novel</option>
               <option value="other">Other</option>
             </select>
             <select class="select" id="recommender-filter">
@@ -262,9 +310,6 @@
               <option value="rating">Rating (High → Low)</option>
               <option value="title">Title (A → Z)</option>
             </select>
-            <label class="chip" style="display:flex;align-items:center;gap:6px">
-              <input type="checkbox" id="collapse-all"/> Collapse comments
-            </label>
             <span class="chip" id="result-count"></span>
           </div>
 
@@ -274,10 +319,21 @@
         <!-- ADD -->
         <section id="add" class="section">
           <div class="add-book-form">
-            <h2 style="margin-bottom:8px;color:var(--ink)">Share a Book Recommendation</h2>
+            <h2 style="margin-bottom:6px;color:var(--ink)">Share a Book Recommendation</h2>
 
+            <!-- Posting preferences for Teams -->
+            <div class="form-row" style="margin-bottom:6px">
+              <div class="form-group"><label><input id="pref-post-new" type="checkbox" checked/> Post on <strong>new book</strong></label></div>
+              <div class="form-group"><label><input id="pref-post-finish" type="checkbox" checked/> Post when someone <strong>finishes a book</strong></label></div>
+              <div class="form-group"><label><input id="pref-post-5" type="checkbox" checked/> Post for <strong>new 5★ ratings</strong></label></div>
+              <div class="form-group" style="flex:0 1 auto;align-self:flex-end">
+                <button id="prefs-save" class="btn btn-small" type="button">Save</button>
+              </div>
+            </div>
+
+            <!-- Google Books Search -->
             <div class="form-row">
-              <div class="form-group dropdown" style="flex:2 1 360px">
+              <div class="form-group dropdown" style="flex:2 1 420px">
                 <label for="book-search">Search books to auto-fill (Google Books)</label>
                 <input id="book-search" class="input" type="text" placeholder="Start typing a title or author..."/>
                 <div id="book-results" class="results" style="display:none"></div>
@@ -304,8 +360,24 @@
                     <option value="non-fiction">Non-Fiction</option>
                     <option value="biography">Biography</option>
                     <option value="self-help">Self-Help</option>
-                    <option value="other">Other</option>
+                    <option value="poetry">Poetry</option>
+                    <option value="history">History</option>
+                    <option value="science">Science</option>
+                    <option value="technology">Technology</option>
+                    <option value="philosophy">Philosophy</option>
+                    <option value="psychology">Psychology</option>
+                    <option value="economics">Economics</option>
+                    <option value="business">Business</option>
+                    <option value="leadership">Leadership</option>
+                    <option value="mystery">Mystery</option>
+                    <option value="thriller">Thriller</option>
+                    <option value="fantasy">Fantasy</option>
+                    <option value="sci-fi">Sci-Fi</option>
+                    <option value="romance">Romance</option>
+                    <option value="young-adult">Young Adult</option>
+                    <option value="graphic-novel">Graphic Novel</option>
                     <option value="professional">Professional</option>
+                    <option value="other">Other</option>
                   </select>
                 </div>
                 <div class="form-group">
@@ -315,41 +387,46 @@
               </div>
 
               <div class="form-row">
-                <div class="form-group">
+                <div class="form-group" style="flex:1 1 340px">
                   <label for="book-image">Book Cover Image (optional)</label>
                   <input class="input" type="url" id="book-image" placeholder="https://example.com/book-cover.jpg"/>
                 </div>
               </div>
 
               <div class="form-group">
-                <label for="synopsis">Synopsis (auto-fills when available)</label>
-                <textarea class="textarea" id="synopsis" placeholder="Book description..."></textarea>
+                <label for="synopsis">Synopsis (auto-filled when available)</label>
+                <textarea class="textarea" id="synopsis" placeholder="Short description of the book..."></textarea>
               </div>
 
               <div class="form-group">
                 <label for="reason">Why I recommend this book *</label>
-                <textarea class="textarea" id="reason" required placeholder="What did you love about it? Why should others read it?"></textarea>
+                <div class="form-row">
+                  <textarea class="textarea" id="reason" placeholder="Share what you loved and who might enjoy this" required></textarea>
+                  <button id="ai-reason" class="btn btn-small" type="button" style="height:fit-content;align-self:flex-start">Generate with AI ✨</button>
+                </div>
               </div>
 
+              <!-- Tags -->
               <div class="form-group">
                 <label>Tags</label>
                 <div class="tags-input-container" id="tags-container">
                   <div class="tags-display" id="tags-display"></div>
-                  <input type="text" class="tag-input" id="tag-input" placeholder="Add tags…"/>
+                  <input type="text" class="tag-input" id="tag-input" placeholder=""/>
                   <div class="suggestions" id="tag-suggestions" style="display:none"></div>
                 </div>
               </div>
 
+              <!-- Rating -->
               <div class="form-group">
                 <label>Your Rating *</label>
-                <div class="stars" id="rating-stars" aria-label="rating stars" style="margin-top:6px">
+                <div class="stars" id="rating-stars" aria-label="rating stars" style="margin-top:2px">
                   <button class="star" type="button" data-rating="1">★</button>
                   <button class="star" type="button" data-rating="2">★</button>
                   <button class="star" type="button" data-rating="3">★</button>
                   <button class="star" type="button" data-rating="4">★</button>
                   <button class="star" type="button" data-rating="5">★</button>
                 </div>
-                <div id="rating-feedback" style="font-size:13px;color:var(--muted);margin-top:4px">Click stars to rate (required)</div>
+                <div id="rating-feedback" style="font-size:13px;color:var(--muted);margin-top:2px">Click stars to rate (required)</div>
               </div>
 
               <button type="submit" class="btn">Share Book</button>
@@ -376,94 +453,84 @@
 
         <!-- PREFS -->
         <section id="prefs" class="section">
-          <h2 style="margin-bottom:8px;color:var(--ink)">Preferences</h2>
-
-          <div class="reading-list">
-            <h3>Posting Preferences</h3>
-            <div class="form-row" style="margin-bottom:8px">
-              <div class="form-group"><label><input id="pref-post-new" type="checkbox"/> Post on <strong>new book</strong></label></div>
-              <div class="form-group"><label><input id="pref-post-finish" type="checkbox"/> Post when someone <strong>finishes a book</strong></label></div>
-              <div class="form-group"><label><input id="pref-post-5" type="checkbox"/> Post for <strong>new 5★ ratings</strong></label></div>
-            </div>
-            <button id="prefs-save" class="btn" type="button">Save Preferences</button>
-          </div>
+          <h2 style="margin-bottom:10px;color:var(--ink)">Preferences</h2>
 
           <div class="reading-list">
             <h3>Export / Backup</h3>
-            <p style="color:var(--muted);margin-bottom:6px">Downloads Excel-friendly CSV files (books.csv and comments.csv).</p>
+            <p style="color:var(--muted);margin-bottom:6px">Download Excel-friendly CSV files (books.csv and comments.csv).</p>
             <button id="export-csv-btn" class="btn" type="button">Download CSVs</button>
           </div>
 
-          <div class="reading-list" id="admin-tools">
-            <h3>Admin / Maintenance</h3>
-            <div class="form-row">
-              <div class="form-group" style="flex:1 1 200px">
-                <label for="admin-pw">Admin Password</label>
-                <input id="admin-pw" class="input" type="password" placeholder="Enter admin password"/>
-              </div>
-              <div class="form-group" style="flex:1 1 200px;display:flex;gap:8px;align-items:flex-end">
-                <button id="sync-now-btn" class="btn" type="button">Sync From Server</button>
-                <button id="save-now-btn" class="btn" type="button">Save To Server</button>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group" style="flex:2 1 420px">
-                <label for="admin-note">Post Admin Note to Activity</label>
-                <textarea id="admin-note" class="textarea" placeholder="Short note…"></textarea>
-              </div>
-              <div class="form-group" style="flex:0 0 auto;display:flex;align-items:flex-end">
-                <button id="post-note-btn" class="btn" type="button">Post Note</button>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group" style="flex:0 0 auto">
-                <button id="clear-data-btn" class="btn btn-danger" type="button">Clear All Data</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Users Admin (keep) -->
-          <div class="reading-list" id="users-admin">
-            <h3>Users Admin</h3>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Pick a user</label>
-                <select id="ua-user" class="select"></select>
-              </div>
-              <div class="form-group">
-                <label>Rename to</label>
-                <input id="ua-new-name" class="input" type="text" placeholder="New name"/>
-              </div>
-              <div class="form-group" style="flex:0 0 auto;display:flex;align-items:flex-end">
-                <button id="ua-rename" class="btn" type="button">Rename</button>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Merge selected user into</label>
-                <select id="ua-merge-target" class="select"></select>
-              </div>
-              <div class="form-group" style="flex:0 0 auto;display:flex;align-items:flex-end">
-                <button id="ua-merge" class="btn" type="button">Merge Users</button>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group" style="flex:0 0 auto">
-                <button id="ua-delete" class="btn btn-danger" type="button">Delete User</button>
-              </div>
-              <p style="color:var(--muted);font-size:12px;margin-top:8px">All actions require the Admin Password above.</p>
-            </div>
+          <div class="reading-list">
+            <h3>Add to Home Screen (iOS)</h3>
+            <ol style="margin-left:18px;color:#444;line-height:1.5;font-size:.95rem">
+              <li>Open this page in Safari (iPhone/iPad).</li>
+              <li>Tap the <strong>Share</strong> icon.</li>
+              <li>Choose <strong>Add to Home Screen</strong>.</li>
+              <li>Tap <strong>Add</strong>. It will open full-screen like an app.</li>
+            </ol>
           </div>
 
           <div class="reading-list">
-            <h3>Teams Channel Notifications</h3>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <h3>Teams Channel Notifications</h3>
+              <button id="save-teams-btn" class="btn btn-small" type="button">Save Teams URL</button>
+            </div>
+            <p style="color:var(--muted);margin:6px 0">Optional. Add an <em>Incoming Webhook</em> to your Teams <strong>channel</strong>, then paste the URL here.</p>
+            <input id="pref-teams-url" class="input" type="url" placeholder="https://outlook.office.com/webhook/..."/>
+          </div>
+
+          <!-- ADMIN -->
+          <div class="reading-list">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <h3>Admin</h3>
+              <button id="toggle-danger" class="pill-btn" type="button">Show Admin Panel</button>
+            </div>
+          </div>
+
+          <div class="reading-list" id="admin-panel" style="display:none">
+            <h3>Admin Panel (password: Prob1234)</h3>
             <div class="form-row">
-              <div class="form-group" style="flex:2 1 520px">
-                <label for="pref-teams-url">Teams Webhook URL</label>
-                <input id="pref-teams-url" class="input" type="url" placeholder="https://outlook.office.com/webhook/..."/>
+              <div class="form-group" style="flex:1 1 220px">
+                <button id="clear-data-btn" class="btn btn-danger" type="button">Clear All Data</button>
+              </div>
+              <div class="form-group" style="flex:1 1 220px">
+                <button id="post-sample-activity" class="btn" type="button">Post Sample Activity</button>
+              </div>
+            </div>
+
+            <h4 style="margin:6px 0">Edit Books</h4>
+            <div id="admin-books"></div>
+
+            <h4 style="margin:6px 0">Manage Users</h4>
+            <div class="form-row">
+              <div class="form-group">
+                <input class="input" id="admin-rename-from" placeholder="Rename user: FROM"/>
+              </div>
+              <div class="form-group">
+                <input class="input" id="admin-rename-to" placeholder="Rename user: TO"/>
               </div>
               <div class="form-group" style="flex:0 0 auto;display:flex;align-items:flex-end">
-                <button id="save-teams-btn" class="btn" type="button">Save Teams URL</button>
+                <button id="admin-rename-btn" class="btn btn-small" type="button">Rename</button>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <input class="input" id="admin-merge-source" placeholder="Merge user: SOURCE"/>
+              </div>
+              <div class="form-group">
+                <input class="input" id="admin-merge-target" placeholder="Merge into: TARGET"/>
+              </div>
+              <div class="form-group" style="flex:0 0 auto;display:flex;align-items:flex-end">
+                <button id="admin-merge-btn" class="btn btn-small" type="button">Merge</button>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="flex:1 1 260px">
+                <input class="input" id="admin-delete-user" placeholder="Delete user (exact name)"/>
+              </div>
+              <div class="form-group" style="flex:0 0 auto;display:flex;align-items:flex-end">
+                <button id="admin-delete-btn" class="btn btn-small btn-danger" type="button">Delete User</button>
               </div>
             </div>
           </div>
@@ -478,7 +545,7 @@
   <div id="finish-modal" class="modal" aria-hidden="true">
     <div class="card">
       <h3 id="finish-heading" style="margin-bottom:6px">Rate this book</h3>
-      <p id="finish-title" style="color:var(--muted);margin-bottom:8px"></p>
+      <p id="finish-title" style="color:var(--muted);margin-bottom:6px"></p>
       <div class="stars" id="finish-stars" style="margin:6px 0 4px">
         <button class="star" data-rating="1" type="button">★</button>
         <button class="star" data-rating="2" type="button">★</button>
@@ -494,96 +561,164 @@
   </div>
 
 <script>
-/* ========= JSONBin Storage ========= */
+/* ========= JSONBin Storage & State ========= */
 const JSONBIN_API = 'https://api.jsonbin.io/v3';
-const BIN_ID = '68b1dc30ae596e708fdb3ff1';
-const API_KEY = '$2a$10$LYh6e0ns1sOKv23ek6kbD.7UJoIW.UclGVfzMvSeDzeSLfshEvQZi';
+const BIN_ID = '68b1dc30ae596e708fdb3ff1';   // Your bin
+const API_KEY = '$2a$10$LYh6e0ns1sOKv23ek6kbD.7UJoIW.UclGVfzMvSeDzeSLfshEvQZi'; // Your X-MASTER-KEY
 const ADMIN_PASSWORD = 'Prob1234';
 
-let currentUser='';
+let currentUser=''; 
 let books=[]; 
 let userData={}; 
 let activity=[]; 
-let currentBooks=[];
-let sitePrefs={teamsWebhook:'',postNew:true,postFinish:true,postFive:true,collapseComments:true};
+let currentBooks=[]; 
+let sitePrefs={teamsWebhook:'',postNew:true,postFinish:true,postFive:true,collapseAll:false};
 
+let isLoading=false;
 let currentTags = [];
 let currentRating=0;
 let finishContext=null; 
 let activityExpanded=false;
-let gResults = [];
-let commentCollapse = {}; // per-book override
 
-/* ========= Utils ========= */
+/* ========= Utilities ========= */
 const $  = (sel, root=document) => root.querySelector(sel);
 const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 const now=()=>new Date().toISOString();
 const timeAgo=(iso)=>{const d=new Date(iso);const s=(Date.now()-d)/1000;if(s<60)return`${Math.floor(s)}s ago`;const m=s/60;if(m<60)return`${Math.floor(m)}m ago`;const h=m/60;if(h<24)return`${Math.floor(h)}h ago`;return`${Math.floor(h/24)}d ago`};
 const escapeHtml=(s='')=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 const escapeAttr=(s='')=>escapeHtml(s).replaceAll('"','&quot;');
-const stripHtml=(s='')=>String(s).replace(/<[^>]*>/g,'').trim();
-const showToast=(msg,isError=false)=>{const t=$('#toast');t.textContent=msg;t.classList.toggle('error',isError);t.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove('show'),isError?3200:1600);};
+const showToast=(msg,isError=false)=>{const t=$('#toast');t.textContent=msg;t.classList.toggle('error',isError);t.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove('show'),isError?2800:1500);};
 const formatStars=(n)=>'★'.repeat(n)+'☆'.repeat(5-n);
 const debounce=(fn,ms=350)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};};
-const isCommentsCollapsed=(id)=> (id in commentCollapse) ? commentCollapse[id] : !!sitePrefs.collapseComments;
-const fmtDate=(iso)=> iso ? new Date(iso).toLocaleDateString() : '';
+const truncate=(s,n=300)=> s && s.length>n ? s.slice(0,n-1)+'…' : s;
 
-/* ========= Persistence ========= */
+/* ========= Cloud-safe Local & Remote Persistence ========= */
+const SYNC_STATE = { lastServer: null, lastSyncOk: false };
+function safeArray(a){return Array.isArray(a)?a:[]}
+function uniq(arr){return Array.from(new Set(arr));}
+function mergeById(a=[],b=[]){const m=new Map();a.forEach(x=>m.set(x.id,JSON.parse(JSON.stringify(x))));b.forEach(x=>{const p=m.get(x.id)||{};m.set(x.id,{...p,...x});});return Array.from(m.values());}
+function mergeByKey(a=[],b=[],key){const m=new Map();safeArray(a).forEach(x=>m.set(x?.[key],JSON.parse(JSON.stringify(x))));safeArray(b).forEach(x=>{const k=x?.[key];if(k==null)return;const p=m.get(k)||{};m.set(k,{...p,...x});});return Array.from(m.values());}
+
+function mergeBooksArray(srv=[],loc=[]){
+  const byId=new Map();
+  const take=(bk)=>{
+    const cur=byId.get(bk.id);
+    if(!cur){byId.set(bk.id,JSON.parse(JSON.stringify(bk)));return;}
+    const a=cur,b=bk,out={...a,...b};
+    out.comments = mergeById(safeArray(a.comments),safeArray(b.comments));
+    out.userRatings = mergeByKey(safeArray(a.userRatings),safeArray(b.userRatings),'user');
+    out.postLikedBy = uniq([...(a.postLikedBy||[]),...(b.postLikedBy||[])]);
+    out.postLikes = typeof out.postLikes==='number'?out.postLikes:out.postLikedBy.length;
+    out.tags = uniq([...(a.tags||[]),...(b.tags||[])]);
+    byId.set(bk.id,out);
+  };
+  safeArray(srv).forEach(take);
+  safeArray(loc).forEach(take);
+  return Array.from(byId.values()).sort((x,y)=>Number(y.id)-Number(x.id));
+}
+function mergeUserData(srv={},loc={}){
+  const names=uniq([...(Object.keys(srv||{})),...(Object.keys(loc||{}))]);
+  const out={}; const lists=['wishList','currentReading','readList'];
+  names.forEach(n=>{
+    const sa=srv?.[n]||{readList:[],wishList:[],currentReading:[]};
+    const lb=loc?.[n]||{readList:[],wishList:[],currentReading:[]};
+    out[n]={readList:[],wishList:[],currentReading:[]};
+    lists.forEach(k=>{
+      const m=new Map();
+      safeArray(sa[k]).forEach(it=>m.set(it.id,JSON.parse(JSON.stringify(it))));
+      safeArray(lb[k]).forEach(it=>m.set(it.id,{...m.get(it.id),...it}));
+      out[n][k]=Array.from(m.values());
+    });
+  });
+  return out;
+}
+function mergeActivity(srv=[],loc=[]){
+  const m=new Map();
+  safeArray(srv).forEach(x=>m.set(String(x.id),JSON.parse(JSON.stringify(x))));
+  safeArray(loc).forEach(x=>m.set(String(x.id),x));
+  return Array.from(m.values()).sort((a,b)=> new Date(b.at)-new Date(a.at));
+}
+function deepMergePayloads(server={},local={}){
+  return {
+    books:     mergeBooksArray(server.books, local.books),
+    userData:  mergeUserData(server.userData, local.userData),
+    activity:  mergeActivity(server.activity, local.activity),
+    sitePrefs: {...(server.sitePrefs||{}), ...(local.sitePrefs||{})}
+  };
+}
+async function fetchServerLatest(){
+  const r=await fetch(`${JSONBIN_API}/b/${BIN_ID}/latest`,{method:'GET',headers:{'X-Master-Key':API_KEY}});
+  if(!r.ok) throw new Error(`GET latest ${r.status}: ${await r.text()}`);
+  const data=await r.json(); return data.record||{};
+}
+async function putServer(payload){
+  const r=await fetch(`${JSONBIN_API}/b/${BIN_ID}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':API_KEY},body:JSON.stringify(payload)});
+  if(!r.ok) throw new Error(`PUT ${r.status}: ${await r.text()}`); return true;
+}
 async function loadAll(){
+  if(isLoading) return; isLoading=true;
+  // load local cache (but do not auto-login any user)
   try{
-    const cached = JSON.parse(localStorage.getItem('bookclub_payload')||'{}');
-    if(cached.books) books = cached.books;
-    if(cached.userData) userData = cached.userData;
-    if(cached.activity) activity = cached.activity;
-    if(cached.sitePrefs) sitePrefs = Object.assign(sitePrefs, cached.sitePrefs);
-    currentUser = ''; // always start logged out
+    const cached=JSON.parse(localStorage.getItem('bookclub_payload')||'{}');
+    if(cached.books) books=cached.books;
+    if(cached.userData) userData=cached.userData;
+    if(cached.activity) activity=cached.activity;
+    if(cached.sitePrefs) sitePrefs=Object.assign(sitePrefs,cached.sitePrefs);
   }catch{}
   try{
-    const r = await fetch(`${JSONBIN_API}/b/${BIN_ID}/latest`, {headers:{'X-Master-Key':API_KEY}});
-    if(r.ok){
-      const data=await r.json();
-      const record=data.record||{};
-      books=record.books||books||[];
-      userData=record.userData||userData||{};
-      activity=record.activity||activity||[];
-      sitePrefs=Object.assign(sitePrefs, record.sitePrefs||{});
-      localStorage.setItem('bookclub_payload', JSON.stringify({books,userData,activity,sitePrefs}));
-    }
-  }catch{}
+    const server=await fetchServerLatest();
+    SYNC_STATE.lastServer=server;
+    const merged=deepMergePayloads(server,{books,userData,activity,sitePrefs});
+    books=merged.books; userData=merged.userData; activity=merged.activity; sitePrefs=merged.sitePrefs;
+    localStorage.setItem('bookclub_payload',JSON.stringify({books,userData,activity,sitePrefs}));
+    SYNC_STATE.lastSyncOk=true;
+  }catch(e){ console.warn('Server sync failed; using local cache',e); SYNC_STATE.lastSyncOk=false; }
+  isLoading=false;
 }
 async function saveAll(){
-  try{ localStorage.setItem('bookclub_payload', JSON.stringify({books,userData,activity,sitePrefs})); }catch{}
+  try{ localStorage.setItem('bookclub_payload',JSON.stringify({books,userData,activity,sitePrefs})); }catch{}
   try{
-    await fetch(`${JSONBIN_API}/b/${BIN_ID}`,{
-      method:'PUT', headers:{'Content-Type':'application/json','X-Master-Key':API_KEY},
-      body: JSON.stringify({books,userData,activity,sitePrefs})
-    });
-  }catch{ showToast('Saved locally — server sync failed.', true); }
+    const server=await fetchServerLatest().catch(()=> SYNC_STATE.lastServer||{});
+    const merged=deepMergePayloads(server,{books,userData,activity,sitePrefs});
+    await putServer(merged);
+    books=merged.books; userData=merged.userData; activity=merged.activity; sitePrefs=merged.sitePrefs;
+    SYNC_STATE.lastServer=merged; SYNC_STATE.lastSyncOk=true;
+    localStorage.setItem('bookclub_payload',JSON.stringify({books,userData,activity,sitePrefs}));
+  }catch(e){ console.warn('Cloud save failed; will retry later.',e); SYNC_STATE.lastSyncOk=false; }
 }
 
 const defaultUser=()=>({readList:[],wishList:[],currentReading:[]});
 function ensureUser(name){ if(!userData[name]) userData[name]=defaultUser(); }
 const me=()=>userData[currentUser]||defaultUser();
 
-/* ========= Teams ========= */
-async function postToTeams(type, text){
-  const url = sitePrefs.teamsWebhook?.trim();
-  if(!url) return;
-  const allow = (type==='share'  && sitePrefs.postNew)
-             || (type==='finish' && sitePrefs.postFinish)
-             || (type==='note');
+/* ========= Teams Post ========= */
+async function postToTeams(type,text){
+  const url=sitePrefs.teamsWebhook?.trim(); if(!url) return;
+  const allow=(type==='share'&&sitePrefs.postNew)||(type==='finish'&&sitePrefs.postFinish)||(type==='five'&&sitePrefs.postFive);
   if(!allow) return;
-  try{ await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})}); }catch{}
+  try{ await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})}); }catch(e){ console.error('Teams post failed',e); }
 }
 
 /* ========= Activity ========= */
+function activityIcon(type){return({share:'📣',finish:'🏁',five:'🏆',like:'👍',list:'🗂️'}[type]||'📝');}
 function postActivity(type,payload){
-  const item = {id:Date.now()+Math.random(), type, payload, at:now(), likes:0, likedBy:[]};
-  activity.unshift(item);
+  // combine back-to-back events by same user+book within 60s
+  const key=payload?.user+'|'+payload?.title;
+  const nowMs=Date.now();
+  const recent = activity.find(a=> a._key===key && (nowMs - (a._atMs||0))<60000 );
+  if(recent){
+    // merge textually by appending detail into payload.note
+    recent.payload.notes = (recent.payload.notes||[]).concat(payload.note||payload.action||type);
+    recent.at=now(); recent._atMs=nowMs;
+    recent.type = (type==='five'||recent.type==='five')?'five':(type==='finish'||recent.type==='finish')?'finish':recent.type;
+  }else{
+    const item={id:nowMs+Math.random(), type, payload, at:now(), likes:0, likedBy:[], _key:key, _atMs:nowMs};
+    activity.unshift(item);
+  }
   if(activity.length>200) activity.length=200;
-  renderActivity(); saveAll();
+  renderActivity();
+  saveAll();
 }
-function activityIcon(type){ return ({share:'📣',finish:'🏁',like:'👍',note:'🛠️',comment:'💬'}[type]||'📝'); }
 
 /* ========= Ratings helpers ========= */
 function ratingCount(book){
@@ -592,56 +727,76 @@ function ratingCount(book){
   return base + extra;
 }
 function averageRatingForBook(book){
-  const vals=[]; if(typeof book.rating==='number') vals.push(book.rating);
+  const vals=[];
+  if(typeof book.rating === 'number') vals.push(book.rating);
   (book.userRatings||[]).forEach(r=>{ if(typeof r.rating==='number') vals.push(r.rating); });
   if(!vals.length) return 0;
   return vals.reduce((a,b)=>a+b,0)/vals.length;
 }
 
 /* ========= Tags ========= */
-const tagSuggestions=[ 'sci-fi','fantasy','romance','mystery','thriller','horror','historical-fiction','young-adult','contemporary','classic','literary-fiction','dystopian','leadership','business','productivity','entrepreneurship','marketing','personal-development','psychology','philosophy','history','science','technology','health','fitness','cooking','travel','memoir','comedy','drama','action','adventure','coming-of-age','family','friendship','war','politics','economics','environment','social-justice','quick-read','page-turner','thought-provoking','emotional','inspiring','educational','practical','reference','beginner-friendly','advanced' ];
-function renderTagsDisplay(){ $('#tags-display').innerHTML = currentTags.map(t=>`<span class="tag" data-tag="${escapeAttr(t)}">${escapeHtml(t)} ×</span>`).join(''); }
-function addTag(tag){ const t=tag.trim().toLowerCase(); if(!t||currentTags.includes(t))return; currentTags.push(t); renderTagsDisplay(); $('#tag-input').value=''; hideSuggestions(); }
+const tagSuggestions=["sci-fi","fantasy","romance","mystery","thriller","horror","historical-fiction","young-adult","classic","literary-fiction","dystopian","leadership","business","productivity","entrepreneurship","marketing","personal-development","psychology","philosophy","history","science","technology","health","fitness","cooking","travel","memoir","comedy","drama","adventure","coming-of-age","family","friendship","war","politics","economics","environment","social-justice","quick-read","page-turner","thought-provoking","emotional","inspiring","educational","practical","reference","beginner-friendly","advanced"];
+function renderTagsDisplay(){ $('#tags-display').innerHTML=currentTags.map(t=>`<span class="tag" data-tag="${escapeAttr(t)}">${escapeHtml(t)} ×</span>`).join(''); }
+function addTag(tag){ const t=tag.trim().toLowerCase(); if(!t||currentTags.includes(t)) return; currentTags.push(t); renderTagsDisplay(); $('#tag-input').value=''; $('#tag-suggestions').style.display='none'; }
 function removeTag(tag){ currentTags=currentTags.filter(x=>x!==tag); renderTagsDisplay(); }
-function showSuggestions(input){ const q=input.toLowerCase().trim(); if(!q) return hideSuggestions(); const list=tagSuggestions.filter(t=>t.includes(q)&&!currentTags.includes(t)).slice(0,8); const c=$('#tag-suggestions'); if(!list.length) return hideSuggestions(); c.innerHTML=list.map(t=>`<div class="suggestion-item" data-tag="${escapeAttr(t)}">${escapeHtml(t)}</div>`).join(''); c.style.display='block'; }
-function hideSuggestions(){ $('#tag-suggestions').style.display='none'; }
-function generateSmartTags({categories=[], description=''},{genre='' }={}){ const tags=new Set(); const g=(genre||'').toLowerCase(); if(g) tags.add(g); (categories||[]).forEach(cat=>{ const c=String(cat).toLowerCase(); if(c.includes('science fiction')) tags.add('sci-fi'); else if(c.includes('young adult')) tags.add('young-adult'); else if(c.includes('histor')) tags.add('historical-fiction'); else tags.add(c.replace(/\s+/g,'-')); }); const d=(description||'').toLowerCase(); [['time travel','time-travel'],['detective','mystery'],['murder','thriller'],['magic','fantasy'],['romance','romance'],['startup','entrepreneurship'],['self-help','self-help'],['philosophy','philosophy'],['memoir','memoir'],['dystopian','dystopian'],['classic','classic'],['inspiring','inspiring']].forEach(([n,t])=>{ if(d.includes(n)) tags.add(t); }); return Array.from(tags).slice(0,8); }
-function autoPopulateTagsFromBook({genre='', description='', categories=[]}){ generateSmartTags({categories, description},{genre}).forEach(t=>{ if(!currentTags.includes(t)) currentTags.push(t); }); renderTagsDisplay(); }
+function showSuggestions(input){
+  const q=input.toLowerCase().trim(); const box=$('#tag-suggestions');
+  if(!q){box.style.display='none';return;}
+  const filtered=tagSuggestions.filter(t=> t.includes(q) && !currentTags.includes(t)).slice(0,8);
+  if(!filtered.length){box.style.display='none';return;}
+  box.innerHTML=filtered.map(t=>`<div class="suggestion-item" data-tag="${escapeAttr(t)}">${escapeHtml(t)}</div>`).join('');
+  box.style.display='block';
+}
 
-/* ========= Per-user status chip ========= */
-function userStatusLine(book){
-  if(!currentUser) return '';
-  const u=me();
-  const rd=(u.readList||[]).find(x=>x.id===book.id);
-  if(rd){
-    const fromRatings=(book.userRatings||[]).find(r=>r.user===currentUser)?.rating;
-    const stars=rd._rating ?? fromRatings;
-    const date=fmtDate(rd._ratedAt);
-    return `<div class="chip user-status">You marked this as <strong>Read</strong>${date?` on ${date}`:''}${stars?` — ${stars}★`:''}</div>`;
-  }
-  const cr=(u.currentReading||[]).find(x=>x.id===book.id);
-  if(cr){ const date=fmtDate(cr._startedAt); return `<div class="chip user-status">You’re <strong>Currently Reading</strong>${date?` (since ${date})`:''}</div>`; }
-  const wl=(u.wishList||[]).find(x=>x.id===book.id);
-  if(wl){ const date=fmtDate(wl._addedAt); return `<div class="chip user-status">In your <strong>Want to Read</strong>${date?` (added ${date})`:''}</div>`; }
-  return '';
+/* ========= Per-book system activity as comments ========= */
+function appendSystemComment(book, text){
+  book.comments = book.comments||[];
+  book.comments.push({id:Date.now()+Math.random(), commenter:'System', text, likes:0, likedBy:[], system:true, at:now()});
 }
 
 /* ========= Rendering ========= */
 function bookCoverBlock(book){
   if (book.image) {
-    const q=encodeURIComponent(`${book.title} ${book.author}`); const url=`https://www.goodreads.com/search?q=${q}`;
-    return `<a href="${url}" target="_blank" rel="noopener"><img class="book-cover" loading="lazy" alt="Cover of ${escapeHtml(book.title)}" src="${escapeAttr(book.image)}" title="View on Goodreads"/></a>`;
-  } else { return `<div class="book-cover-placeholder">No Cover</div>`; }
+    const q=encodeURIComponent(`${book.title} ${book.author}`);
+    const goodreads=`https://www.goodreads.com/search?q=${q}`;
+    return `<a href="${goodreads}" target="_blank" rel="noopener"><img class="book-cover" loading="lazy" alt="Cover of ${escapeHtml(book.title)}" src="${escapeAttr(book.image)}" title="View on Goodreads"/></a>`;
+  } else {
+    return `<div class="book-cover-placeholder">No Cover</div>`;
+  }
 }
+function likedByLine(arr=[]){ if(!arr.length) return ''; const names=arr.join(', '); return `<div class="liked-by"><em>Liked by:</em> ${escapeHtml(names)}</div>`; }
 function tagChips(tags){ if(!tags||!tags.length) return ''; return `<div>${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>`; }
+
+function yourStatusLine(book){
+  if(!currentUser) return '';
+  const mine=me();
+  const inWish = (mine.wishList||[]).some(x=>x.id===book.id);
+  const inCur  = (mine.currentReading||[]).some(x=>x.id===book.id);
+  const read   = (mine.readList||[]).find(x=>x.id===book.id);
+  const myUR   = (book.userRatings||[]).find(r=>r.user===currentUser);
+  if(read){
+    const when = read._at || '';
+    const rating = (read._rating || myUR?.rating || 0);
+    return `<div class="your-status"><strong>${escapeHtml(currentUser)}</strong>, you marked this as <em>Read</em>${when?` on ${new Date(when).toLocaleDateString()}`:''}${rating?` and rated ${rating}★`:''}.</div>`;
+  }
+  if(inCur){ return `<div class="your-status"><strong>${escapeHtml(currentUser)}</strong>, this is in your <em>Currently Reading</em> list.</div>`; }
+  if(inWish){ return `<div class="your-status"><strong>${escapeHtml(currentUser)}</strong>, this is in your <em>Want to Read</em> list.</div>`; }
+  return '';
+}
 
 function bookCard(book){
   const liked=currentUser && (book.postLikedBy||[]).includes(currentUser);
-  const synopsis=book.synopsis||''; const reason=book.reason||'';
-  const avg=averageRatingForBook(book); const rounded=Math.round(avg||0); const count=ratingCount(book);
-  const collapsed = isCommentsCollapsed(book.id);
+  const synopsis=book.synopsis||'';
+  const reason=book.reason||'';
+  const avg=averageRatingForBook(book);
+  const rounded=Math.round(avg||0);
+  const count=ratingCount(book);
+
+  const collapse = sitePrefs.collapseAll ? 'data-collapsed="true"' : '';
+  const commentsCount = (book.comments||[]).length;
+
   return `
-  <article id="book-${book.id}" class="book-post" data-id="${book.id}">
+  <article class="book-post" data-id="${book.id}">
     <div class="post-header">
       ${bookCoverBlock(book)}
       <div class="book-info">
@@ -651,7 +806,7 @@ function bookCard(book){
         <div class="book-recommender">Recommended by ${escapeHtml(book.recommender)}</div>
         <div class="book-rating"><div class="stars">${formatStars(rounded)}</div><span>(${avg.toFixed(1)}/5 • ${count} rating${count===1?'':'s'})</span></div>
         ${tagChips(book.tags)}
-        ${userStatusLine(book)}
+        ${yourStatusLine(book)}
       </div>
     </div>
 
@@ -664,30 +819,28 @@ function bookCard(book){
       <button class="action-btn" type="button" data-action="reading" data-id="${book.id}">📖 Currently Reading</button>
       <button class="action-btn" type="button" data-action="finish" data-id="${book.id}">✅ Mark as Read</button>
     </div>
-    ${(book.postLikedBy||[]).length?`<div class="liked-by"><em>Liked by:</em> ${escapeHtml((book.postLikedBy||[]).join(', '))}</div>`:''}
+    ${likedByLine(book.postLikedBy)}
 
-    <div class="comments-section ${collapsed?'collapsed':''}" data-id="${book.id}">
+    <div class="comments-section">
       <div class="comments-head">
-        <button class="toggle-comments-btn" data-action="toggle-comments" data-id="${book.id}">💬 Comments (${(book.comments||[]).length}) ▾</button>
+        <strong>Comments (${commentsCount})</strong>
+        <button class="pill-btn" type="button" data-action="toggle-comments" data-id="${book.id}">Toggle</button>
       </div>
-      <div class="comments-body">
-        ${(book.comments||[]).map(c=>`
-          <div class="comment ${c.sys?'sys':'user'}" data-comment-id="${c.id}">
-            <div class="comment-header">
-              <div style="display:flex;align-items:center;gap:6px">
-                <span class="commenter-name">${escapeHtml(c.commenter||'Anonymous')}</span>
-                <span class="comment-badge">${c.sys?'note':'comment'}</span>
-              </div>
-              <button class="like-comment-btn ${(c.likedBy||[]).includes(currentUser)?'liked':''}" type="button" data-action="like-comment" data-id="${book.id}" data-cid="${c.id}">👍 ${c.likes||0}</button>
-            </div>
-            <div class="comment-text">${escapeHtml(c.text||'')}</div>
-          </div>`).join('')}
-        <div class="add-comment">
-          <div class="comment-form" data-id="${book.id}">
-            <input type="text" placeholder="Your name" class="comment-input" data-field="name" value="${escapeAttr(currentUser)}"/>
-            <textarea placeholder="Write your comment..." class="comment-textarea" data-field="text"></textarea>
-            <button class="btn btn-small" type="button" data-action="add-comment" data-id="${book.id}">Add Comment</button>
+      <div class="comments-wrap" ${collapse}>
+      ${(book.comments||[]).map(c=>`
+        <div class="comment ${c.system?'system':''}" data-comment-id="${c.id}">
+          <div class="comment-header">
+            <span class="commenter-name">${escapeHtml(c.commenter||'Anonymous')}</span>
+            <button class="like-comment-btn ${(c.likedBy||[]).includes(currentUser)?'liked':''}" type="button" data-action="like-comment" data-id="${book.id}" data-cid="${c.id}">👍 ${c.likes||0}</button>
           </div>
+          <div class="comment-text">${escapeHtml(c.text||'')}</div>
+        </div>`).join('')}
+      </div>
+      <div class="add-comment">
+        <div class="comment-form" data-id="${book.id}">
+          <input type="text" placeholder="Your name" class="comment-input" data-field="name" value="${escapeAttr(currentUser)}"/>
+          <textarea placeholder="Write your comment..." class="comment-textarea" data-field="text"></textarea>
+          <button class="btn btn-small" type="button" data-action="add-comment" data-id="${book.id}">Add Comment</button>
         </div>
       </div>
     </div>
@@ -697,8 +850,9 @@ function bookCard(book){
 function renderActivity(){
   const list=$('#activity-list');
   const filter = $('#activity-filter').value;
-  const cap = activityExpanded ? 25 : 8;
+  const cap = activityExpanded ? 30 : 10;
   const filtered = filter ? activity.filter(a => a.type === filter) : activity;
+  $('#activity-count').textContent = `${filtered.length} item${filtered.length===1?'':'s'}`;
   if(!filtered.length){
     list.innerHTML=`<div class="activity-item"><div class="activity-badge">👋</div><div>Welcome! Share a book to kick off the activity feed.</div></div>`;
     return;
@@ -706,30 +860,38 @@ function renderActivity(){
   list.innerHTML = filtered.slice(0,cap).map(a=>{
     const {type,payload,at,likes=0,likedBy=[]}=a;
     let text='';
-    if(type==='share')  text=`<strong>${escapeHtml(payload.user)}</strong> shared <em>${escapeHtml(payload.title)}</em> by ${escapeHtml(payload.author)} (${payload.rating}★).`;
-    else if(type==='finish') text=`<strong>${escapeHtml(payload.user)}</strong> finished <em>${escapeHtml(payload.title)}</em> — ${payload.rating}★.`;
-    else if(type==='comment') text=`<strong>${escapeHtml(payload.user)}</strong> commented on <em>${escapeHtml(payload.title)}</em>.`;
+    if(type==='share')      text=`<strong>${escapeHtml(payload.user)}</strong> shared <em>${escapeHtml(payload.title)}</em> by ${escapeHtml(payload.author)} (${payload.rating}★).`;
+    else if(type==='finish')text=`<strong>${escapeHtml(payload.user)}</strong> finished <em>${escapeHtml(payload.title)}</em> — ${payload.rating}★.`;
+    else if(type==='five')  text=`<strong>${escapeHtml(payload.user)}</strong> rated <em>${escapeHtml(payload.title)}</em> <strong>5★</strong>.`;
     else if(type==='like')  text=`<strong>${escapeHtml(payload.user)}</strong> liked <em>${escapeHtml(payload.title)}</em>.`;
-    else if(type==='note')  text=`<strong>Admin</strong>: ${escapeHtml(payload.message||'Note')}`;
+    else if(type==='list')  text=`<strong>${escapeHtml(payload.user)}</strong> updated list for <em>${escapeHtml(payload.title)}</em> — ${escapeHtml(payload.action||'')}.`;
+    const notes = (payload.notes&&payload.notes.length) ? `<div class="activity-meta">Also: ${payload.notes.map(escapeHtml).join(', ')}</div>` : '';
+    const likedByNames = likedBy.length ? `<div class="liked-by-line"><em>Liked by:</em> ${escapeHtml(likedBy.join(', '))}</div>` : '';
     const meLiked = currentUser && likedBy.includes(currentUser);
+    const likeBtnClass = 'pill-btn' + (meLiked ? ' active' : '');
     return `<div class="activity-item" data-aid="${a.id}">
       <div class="activity-badge">${activityIcon(type)}</div>
       <div>
         <div>${text}</div>
+        ${notes}
         <div class="activity-meta">${timeAgo(at)}</div>
-        <div class="activity-actions"><button class="pill-btn ${meLiked?'active':''}" type="button" data-action="like-activity" data-aid="${a.id}">👍 ${likes}</button></div>
+        <div class="activity-actions">
+          <button class="${likeBtnClass}" type="button" data-action="like-activity" data-aid="${a.id}">👍 ${likes}</button>
+        </div>
+        ${likedByNames}
       </div>
     </div>`;
   }).join('');
-  $('#activity-toggle').textContent = activityExpanded ? 'Show less' : 'Show more';
+  $('#activity-toggle').textContent = activityExpanded ? 'Collapse' : 'Expand';
   $('#activity').classList.toggle('expanded',activityExpanded);
 }
 
 function renderBooks(){
   const c=$('#books-feed');
   if(!currentBooks.length){
-    c.innerHTML=`<div style="text-align:center;padding:18px;color:var(--muted)"><h3>No books found</h3><p>Try adjusting search/filters or add a new recommendation!</p></div>`;
-    $('#result-count').textContent='0 results'; return;
+    c.innerHTML=`<div style="text-align:center;padding:28px;color:var(--muted)"><h3>No books found</h3><p>Try adjusting search/filters or add a new recommendation!</p></div>`;
+    $('#result-count').textContent='0 results';
+    return;
   }
   c.innerHTML=currentBooks.map(bookCard).join('');
   $('#result-count').textContent=`${currentBooks.length} result${currentBooks.length===1?'':'s'}`;
@@ -753,85 +915,88 @@ function renderMyLists(){
     <button class="btn btn-small btn-danger" type="button" data-action="remove-read" data-id="${b.id}">Remove</button>`);
 }
 
-/* ========= Leaderboards & Trending ========= */
-function updateStats(){ 
+/* ========= Stats / Leaderboard / Trending ========= */
+function updateStats(){
   let ratingSum=0, ratingN=0;
-  books.forEach(b=>{ if(typeof b.rating==='number'){ ratingSum+=b.rating; ratingN++; } (b.userRatings||[]).forEach(r=>{ if(typeof r.rating==='number'){ratingSum+=r.rating; ratingN++;} }); });
-  $('#total-books').textContent=String(books.length);
-  $('#total-reviews').textContent=String(books.reduce((s,b)=>s+(b.comments?.length||0),0));
-  $('#avg-rating').textContent=(ratingN?(ratingSum/ratingN):0).toFixed(1);
-  $('#books-read').textContent=String(me().readList.length);
-  const users=Object.keys(userData||{}).sort((a,b)=>a.localeCompare(b));
-  $('#total-users').textContent=String(users.length);
-  $('#users-stat').title = users.length ? `Users: ${users.join(', ')}` : 'No users yet';
-  renderTopRecommenders(); renderTopReaders(); renderMostActive(); renderTrending(); populateUsersAdminOptions();
-}
-function listToRows(pairs, suffix){
-  return pairs.length?pairs.map(([name,count])=>`
-    <div class="list-item">
-      <div><strong>${escapeHtml(name)}</strong></div>
-      <span class="chip">${count} ${suffix}</span>
-    </div>`).join(''):'<p style="color:#999;font-style:italic">No data yet</p>';
-}
-function renderTopRecommenders(){
-  const counts = {}; books.forEach(b=>{ const n=b.recommender; if (n) counts[n] = (counts[n] || 0) + 1; });
-  const sorted = Object.entries(counts).sort(([,a],[,b])=>b-a).slice(0,5);
-  $('#recommenders-list').innerHTML = listToRows(sorted,'book'+(sorted.length===1?'':'s'));
-}
-function renderTopReaders(){
-  const counts={}; Object.entries(userData||{}).forEach(([n,d])=>counts[n]=(d.readList||[]).length);
-  const sorted=Object.entries(counts).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  $('#readers-list').innerHTML = listToRows(sorted,'read');
-}
-function renderMostActive(){
-  const scoreMap={};
-  const names = new Set([
-    ...Object.keys(userData||{}),
-    ...books.map(b=>b.recommender).filter(Boolean),
-    ...books.flatMap(b=>(b.comments||[]).map(c=>c.commenter||'Anonymous')),
-    ...books.flatMap(b=>(b.postLikedBy||[]))
-  ]);
-  names.forEach(n=>{ if(n && n.toLowerCase()!=='anonymous'){ scoreMap[n]={posts:0,comments:0,likes:0}; }});
-  books.forEach(b=>{ const n=b.recommender; if(n && scoreMap[n]) scoreMap[n].posts += 1; });
-  books.forEach(b=>{ (b.comments||[]).forEach(c=>{ const n=c.commenter||''; if(n && scoreMap[n] && !c.sys) scoreMap[n].comments += 1; }); });
-  Object.keys(scoreMap).forEach(n=>{
-    const postLikesGiven = books.filter(b=> (b.postLikedBy||[]).includes(n)).length;
-    const commentLikesGiven = books.reduce((s,b)=> s + (b.comments||[]).filter(c=> (c.likedBy||[]).includes(n)).length, 0);
-    scoreMap[n].likes = postLikesGiven + commentLikesGiven;
+  books.forEach(b=>{
+    if(typeof b.rating==='number'){ ratingSum+=b.rating; ratingN++; }
+    (b.userRatings||[]).forEach(r=>{ if(typeof r.rating==='number'){ratingSum+=r.rating; ratingN++;} });
   });
-  const rows=Object.entries(scoreMap).map(([name,s])=>({name,score:s.posts*3+s.comments*2+s.likes,...s}))
-              .filter(r=>r.score>0).sort((a,b)=>b.score-a.score).slice(0,5);
-  $('#most-active-list').innerHTML = rows.length?rows.map(r=>`
-    <div class="list-item">
-      <div><strong>${escapeHtml(r.name)}</strong>
-        <div style="font-size:12px;color:#6b765f;margin-top:2px">${r.posts} posted • ${r.comments} comments • ${r.likes} likes</div>
-      </div>
-      <span class="chip">${r.score} actions</span>
-    </div>`).join(''):'<p style="color:#999;font-style:italic">No activity yet</p>';
+  const totalBooks=books.length;
+  const totalComments=books.reduce((s,b)=>s+(b.comments?.length||0),0);
+  const globalAvg=ratingN ? (ratingSum/ratingN) : 0;
+  const readCount=me().readList.length;
+  const usersCount=Object.keys(userData||{}).length;
+  $('#total-books').textContent=String(totalBooks);
+  $('#total-reviews').textContent=String(totalComments);
+  $('#avg-rating').textContent=globalAvg.toFixed(1);
+  $('#books-read').textContent=String(readCount);
+  $('#total-users').textContent=String(usersCount);
+
+  renderLeaderboard();
+  renderTrending();
+  populateRecommenderFilter();
+  // Users hover list
+  const names=Object.keys(userData||{}).sort((a,b)=>a.localeCompare(b));
+  $('#users-card').title = names.length ? `Users:\n${names.join('\n')}` : 'No users yet';
 }
-function bookActionScore(b){
-  const commentLikes = (b.comments||[]).reduce((s,c)=>s+(c.likes||0),0);
-  const userComments = (b.comments||[]).filter(c=>!c.sys).length;
-  const systemNotes  = (b.comments||[]).filter(c=> c.sys).length;
-  return (b.postLikes||0)*2 + (b.userRatings?.length||0)*2 + userComments*2 + systemNotes*1 + commentLikes;
+function renderLeaderboard(){
+  // Most Active score: shares*3 + comments*2 + likes*1 + listOps*2 + finishes*3
+  const scores={};
+  activity.forEach(a=>{
+    const u=a.payload?.user; if(!u) return;
+    let add=0;
+    if(a.type==='share') add=3;
+    else if(a.type==='finish') add=3;
+    else if(a.type==='five') add=2;
+    else if(a.type==='like') add=1;
+    else if(a.type==='list') add=2;
+    scores[u]=(scores[u]||0)+add;
+  });
+  // Top Recommenders:
+  const recCounts={}; books.forEach(b=>{if(b.recommender) recCounts[b.recommender]=(recCounts[b.recommender]||0)+1;});
+  // Top Readers:
+  const readCounts={}; Object.entries(userData||{}).forEach(([n,d])=> readCounts[n]=(d.readList||[]).length );
+
+  const mostActive = Object.entries(scores).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const topRec = Object.entries(recCounts).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const topRead = Object.entries(readCounts).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+  const row=$('#leaderboard-row');
+  function col(title,pairs,unit){
+    return `
+      <div class="micro-item" title="${escapeAttr(title)}">
+        <div>
+          <div class="micro-sub" style="font-weight:800;color:#2e4a3a">${escapeHtml(title)}</div>
+          ${pairs.length? pairs.map(([n,v])=>`<div>${escapeHtml(n)} — <strong>${v}</strong>${unit||''}</div>`).join('') : `<div style="color:#999">No data</div>`}
+        </div>
+      </div>`;
+  }
+  row.innerHTML = col('Active', mostActive,' pts') + col('Recommenders', topRec,'') + col('Readers', topRead,' read');
 }
 function renderTrending(){
-  const top = [...books].sort((a,b)=>bookActionScore(b)-bookActionScore(a)).slice(0,3);
-  $('#trending-list').innerHTML = top.length?top.map(b=>`
-    <a href="#book-${b.id}" class="list-item" data-jump-book="${b.id}" style="text-decoration:none;color:inherit">
-      <div style="display:flex;gap:10px;align-items:center">
-        ${b.image?`<img src="${escapeAttr(b.image)}" alt="" style="width:40px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e6ece8">`
-                  :`<div style="width:40px;height:60px;border-radius:6px;background:#e9ecef;border:1px solid #e6ece8"></div>`}
-        <div>
-          <div style="font-weight:700">${escapeHtml(b.title)}</div>
-          <div style="font-size:12px;color:#6b765f">by ${escapeHtml(b.author)}</div>
-        </div>
-      </div>
-      <span class="chip">${bookActionScore(b)} actions</span>
-    </a>`).join(''):'<p style="color:#999;font-style:italic">No trending books yet</p>';
+  // score per book: recent activity weight + likes + comments
+  const bookScore=new Map();
+  const recentHorizon=1000*60*60*24*14; // 14 days
+  const nowMs=Date.now();
+  books.forEach(b=>{bookScore.set(b.id,(b.postLikes||0) + (b.comments?.length||0)*1.5);});
+  activity.forEach(a=>{
+    const t= new Date(a.at).getTime(); const fresh = Math.max(0, 1 - (nowMs - t)/recentHorizon);
+    const weight = (a.type==='share'||a.type==='finish')?3: (a.type==='five')?2:(a.type==='list')?1.5:1;
+    const id = (books.find(b=>b.title===a.payload?.title)?.id)||null;
+    if(id!=null){ bookScore.set(id,(bookScore.get(id)||0)+ weight*(1+fresh*2)); }
+  });
+  const top = Array.from(bookScore.entries()).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([id])=> books.find(b=>b.id===id)).filter(Boolean);
+
+  $('#trending-list').innerHTML = top.length ? top.map(b=>`
+    <div class="micro-item">
+      ${b.image?`<img class="micro-thumb" src="${escapeAttr(b.image)}" alt="">`:`<div class="micro-thumb"></div>`}
+      <div><a href="#" data-jump-book="${b.id}">${escapeHtml(b.title)}</a><div class="micro-sub">${escapeHtml(b.author)}</div></div>
+    </div>
+  `).join('') : `<div class="micro-item"><div class="micro-sub">No trending yet</div></div>`;
 }
 
-/* ========= Search ========= */
+/* ========= Filters ========= */
 function getUniqueRecommenders(){ return Array.from(new Set(books.map(b=>b.recommender).filter(Boolean))).sort((a,b)=>a.localeCompare(b)); }
 function populateRecommenderFilter(){
   const sel=$('#recommender-filter'); const cur=sel.value;
@@ -840,13 +1005,21 @@ function populateRecommenderFilter(){
 }
 function bookSearchScore(b,t){
   if(!t) return 1;
-  const term=t.toLowerCase(), inStr=(s)=> (s||'').toLowerCase();
-  let s=0; const title=inStr(b.title), author=inStr(b.author), rec=inStr(b.recommender), syn=inStr(b.synopsis), rea=inStr(b.reason);
+  const term=t.toLowerCase();
+  const inStr=(s)=> (s||'').toLowerCase();
+  let score=0;
+  const title=inStr(b.title), author=inStr(b.author), rec=inStr(b.recommender), syn=inStr(b.synopsis), rea=inStr(b.reason);
   const tags=(b.tags||[]).map(x=>x.toLowerCase());
-  if(title===term) s+=100; if(title.startsWith(term)) s+=60; if(title.includes(term)) s+=30;
-  if(author.startsWith(term)) s+=30; if(author.includes(term)) s+=20; if(rec.includes(term)) s+=15;
-  if(rea.includes(term)) s+=12; if(syn.includes(term)) s+=10; if(tags.some(x=>x.includes(term))) s+=25;
-  return s;
+  if(title===term) score+=100;
+  if(title.startsWith(term)) score+=60;
+  if(title.includes(term)) score+=30;
+  if(author.startsWith(term)) score+=30;
+  if(author.includes(term)) score+=20;
+  if(rec.includes(term)) score+=15;
+  if(rea.includes(term)) score+=12;
+  if(syn.includes(term)) score+=10;
+  if(tags.some(x=>x.includes(term))) score+=25;
+  return score;
 }
 function applyFilters(){
   const term=$('#search-input').value.trim();
@@ -856,14 +1029,16 @@ function applyFilters(){
   const min=parseInt($('#min-rating').value,10)||0;
   const sort=$('#sort-by').value;
 
-  const list = books.map(b=>({...b,_score:bookSearchScore(b,term)})).filter(b=>{
-    if(term && b._score<=0) return false;
-    if(cat && b.genre!==cat) return false;
-    if(who && b.recommender!==who) return false;
-    if(min && averageRatingForBook(b) < min) return false;
-    if(tagTerm && !(b.tags||[]).some(t=>String(t).toLowerCase().includes(tagTerm))) return false;
-    return true;
-  });
+  const list = books
+    .map(b=>({ ...b, _score: bookSearchScore(b, term) }))
+    .filter(b=>{
+      if(term && b._score<=0) return false;
+      if(cat && b.genre!==cat) return false;
+      if(who && b.recommender!==who) return false;
+      if(min && averageRatingForBook(b) < min) return false;
+      if(tagTerm && !(b.tags||[]).some(t=> String(t).toLowerCase().includes(tagTerm))) return false;
+      return true;
+    });
 
   if(term){ list.sort((a,b)=> b._score - a._score || b.id - a.id); }
   else if(sort==='new'){ list.sort((a,b)=>b.id-a.id); }
@@ -871,132 +1046,141 @@ function applyFilters(){
   else if(sort==='rating'){ list.sort((a,b)=>averageRatingForBook(b)-averageRatingForBook(a)); }
   else if(sort==='title'){ list.sort((a,b)=>a.title.localeCompare(b.title)); }
 
-  currentBooks=list; renderBooks();
+  currentBooks=list;
+  renderBooks();
 }
 
-/* ========= Google Books ========= */
+/* ========= Google Books Search (title/author/cover; synopsis best-effort) ========= */
 const searchGoogleBooks = debounce(async (q)=>{
-  const box=$('#book-results'); if(!q||q.trim().length<2){ box.style.display='none'; box.innerHTML=''; gResults=[]; return; }
+  const box=$('#book-results');
+  const input = $('#book-search');
+  if(!q||q.trim().length<2){ box.style.display='none'; box.innerHTML=''; return; }
   try{
-    const url=`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q.trim())}&maxResults=10`;
-    const r=await fetch(url); const data=await r.json();
-    const items=data.items||[]; if(!items.length){ gResults=[]; box.innerHTML='<div class="result-item"><div style="color:#999;font-style:italic">No results found</div></div>'; box.style.display='block'; return; }
-    gResults = items.map((it,i)=>{ const v=it.volumeInfo||{}; return {index:i,title:v.title||'Unknown Title',author:(v.authors||[]).join(', ')||'Unknown Author',cover:v.imageLinks?.thumbnail||'',description:v.description||'',categories:v.categories||[]}; });
-    box.innerHTML=gResults.map(r=>`
+    if(!input.classList.contains('loading')){ const span=document.createElement('span'); span.className='spinner'; input.parentElement.prepend(span); input.classList.add('loading');}
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q.trim())}&maxResults=10`;
+    const r=await fetch(url); if (!r.ok) throw new Error(`Search failed: ${r.status}`);
+    const data=await r.json();
+    input.classList.remove('loading'); const sp=input.parentElement.querySelector('.spinner'); if(sp) sp.remove();
+
+    const items = data.items || [];
+    if(!items.length){ box.innerHTML='<div class="result-item"><div style="color:#999;font-style:italic">No results found</div></div>'; box.style.display='block'; return; }
+    const rows = items.map((item, index) => {
+      const info = item.volumeInfo || {};
+      return {
+        title: info.title || 'Unknown Title',
+        author: (info.authors || []).join(', ') || 'Unknown Author',
+        cover: info.imageLinks?.thumbnail || '',
+        description: info.description || '',
+        categories: info.categories || [],
+        index
+      };
+    });
+
+    box.innerHTML = rows.map(r => `
       <div class="result-item" data-i="${r.index}">
-        <img class="result-cover" src="${escapeAttr(r.cover)}" alt="" onerror="this.style.display='none'"/>
-        <div><div><strong>${escapeHtml(r.title)}</strong></div><div>${escapeHtml(r.author)}</div>${r.categories?.length?`<div class="chip">${escapeHtml(r.categories[0])}</div>`:''}</div>
-      </div>`).join('');
+        <img class="result-cover" src="${escapeAttr(r.cover || '')}" alt="" onerror="this.style.display='none'"/>
+        <div>
+          <div><strong>${escapeHtml(r.title)}</strong></div>
+          <div>${escapeHtml(r.author)}</div>
+          ${r.categories?.length ? `<div class="chip">${escapeHtml(r.categories[0])}</div>` : ''}
+          <div class="micro-sub">${escapeHtml(truncate(r.description||'',120))}</div>
+        </div>
+      </div>
+    `).join('');
+    box.dataset.results = encodeURIComponent(JSON.stringify(rows));
     box.style.display='block';
-  }catch{ box.innerHTML='<div class="result-item"><div style="color:#b74a4a">Search failed. Try again.</div></div>'; box.style.display='block'; }
-});
-document.addEventListener('click', (e)=>{
-  if(!$('#book-search').contains?.(e?.target) && !$('#book-results').contains(e.target)){
-    $('#book-results').style.display='none';
+  }catch(e){
+    input.classList.remove('loading'); const sp=input.parentElement.querySelector('.spinner'); if(sp) sp.remove();
+    console.error(e);
+    box.innerHTML='<div class="result-item"><div style="color:#b74a4a">Search failed. Try again.</div></div>';
+    box.style.display='block';
   }
 });
 
-/* ========= CSV ========= */
+/* ========= CSV Export (all rows + BOM for Excel) ========= */
+function download(filename, text) {
+  const blob = new Blob(['\uFEFF'+text], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  URL.revokeObjectURL(url); a.remove();
+}
 function toCsvRow(arr){ return arr.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(','); }
-function downloadCsv(filename, rows){ const BOM='\uFEFF'; const blob=new Blob([BOM+rows.join('\r\n')],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); a.remove(); }
 function exportCsvs(){
-  const booksHeader=toCsvRow(['id','title','author','genre','recommender','image','avg_rating','ratings_count','tags','synopsis','reason']);
-  const booksRows=books.map(b=>toCsvRow([b.id,b.title,b.author,b.genre,b.recommender,b.image||'',averageRatingForBook(b).toFixed(2),ratingCount(b),(b.tags||[]).join('|'),(b.synopsis||''),(b.reason||'')]));
-  downloadCsv('books.csv',[booksHeader,...booksRows]);
-  const commentsHeader=toCsvRow(['book_id','book_title','comment_id','commenter','likes','text','is_system']);
-  const commentsRows=books.flatMap(b=>(b.comments||[]).map(c=>toCsvRow([b.id,b.title,c.id,c.commenter||'',c.likes||0,c.text||'',c.sys?1:0])));
-  downloadCsv('comments.csv',[commentsHeader,...commentsRows]);
+  const booksHeader = toCsvRow(['id','title','author','genre','recommender','image','avg_rating','ratings_count','tags','synopsis','reason']);
+  const booksRows = books.map(b=>toCsvRow([
+    b.id,b.title,b.author,b.genre,b.recommender,b.image||'',
+    averageRatingForBook(b).toFixed(2), ratingCount(b),
+    (b.tags||[]).join('|'), (b.synopsis||''), (b.reason||'')
+  ]));
+  download('books.csv',[booksHeader,...booksRows].join('\r\n'));
+
+  const commentsHeader = toCsvRow(['book_id','book_title','comment_id','commenter','likes','text','system']);
+  const commentsRows = books.flatMap(b=>(b.comments||[]).map(c=>toCsvRow([b.id,b.title,c.id,c.commenter||'',c.likes||0,c.text||'',c.system?1:0])));
+  download('comments.csv',[commentsHeader,...commentsRows].join('\r\n'));
 }
 
-/* ========= Users Admin helpers ========= */
-function populateUsersAdminOptions(){
-  const users=Object.keys(userData||{}).sort((a,b)=>a.localeCompare(b));
-  const opts = users.map(u=>`<option value="${escapeAttr(u)}">${escapeHtml(u)}</option>`).join('');
-  $('#ua-user').innerHTML = opts || '<option value="">(none)</option>';
-  $('#ua-merge-target').innerHTML = '<option value="">Select…</option>' + opts;
+/* ========= Modal ========= */
+function openFinishModal(book){
+  finishContext = {bookId: book.id};
+  currentRating = 0;
+  $('#finish-title').textContent = `${book.title} — ${book.author}`;
+  $$('#finish-stars .star').forEach(star=>star.classList.remove('filled'));
+  $('#finish-modal').style.display='flex';
+  $('#finish-modal').setAttribute('aria-hidden','false');
 }
-function requireAdminPw(){ const pw=$('#admin-pw').value.trim(); if(pw!==ADMIN_PASSWORD){ showToast('Admin password required/incorrect.', true); return false; } return true; }
-function replaceNameEverywhere(oldName, newName){
-  books.forEach(b=>{
-    if(b.recommender===oldName) b.recommender=newName;
-    (b.userRatings||[]).forEach(r=>{ if(r.user===oldName) r.user=newName; });
-    if(b.userRatings && b.userRatings.length){
-      const seen=new Set(); b.userRatings = b.userRatings.reverse().filter(r=> (seen.has(r.user)?false:seen.add(r.user))).reverse();
-    }
-    (b.comments||[]).forEach(c=>{ if(c.commenter===oldName) c.commenter=newName; c.likedBy = (c.likedBy||[]).map(n=> n===oldName ? newName : n).filter((v,i,a)=>a.indexOf(v)===i); });
-    b.postLikedBy = (b.postLikedBy||[]).map(n=> n===oldName ? newName : n).filter((v,i,a)=>a.indexOf(v)===i);
-  });
-  activity.forEach(a=>{ if(a?.payload?.user===oldName) a.payload.user=newName; });
-}
-function mergeUsers(from, to){
-  if(!userData[from] || !userData[to]) return;
-  const toUser=userData[to], fromUser=userData[from];
-  const dedupe=(arr)=>{ const map=new Map(); (arr||[]).forEach(x=>{ map.set(x.id, Object.assign(map.get(x.id)||{}, x)); }); return Array.from(map.values()); };
-  toUser.wishList = dedupe([...(toUser.wishList||[]), ...(fromUser.wishList||[])]);
-  toUser.currentReading = dedupe([...(toUser.currentReading||[]), ...(fromUser.currentReading||[])]);
-  toUser.readList = dedupe([...(toUser.readList||[]), ...(fromUser.readList||[])]);
-  replaceNameEverywhere(from, to);
-  delete userData[from];
-}
-
-/* ========= UI helpers ========= */
-function openSection(id){
-  $$('.section').forEach(s=>s.classList.remove('active'));
-  $('#'+id).classList.add('active');
-  $$('.nav-btn').forEach(b=>b.classList.remove('active'));
-  if(id==='feed') $('#feed-btn').classList.add('active');
-  if(id==='add')  $('#add-btn').classList.add('active');
-  if(id==='my-books') $('#my-books-btn').classList.add('active');
-  if(id==='prefs') $('#prefs-btn').classList.add('active');
-}
-function gotoFeedTop(){ openSection('feed'); window.scrollTo({top:0,behavior:'smooth'}); }
-function gotoBook(id){
-  openSection('feed'); applyFilters();
-  setTimeout(()=>{
-    const el=document.getElementById(`book-${id}`);
-    if(el){ el.classList.add('highlight'); el.scrollIntoView({behavior:'smooth', block:'start'}); setTimeout(()=>el.classList.remove('highlight'),1600); }
-  },10);
+function closeFinishModal(){
+  $('#finish-modal').style.display='none';
+  $('#finish-modal').setAttribute('aria-hidden','true');
+  finishContext=null; currentRating=0;
 }
 
 /* ========= Boot ========= */
 document.addEventListener('DOMContentLoaded', async () => {
+  // Always reset to login (multi-people can use it simultaneously)
+  currentUser = '';
+  $('#main-app').style.display='none';
+  $('#login-section').style.display='block';
+  $('#user-info').style.display='none';
+
   await loadAll();
 
-  // Always start at login (no last user)
-  $('#login-section').style.display='block';
-  $('#main-app').style.display='none';
-  $('#user-info').style.display='none';
-  $('#current-user-name').textContent='';
-
-  // Prefs UI initial state
-  $('#pref-post-new').checked    = !!sitePrefs.postNew;
-  $('#pref-post-finish').checked = !!sitePrefs.postFinish;
-  $('#pref-post-5').checked      = !!sitePrefs.postFive;
-  $('#pref-teams-url').value     = sitePrefs.teamsWebhook || '';
-  $('#collapse-all').checked     = !!sitePrefs.collapseComments;
-
-  // Clickable stats – jump to feed top
-  $$('.stat-card[data-jump="feed"]').forEach(card=>{
-    card.addEventListener('click', gotoFeedTop);
-  });
-
-  populateRecommenderFilter();
+  // Initial renders (feed for guests too)
   applyFilters();
   renderActivity();
-  renderMyLists();
   updateStats();
+  renderLeaderboard();
 
-  /* Jump from Trending to the book card */
-  document.addEventListener('click', (e)=>{
-    const a=e.target.closest('[data-jump-book]');
-    if(a){ e.preventDefault(); const id=a.getAttribute('data-jump-book'); gotoBook(id); }
-  });
-
-  /* Nav */
+  /* Tabs */
+  function openSection(id){
+    $$('.section').forEach(s=>s.classList.remove('active'));
+    $('#'+id).classList.add('active');
+    $$('.nav-btn').forEach(b=>b.classList.remove('active'));
+    if(id==='feed') $('#feed-btn').classList.add('active');
+    if(id==='add')  $('#add-btn').classList.add('active');
+    if(id==='my-books') $('#my-books-btn').classList.add('active');
+    if(id==='prefs') $('#prefs-btn').classList.add('active');
+    if(id==='feed'){ window.scrollTo({top:0,behavior:'smooth'}); }
+  }
   $('#feed-btn').addEventListener('click', ()=>{ openSection('feed'); applyFilters(); });
   $('#add-btn').addEventListener('click', ()=> openSection('add'));
   $('#my-books-btn').addEventListener('click', ()=>{ openSection('my-books'); renderMyLists(); });
   $('#prefs-btn').addEventListener('click', ()=> openSection('prefs'));
+
+  // Jump from stats/trending
+  $('#stats-bar').addEventListener('click', (e)=>{
+    const card=e.target.closest('.stat-card'); if(!card) return;
+    const j=card.getAttribute('data-jump'); if(j==='feed') $('#feed-btn').click();
+    else if(j==='my-books') $('#my-books-btn').click();
+  });
+  document.addEventListener('click',(e)=>{
+    const jump=e.target.closest('[data-jump-book]'); if(!jump) return;
+    const id=Number(jump.getAttribute('data-jump-book'));
+    $('#feed-btn').click();
+    // scroll to that book after render
+    requestAnimationFrame(()=>{ const el = document.querySelector(`.book-post[data-id="${id}"]`); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); });
+  });
 
   /* Login */
   $('#login-form').addEventListener('submit', (e)=>{
@@ -1010,61 +1194,66 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#login-section').style.display='none';
     $('#main-app').style.display='block';
     $('#recommender').value = currentUser;
-    showToast(`Hi, ${currentUser}!`);
+    renderMyLists();
+    updateStats();
+    applyFilters(); // refresh "your status" lines
   });
   $('#logout-btn').addEventListener('click', ()=>{
     currentUser='';
-    $('#current-user-name').textContent='';
     $('#user-info').style.display='none';
     $('#main-app').style.display='none';
     $('#login-section').style.display='block';
   });
 
-  /* Filters */
+  /* Activity */
   $('#activity-toggle').addEventListener('click', ()=>{ activityExpanded=!activityExpanded; renderActivity(); });
   $('#activity-filter').addEventListener('change', renderActivity);
+
+  /* Collapse all comments toggle */
+  $('#collapse-all-comments').addEventListener('click', ()=>{
+    sitePrefs.collapseAll = !sitePrefs.collapseAll;
+    saveAll();
+    applyFilters();
+  });
+
+  /* Filters */
   $('#search-input').addEventListener('input', applyFilters);
   $('#tag-filter').addEventListener('input', applyFilters);
   $('#category-filter').addEventListener('change', applyFilters);
   $('#recommender-filter').addEventListener('change', applyFilters);
   $('#min-rating').addEventListener('change', applyFilters);
   $('#sort-by').addEventListener('change', applyFilters);
-  $('#collapse-all').addEventListener('change', ()=>{
-    sitePrefs.collapseComments = $('#collapse-all').checked;
-    commentCollapse = {};
-    saveAll();
-    applyFilters();
-  });
 
-  /* Google Books -> autofill */
+  /* Add: Google Books search */
   $('#book-search').addEventListener('input', (e)=> searchGoogleBooks(e.target.value));
   $('#book-results').addEventListener('click', (e)=>{
-    const el = e.target.closest('.result-item'); if(!el) return;
-    const index = Number(el.getAttribute('data-i'));
-    const data = gResults.find(r=>r.index===index); if(!data) return;
-    $('#title').value = data.title || '';
-    $('#author').value = data.author || '';
-    $('#book-image').value = data.cover || '';
-    $('#synopsis').value = stripHtml(data.description || '');
+    const item = e.target.closest('.result-item'); if(!item) return;
+    const idx = Number(item.getAttribute('data-i'));
+    const rows = JSON.parse(decodeURIComponent($('#book-results').dataset.results||'[]'));
+    const r = rows[idx]; if(!r) return;
+    $('#title').value = r.title || '';
+    $('#author').value = r.author || '';
+    $('#book-image').value = r.cover || '';
+    if(r.description && !$('#synopsis').value) $('#synopsis').value = r.description;
     currentTags = [];
-    autoPopulateTagsFromBook({ genre: $('#genre').value, description: data.description || '', categories: data.categories || [] });
+    if(r.categories?.length) currentTags.push(String(r.categories[0]).toLowerCase());
+    renderTagsDisplay();
     $('#book-results').style.display='none';
   });
 
-  /* Tags input */
+  /* Add: Tags input */
   $('#tags-container').addEventListener('click', ()=> $('#tag-input').focus());
   $('#tag-input').addEventListener('input', (e)=> showSuggestions(e.target.value));
   $('#tag-input').addEventListener('keydown', (e)=>{
-    if(e.key==='Enter' || e.key===','){ e.preventDefault(); const val=e.target.value.trim().replace(/,$/, ''); if(val) addTag(val); }
+    if(e.key==='Enter' || e.key===','){ e.preventDefault(); const val=e.target.value.trim().replace(/,$/,''); if(val) addTag(val); }
     else if(e.key==='Backspace' && !e.target.value){ currentTags.pop(); renderTagsDisplay(); }
   });
-  $('#tag-suggestions').addEventListener('click', (e)=>{ const item=e.target.closest('.suggestion-item'); if(!item) return; addTag(item.getAttribute('data-tag')); });
-  $('#genre').addEventListener('change', ()=>{ autoPopulateTagsFromBook({ genre: $('#genre').value, description: $('#synopsis').value || '', categories: [] }); });
+  $('#tag-suggestions').addEventListener('click', (e)=>{ const it=e.target.closest('.suggestion-item'); if(!it) return; addTag(it.getAttribute('data-tag')); });
+  $('#tags-display').addEventListener('click', (e)=>{ const t=e.target.closest('.tag'); if(!t) return; removeTag(t.getAttribute('data-tag')); });
 
-  /* Rating stars (share form) */
+  /* Add: Rating stars (share form) */
   $$('#rating-stars .star').forEach(star=>{
-    star.addEventListener('click', ()=>{
-      const val = Number(star.getAttribute('data-rating')); currentRating = val;
+    star.addEventListener('click', ()=>{ const val=Number(star.getAttribute('data-rating')); currentRating=val;
       $$('#rating-stars .star').forEach(s=> s.classList.toggle('filled', Number(s.getAttribute('data-rating'))<=val));
       $('#rating-feedback').textContent = `You selected ${val} star${val===1?'':'s'}.`;
     });
@@ -1072,233 +1261,360 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /* Finish modal stars */
   $$('#finish-stars .star').forEach(star=>{
-    star.addEventListener('click', ()=>{
-      const val = Number(star.getAttribute('data-rating')); currentRating = val;
+    star.addEventListener('click', ()=>{ const val=Number(star.getAttribute('data-rating')); currentRating=val;
       $$('#finish-stars .star').forEach(s=> s.classList.toggle('filled', Number(s.getAttribute('data-rating'))<=val));
     });
   });
   $('#finish-save').addEventListener('click', ()=>{
-    if(!finishContext) return $('#finish-modal').style.display='none';
-    let book = books.find(b=>String(b.id)===String(finishContext.bookId));
-    // If finishing from My Lists but book not in feed yet, create stub
-    if(!book){
-      ensureUser(currentUser);
-      const mine = me();
-      const shadow = [...(mine.currentReading||[]), ...(mine.wishList||[]), ...(mine.readList||[])]
-        .find(x=>String(x.id)===String(finishContext.bookId));
-      if(shadow){
-        book = { id: shadow.id, title: shadow.title||'Untitled', author: shadow.author||'Unknown', genre:'other', recommender: shadow.recommender||'', image:'', synopsis:'', reason:'', rating:0, userRatings:[], tags:[], comments:[], postLikes:0, postLikedBy:[] };
-        books.unshift(book);
-      }else{ showToast('Could not locate this book details. Try finishing from the feed.', true); $('#finish-modal').style.display='none'; return; }
-    }
+    if(!finishContext) return closeFinishModal();
+    const book = books.find(b=>b.id===finishContext.bookId); if(!book) return closeFinishModal();
     const rating = currentRating || 0;
-
-    // Move to Read + timestamp
     ensureUser(currentUser);
-    const mine = me();
+    const mine=me();
+
+    // move to read list with timestamp + rating, remove from others
     const existing = mine.readList.find(x=>x.id===book.id);
-    if(!existing){
-      mine.readList.push({id:book.id,title:book.title,author:book.author,_rating:rating,_ratedAt:now()});
-    }else{
-      existing._rating = rating;
-      existing._ratedAt = now();
-    }
-    mine.currentReading = (mine.currentReading||[]).filter(x=>x.id!==book.id);
-    mine.wishList = (mine.wishList||[]).filter(x=>x.id!==book.id);
+    if(existing){ existing._rating=rating; existing._at=now(); }
+    else{ mine.readList.push({id:book.id,title:book.title,author:book.author,_rating:rating,_at:now()}); }
+    mine.currentReading = mine.currentReading.filter(x=>x.id!==book.id);
+    mine.wishList = mine.wishList.filter(x=>x.id!==book.id);
 
-    // Rating + system note
+    // add/update user rating on book
     book.userRatings = book.userRatings||[];
-    const er = book.userRatings.find(r=>r.user===currentUser);
-    if(er) er.rating = rating; else book.userRatings.push({user:currentUser, rating});
-    book.comments = book.comments||[];
-    book.comments.push({id:Date.now()+Math.random(), commenter: currentUser, text: `finished this book — ${rating}★`, likes:0, likedBy:[], sys:true});
+    const myr = book.userRatings.find(r=>r.user===currentUser);
+    if(myr) myr.rating=rating; else book.userRatings.push({user:currentUser, rating});
 
-    postActivity('finish',{user:currentUser, title:book.title, author:book.author, rating});
+    // book activity (system comment)
+    appendSystemComment(book, `${currentUser} marked as Read and rated ${rating}★.`);
+    // global activity (+ combine within 60s handled by postActivity)
+    postActivity('finish',{user:currentUser,title:book.title,author:book.author,rating, note:'rated' });
+    if(rating===5) postActivity('five',{user:currentUser,title:book.title,author:book.author,rating});
     postToTeams('finish', `${currentUser} finished "${book.title}" — ${rating}★`);
+    if(rating===5) postToTeams('five', `${currentUser} rated "${book.title}" 5★`);
 
-    saveAll(); $('#finish-modal').style.display='none'; renderMyLists(); applyFilters(); updateStats();
+    saveAll();
+    closeFinishModal();
+    renderMyLists(); applyFilters(); updateStats();
   });
-  $('#finish-cancel').addEventListener('click', ()=> $('#finish-modal').style.display='none');
-  $('#finish-modal').addEventListener('click', (e)=>{ if(e.target.id==='finish-modal') $('#finish-modal').style.display='none'; });
+  $('#finish-cancel').addEventListener('click', closeFinishModal);
+  $('#finish-modal').addEventListener('click', (e)=>{ if(e.target.id==='finish-modal') closeFinishModal(); });
 
-  /* Share Book submit */
+  /* Add: Generate "AI" reason (local heuristic) */
+  $('#ai-reason').addEventListener('click', ()=>{
+    const title=$('#title').value.trim(), author=$('#author').value.trim();
+    const syn = ($('#synopsis').value||'').trim();
+    const picks = (syn||'').split(/[.?!]\s+/).filter(s=>s.length>40).slice(0,3);
+    const why = [
+      `If you enjoyed ${author ? 'works by '+author : 'thoughtful narratives'}, this book blends strong storytelling with memorable ideas.`,
+      picks[0] ? `What stood out: ${picks[0]}` : `What stood out: clear insights and practical takeaways.`,
+      `Recommended for readers who appreciate ${ (currentTags[0]||$('#genre').value||'well-crafted') } books.`
+    ].join(' ');
+    const cur=$('#reason').value.trim();
+    $('#reason').value = cur ? (cur+'\n\n'+why) : why;
+  });
+
+  /* Add: Form submit */
   $('#book-form').addEventListener('submit', (e)=>{
     e.preventDefault();
     if(!currentUser){ showToast('Please log in with your name first.', true); return; }
 
-    const title=$('#title').value.trim();
-    const author=$('#author').value.trim();
-    const genre=$('#genre').value;
-    const recommender=($('#recommender').value||currentUser).trim();
-    const image=$('#book-image').value.trim();
-    const synopsis=$('#synopsis').value.trim();
-    const reason=$('#reason').value.trim();
-    if(!title||!author||!currentRating||!reason){ showToast('Title, author, rating, and reason are required.', true); return; }
+    const title = $('#title').value.trim();
+    const author= $('#author').value.trim();
+    const genre = $('#genre').value;
+    const recommender = ($('#recommender').value||currentUser).trim();
+    const image = $('#book-image').value.trim();
+    const synopsis = $('#synopsis').value.trim();
+    const reason = $('#reason').value.trim();
+    if(!title || !author || !reason || !currentRating){ showToast('Title, author, rating, and reason are required.', true); return; }
 
-    const book={ id:Date.now(), title, author, genre, recommender, image, synopsis, reason, rating:currentRating, userRatings:[], tags:[...currentTags], comments:[], postLikes:0, postLikedBy:[] };
-    book.comments.push({id:Date.now()+Math.random(), commenter: recommender, text:`shared this book and rated it ${currentRating}★`, likes:0, likedBy:[], sys:true});
+    const book = {
+      id: Date.now(),
+      title, author, genre, recommender, image,
+      synopsis, reason,
+      rating: currentRating, // owner's rating
+      userRatings: [], // additional ratings by others
+      tags: [...currentTags],
+      comments: [],
+      postLikes: 0,
+      postLikedBy: []
+    };
     books.unshift(book);
 
-    // Auto-add to Read list with timestamp
+    // Recommender auto-added to Read list
+    ensureUser(recommender);
+    const u = userData[recommender];
+    if(!u.readList.some(x=>x.id===book.id)){
+      u.readList.push({id:book.id,title:book.title,author:book.author,_rating:currentRating,_at:now()});
+    }
+
+    // System comment on the book for the share
+    appendSystemComment(book, `${recommender} shared this book (${currentRating}★).`);
+
+    // Activity + Teams
+    postActivity('share',{user:recommender, title, author, rating:currentRating});
+    if(currentRating===5) postActivity('five',{user:recommender, title, author, rating:5});
+    postToTeams('share', `${recommender} shared "${title}" by ${author} — ${currentRating}★`);
+    if(currentRating===5) postToTeams('five', `${recommender} rated "${title}" 5★`);
+
+    // Reset form
+    $('#book-form').reset();
+    currentTags=[]; renderTagsDisplay();
+    currentRating=0; $$('#rating-stars .star').forEach(s=>s.classList.remove('filled'));
+    $('#rating-feedback').textContent='Click stars to rate (required)';
+    $('#book-results').style.display='none';
+
+    // Sync & render
+    saveAll();
+    applyFilters(); renderMyLists(); updateStats();
+    showToast('Book shared!');
+  });
+
+  /* Prefs: Save posting prefs & Teams URL */
+  $('#prefs-save').addEventListener('click', ()=>{
+    sitePrefs.postNew = $('#pref-post-new').checked;
+    sitePrefs.postFinish = $('#pref-post-finish').checked;
+    sitePrefs.postFive = $('#pref-post-5').checked;
+    saveAll();
+    showToast('Posting preferences saved.');
+  });
+  $('#save-teams-btn').addEventListener('click', ()=>{
+    const url = $('#pref-teams-url').value.trim();
+    sitePrefs.teamsWebhook = url; saveAll(); showToast('Teams webhook URL saved.');
+  });
+
+  /* Prefs: Export */
+  $('#export-csv-btn').addEventListener('click', exportCsvs);
+
+  /* Admin panel */
+  $('#toggle-danger').addEventListener('click', ()=>{
+    const p=$('#admin-panel');
+    p.style.display = p.style.display==='none' ? 'block' : 'none';
+  });
+  function requireAdmin(){ const pw=prompt('Enter admin password:'); return pw===ADMIN_PASSWORD; }
+  $('#clear-data-btn').addEventListener('click', ()=>{
+    if(!requireAdmin()) return showToast('Incorrect password.', true);
+    if(!confirm('This will erase ALL data (books, users, activity). Are you sure?')) return;
+    books=[]; userData={}; activity=[]; sitePrefs={teamsWebhook:'',postNew:true,postFinish:true,postFive:true,collapseAll:false};
+    saveAll(); applyFilters(); renderActivity(); renderMyLists(); updateStats();
+    renderAdminBooks();
+    showToast('All data cleared.');
+  });
+  $('#post-sample-activity').addEventListener('click', ()=>{
+    if(!requireAdmin()) return showToast('Incorrect password.', true);
+    postActivity('like',{user:'Admin',title:'(sample)',action:'demo'});
+  });
+
+  function renderAdminBooks(){
+    const wrap=$('#admin-books');
+    if(!books.length){ wrap.innerHTML='<p style="color:#999">No books</p>'; return; }
+    wrap.innerHTML = books.slice(0,50).map(b=>`
+      <div class="list-item" data-aid="${b.id}">
+        <div><strong>${escapeHtml(b.title)}</strong> — ${escapeHtml(b.author)}</div>
+        <div>
+          <button class="btn btn-small" data-admin="edit" data-id="${b.id}">Edit</button>
+          <button class="btn btn-small btn-danger" data-admin="delete" data-id="${b.id}">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  renderAdminBooks();
+  document.addEventListener('click',(e)=>{
+    const ab=e.target.closest('[data-admin]'); if(!ab) return;
+    const id=Number(ab.getAttribute('data-id')); const b=books.find(x=>x.id===id); if(!b) return;
+    if(ab.getAttribute('data-admin')==='delete'){
+      if(!requireAdmin()) return showToast('Incorrect password.', true);
+      if(!confirm('Delete this book?')) return;
+      books=books.filter(x=>x.id!==id);
+      // remove from all lists
+      Object.values(userData).forEach(u=>{
+        u.wishList = (u.wishList||[]).filter(x=>x.id!==id);
+        u.currentReading = (u.currentReading||[]).filter(x=>x.id!==id);
+        u.readList = (u.readList||[]).filter(x=>x.id!==id);
+      });
+      saveAll(); applyFilters(); renderMyLists(); updateStats(); renderAdminBooks();
+    }else if(ab.getAttribute('data-admin')==='edit'){
+      if(!requireAdmin()) return showToast('Incorrect password.', true);
+      const nt = prompt('Title', b.title)||b.title;
+      const na = prompt('Author', b.author)||b.author;
+      const ng = prompt('Genre', b.genre)||b.genre;
+      const ni = prompt('Image URL', b.image||'')||'';
+      const ns = prompt('Synopsis', b.synopsis||'')||'';
+      const nr = prompt('Reason (why recommend)', b.reason||'')||'';
+      Object.assign(b,{title:nt,author:na,genre:ng,image:ni,synopsis:ns,reason:nr});
+      saveAll(); applyFilters(); renderAdminBooks();
+    }
+  });
+  $('#admin-rename-btn').addEventListener('click', ()=>{
+    if(!requireAdmin()) return showToast('Incorrect password.', true);
+    const from=$('#admin-rename-from').value.trim(), to=$('#admin-rename-to').value.trim();
+    if(!from||!to) return showToast('Fill both names', true);
+    if(!userData[from]) return showToast('Source user not found', true);
+    ensureUser(to);
+    // move lists
+    ['wishList','currentReading','readList'].forEach(k=>{
+      const m=new Map(); userData[to][k].forEach(it=>m.set(it.id,it));
+      (userData[from][k]||[]).forEach(it=>m.set(it.id,it));
+      userData[to][k]=Array.from(m.values());
+    });
+    // move ratings
+    books.forEach(b=>{
+      if(b.userRatings){ b.userRatings.forEach(r=>{ if(r.user===from) r.user=to; }); }
+      if(b.recommender===from) b.recommender=to;
+    });
+    delete userData[from];
+    saveAll(); renderMyLists(); updateStats(); showToast('User renamed/merged');
+  });
+  $('#admin-merge-btn').addEventListener('click', ()=>{
+    if(!requireAdmin()) return showToast('Incorrect password.', true);
+    const src=$('#admin-merge-source').value.trim(), dst=$('#admin-merge-target').value.trim();
+    if(!src||!dst) return showToast('Fill both names', true);
+    $('#admin-rename-from').value=src; $('#admin-rename-to').value=dst;
+    $('#admin-rename-btn').click();
+  });
+  $('#admin-delete-btn').addEventListener('click', ()=>{
+    if(!requireAdmin()) return showToast('Incorrect password.', true);
+    const who=$('#admin-delete-user').value.trim(); if(!who) return;
+    if(!userData[who]) return showToast('User not found', true);
+    if(!confirm(`Delete user ${who}? Their lists will be removed.`)) return;
+    delete userData[who];
+    // strip ratings
+    books.forEach(b=>{
+      b.userRatings = (b.userRatings||[]).filter(r=>r.user!==who);
+    });
+    saveAll(); renderMyLists(); updateStats(); showToast('User deleted');
+  });
+
+  /* Prefs: Global Admin visibility persists per session only */
+});
+
+/* ========= Global click actions (feed + comments + lists + likes) ========= */
+document.addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-action]');
+  if(!btn) return;
+  const action = btn.getAttribute('data-action');
+  const bookId = btn.getAttribute('data-id');
+  const cid    = btn.getAttribute('data-cid');
+  const aid    = btn.getAttribute('data-aid');
+
+  if(action==='toggle-comments'){
+    const post = btn.closest('.book-post'); if(!post) return;
+    const wrap = post.querySelector('.comments-wrap');
+    wrap.toggleAttribute('data-collapsed');
+    return;
+  }
+
+  if(action==='like'){
+    if(!currentUser){ showToast('Log in to like posts.', true); return; }
+    const b=books.find(x=>String(x.id)===String(bookId));
+    if(!b) return;
+    b.postLikedBy=b.postLikedBy||[];
+    if(b.postLikedBy.includes(currentUser)){
+      b.postLikedBy=b.postLikedBy.filter(n=>n!==currentUser);
+      b.postLikes=Math.max(0,(b.postLikes||0)-1);
+    }else{
+      b.postLikedBy.push(currentUser);
+      b.postLikes=(b.postLikes||0)+1;
+      postActivity('like',{user:currentUser,title:b.title});
+    }
+    saveAll(); applyFilters(); return;
+  }
+
+  if(action==='wish'){
+    if(!currentUser){ showToast('Log in to add to your list.', true); return; }
+    const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
     ensureUser(currentUser);
     const mine = me();
-    if(!mine.readList.some(x=>x.id===book.id)){
-      mine.readList.push({id:book.id,title:book.title,author:book.author,_rating:currentRating,_ratedAt:now()});
-      mine.currentReading = mine.currentReading.filter(x=>x.id!==book.id);
-      mine.wishList = mine.wishList.filter(x=>x.id!==book.id);
+    if(!mine.wishList.some(x=>x.id===b.id)) {
+      mine.wishList.push({id:b.id,title:b.title,author:b.author,_at:now()});
+      appendSystemComment(b, `${currentUser} added to Want to Read.`);
+      postActivity('list',{user:currentUser,title:b.title,action:'Want to Read'});
     }
+    saveAll(); renderMyLists(); updateStats(); applyFilters(); showToast('Added to Want to Read'); return;
+  }
 
-    postActivity('share',{user:recommender, title, author, rating:currentRating});
-    postToTeams('share', `${recommender} shared "${title}" by ${author} — ${currentRating}★`);
-
-    $('#book-form').reset(); currentTags=[]; renderTagsDisplay();
-    currentRating=0; $$('#rating-stars .star').forEach(s=>s.classList.remove('filled'));
-    $('#rating-feedback').textContent='Click stars to rate (required)'; $('#book-results').style.display='none';
-
-    saveAll(); populateRecommenderFilter(); applyFilters(); renderMyLists(); updateStats(); showToast('Book shared!');
-  });
-
-  /* Prefs & Admin */
-  $('#prefs-save').addEventListener('click', ()=>{ sitePrefs.postNew=$('#pref-post-new').checked; sitePrefs.postFinish=$('#pref-post-finish').checked; sitePrefs.postFive=$('#pref-post-5').checked; saveAll(); showToast('Posting preferences saved.'); });
-  $('#save-teams-btn').addEventListener('click', ()=>{ sitePrefs.teamsWebhook=$('#pref-teams-url').value.trim(); saveAll(); showToast('Teams webhook URL saved.'); });
-  $('#export-csv-btn').addEventListener('click', exportCsvs);
-  $('#sync-now-btn').addEventListener('click', async ()=>{ await loadAll(); populateRecommenderFilter(); applyFilters(); renderActivity(); renderMyLists(); updateStats(); showToast('Synced from server'); });
-  $('#save-now-btn').addEventListener('click', async ()=>{ await saveAll(); showToast('Saved to server'); });
-  $('#post-note-btn').addEventListener('click', ()=>{ const note=($('#admin-note').value||'').trim(); if(!note){ showToast('Enter a note first.', true); return; } if(!requireAdminPw()) return; postActivity('note',{message:note}); postToTeams('note',`Admin note: ${note}`); $('#admin-note').value=''; showToast('Note posted.'); });
-  $('#clear-data-btn').addEventListener('click', ()=>{ if(!requireAdminPw()) return; if(!confirm('Erase ALL data?')) return; books=[]; userData={}; activity=[]; sitePrefs={teamsWebhook:'',postNew:true,postFinish:true,postFive:true,collapseComments:true}; saveAll(); populateRecommenderFilter(); applyFilters(); renderActivity(); renderMyLists(); updateStats(); showToast('All data cleared.'); });
-
-  /* Users Admin */
-  $('#ua-rename').addEventListener('click', ()=>{
-    if(!requireAdminPw()) return;
-    const src=$('#ua-user').value; const newName=($('#ua-new-name').value||'').trim();
-    if(!src || !newName){ showToast('Pick a user and enter a new name.', true); return; }
-    if(userData[newName]){ showToast('That name already exists. Use Merge instead.', true); return; }
-    userData[newName] = userData[src]; delete userData[src];
-    replaceNameEverywhere(src,newName);
-    if(currentUser===src){ currentUser=newName; $('#current-user-name').textContent=currentUser; }
-    saveAll(); populateUsersAdminOptions(); populateRecommenderFilter(); applyFilters(); renderMyLists(); updateStats(); showToast(`Renamed ${src} → ${newName}`);
-  });
-  $('#ua-merge').addEventListener('click', ()=>{
-    if(!requireAdminPw()) return;
-    const src=$('#ua-user').value; const dest=$('#ua-merge-target').value;
-    if(!src || !dest || src===dest){ showToast('Pick a source and a different target user.', true); return; }
-    mergeUsers(src,dest);
-    if(currentUser===src){ currentUser=dest; $('#current-user-name').textContent=currentUser; }
-    saveAll(); populateUsersAdminOptions(); populateRecommenderFilter(); applyFilters(); renderMyLists(); updateStats(); showToast(`Merged ${src} into ${dest}`);
-  });
-  $('#ua-delete').addEventListener('click', ()=>{
-    if(!requireAdminPw()) return;
-    const u=$('#ua-user').value; if(!u){ showToast('Pick a user first.', true); return; }
-    if(!confirm(`Delete user "${u}"? Their likes will be removed from counts.`)) return;
-    books.forEach(b=>{
-      b.postLikedBy = (b.postLikedBy||[]).filter(n=>n!==u);
-      (b.comments||[]).forEach(c=>{ c.likedBy=(c.likedBy||[]).filter(n=>n!==u); });
-      if(b.userRatings) b.userRatings = b.userRatings.filter(r=>r.user!==u);
-    });
-    if(currentUser===u){ currentUser=''; $('#current-user-name').textContent=''; $('#user-info').style.display='none'; $('#main-app').style.display='none'; $('#login-section').style.display='block'; }
-    delete userData[u];
-    saveAll(); populateUsersAdminOptions(); populateRecommenderFilter(); applyFilters(); renderMyLists(); updateStats(); showToast(`Deleted user ${u}`);
-  });
-
-  /* Feed interactions */
-  document.addEventListener('click', (e)=>{
-    const btn = e.target.closest('[data-action]'); if(!btn) return;
-    const action = btn.getAttribute('data-action'); const bookId = btn.getAttribute('data-id'); const cid=btn.getAttribute('data-cid'); const aid=btn.getAttribute('data-aid');
-
-    if(action==='toggle-comments'){
-      const id=Number(bookId); commentCollapse[id] = !isCommentsCollapsed(id); applyFilters(); return;
+  if(action==='reading'){
+    if(!currentUser){ showToast('Log in to add to your list.', true); return; }
+    const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
+    ensureUser(currentUser);
+    const mine = me();
+    if(!mine.currentReading.some(x=>x.id===b.id)) {
+      mine.currentReading.push({id:b.id,title:b.title,author:b.author,_at:now()});
+      mine.wishList = mine.wishList.filter(x=>x.id!==b.id);
+      appendSystemComment(b, `${currentUser} started Currently Reading.`);
+      postActivity('list',{user:currentUser,title:b.title,action:'Currently Reading'});
     }
+    saveAll(); renderMyLists(); updateStats(); applyFilters(); showToast('Added to Currently Reading'); return;
+  }
 
-    if(action==='like'){
-      if(!currentUser){ showToast('Log in to like posts.', true); return; }
-      const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
-      b.postLikedBy=b.postLikedBy||[];
-      if(b.postLikedBy.includes(currentUser)){ b.postLikedBy=b.postLikedBy.filter(n=>n!==currentUser); b.postLikes=Math.max(0,(b.postLikes||0)-1); }
-      else { b.postLikedBy.push(currentUser); b.postLikes=(b.postLikes||0)+1; postActivity('like',{user:currentUser,title:b.title}); }
-      $('#current-user-name').textContent=currentUser;
-      saveAll(); applyFilters(); updateStats(); return;
+  if(action==='finish'){
+    if(!currentUser){ showToast('Log in to finish books.', true); return; }
+    const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
+    openFinishModal(b); return;
+  }
+
+  if(action==='remove-current'){
+    ensureUser(currentUser);
+    me().currentReading = me().currentReading.filter(x=>String(x.id)!==String(bookId));
+    saveAll(); renderMyLists(); updateStats();
+    return;
+  }
+  if(action==='remove-wish'){
+    ensureUser(currentUser);
+    me().wishList = me().wishList.filter(x=>String(x.id)!==String(bookId));
+    saveAll(); renderMyLists(); updateStats();
+    return;
+  }
+  if(action==='remove-read'){
+    ensureUser(currentUser);
+    me().readList = me().readList.filter(x=>String(x.id)!==String(bookId));
+    saveAll(); renderMyLists(); updateStats();
+    return;
+  }
+
+  if(action==='add-comment'){
+    const wrap = btn.closest('.comment-form'); if(!wrap) return;
+    const name = wrap.querySelector('[data-field="name"]').value.trim() || currentUser || 'Anonymous';
+    const text = wrap.querySelector('[data-field="text"]').value.trim();
+    if(!text){ showToast('Comment cannot be empty.', true); return; }
+    const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
+    b.comments = b.comments||[];
+    b.comments.push({id:Date.now()+Math.random(), commenter:name, text, likes:0, likedBy:[], system:false, at:now()});
+    // also put actual comments into global activity feed
+    postActivity('list',{user:name,title:b.title,action:'commented'});
+    saveAll(); applyFilters(); showToast('Comment added!');
+    return;
+  }
+
+  if(action==='like-comment'){
+    if(!currentUser){ showToast('Log in to like comments.', true); return; }
+    const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
+    const c=(b.comments||[]).find(x=>String(x.id)===String(cid)); if(!c) return;
+    c.likedBy = c.likedBy||[];
+    if(c.likedBy.includes(currentUser)){
+      c.likedBy = c.likedBy.filter(n=>n!==currentUser);
+      c.likes = Math.max(0,(c.likes||0)-1);
+    }else{
+      c.likedBy.push(currentUser);
+      c.likes = (c.likes||0)+1;
     }
+    saveAll(); applyFilters();
+    return;
+  }
 
-    if(action==='wish'){
-      if(!currentUser){ showToast('Log in to add to your list.', true); return; }
-      const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
-      ensureUser(currentUser);
-      const mine = me();
-      if(!mine.wishList.some(x=>x.id===b.id)) mine.wishList.push({id:b.id,title:b.title,author:b.author,_addedAt:now()});
-      b.comments=b.comments||[]; b.comments.push({id:Date.now()+Math.random(), commenter:currentUser, text:'added to Want to Read', likes:0, likedBy:[], sys:true});
-      $('#current-user-name').textContent=currentUser;
-      saveAll(); renderMyLists(); updateStats(); applyFilters(); showToast('Added to Want to Read'); return;
+  if(action==='like-activity'){
+    if(!currentUser){ showToast('Log in to like activity.', true); return; }
+    const a = activity.find(x=>String(x.id)===String(aid)); if(!a) return;
+    a.likedBy = a.likedBy||[];
+    if(a.likedBy.includes(currentUser)){
+      a.likedBy=a.likedBy.filter(n=>n!==currentUser);
+      a.likes=Math.max(0,(a.likes||0)-1);
+    }else{
+      a.likedBy.push(currentUser);
+      a.likes=(a.likes||0)+1;
     }
-
-    if(action==='reading'){
-      if(!currentUser){ showToast('Log in to add to your list.', true); return; }
-      const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
-      ensureUser(currentUser);
-      const mine = me();
-      if(!mine.currentReading.some(x=>x.id===b.id)) {
-        mine.currentReading.push({id:b.id,title:b.title,author:b.author,_startedAt:now()});
-        mine.wishList = mine.wishList.filter(x=>x.id!==b.id);
-      }
-      b.comments=b.comments||[]; b.comments.push({id:Date.now()+Math.random(), commenter:currentUser, text:'started reading', likes:0, likedBy:[], sys:true});
-      $('#current-user-name').textContent=currentUser;
-      saveAll(); renderMyLists(); updateStats(); applyFilters(); showToast('Added to Currently Reading'); return;
-    }
-
-    if(action==='finish'){
-      if(!currentUser){ showToast('Log in to finish books.', true); return; }
-      const b=books.find(x=>String(x.id)===String(bookId));
-      if(b) { $('#finish-modal').style.display='flex'; finishContext={bookId:b.id}; currentRating=0; $('#finish-title').textContent=`${b.title} — ${b.author}`; $$('#finish-stars .star').forEach(s=>s.classList.remove('filled')); }
-      else{
-        ensureUser(currentUser);
-        const mine = me();
-        const shadow = [...(mine.currentReading||[]), ...(mine.wishList||[]), ...(mine.readList||[])]
-          .find(x=>String(x.id)===String(bookId));
-        if(shadow){ $('#finish-modal').style.display='flex'; finishContext={bookId:shadow.id}; currentRating=0; $('#finish-title').textContent=`${shadow.title} — ${shadow.author}`; $$('#finish-stars .star').forEach(s=>s.classList.remove('filled')); }
-      }
-      $('#current-user-name').textContent=currentUser;
-      return;
-    }
-
-    if(action==='remove-current'){ ensureUser(currentUser); me().currentReading = me().currentReading.filter(x=>String(x.id)!==String(bookId)); saveAll(); renderMyLists(); updateStats(); return; }
-    if(action==='remove-wish'){ ensureUser(currentUser); me().wishList = me().wishList.filter(x=>String(x.id)!==String(bookId)); saveAll(); renderMyLists(); updateStats(); return; }
-    if(action==='remove-read'){ ensureUser(currentUser); me().readList = me().readList.filter(x=>String(x.id)!==String(bookId)); saveAll(); renderMyLists(); updateStats(); return; }
-
-    if(action==='add-comment'){
-      const wrap = btn.closest('.comment-form'); if(!wrap) return;
-      const name = wrap.querySelector('[data-field="name"]').value.trim() || currentUser || 'Anonymous';
-      const text = wrap.querySelector('[data-field="text"]').value.trim();
-      if(!text){ showToast('Comment cannot be empty.', true); return; }
-      const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
-      b.comments = b.comments||[]; b.comments.push({id:Date.now()+Math.random(), commenter:name, text, likes:0, likedBy:[], sys:false});
-      postActivity('comment',{user:name,title:b.title});
-      $('#current-user-name').textContent=currentUser;
-      saveAll(); applyFilters(); updateStats(); showToast('Comment added!'); return;
-    }
-
-    if(action==='like-comment'){
-      if(!currentUser){ showToast('Log in to like comments.', true); return; }
-      const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
-      const c=(b.comments||[]).find(x=>String(x.id)===String(cid)); if(!c) return;
-      c.likedBy = c.likedBy||[];
-      if(c.likedBy.includes(currentUser)){ c.likedBy = c.likedBy.filter(n=>n!==currentUser); c.likes = Math.max(0,(c.likes||0)-1); }
-      else { c.likedBy.push(currentUser); c.likes = (c.likes||0)+1; }
-      $('#current-user-name').textContent=currentUser;
-      saveAll(); applyFilters(); updateStats(); return;
-    }
-
-    if(action==='like-activity'){
-      if(!currentUser){ showToast('Log in to like activity.', true); return; }
-      const a = activity.find(x=>String(x.id)===String(aid)); if(!a) return;
-      a.likedBy = a.likedBy||[];
-      if(a.likedBy.includes(currentUser)){ a.likedBy=a.likedBy.filter(n=>n!==currentUser); a.likes=Math.max(0,(a.likes||0)-1); }
-      else { a.likedBy.push(currentUser); a.likes=(a.likes||0)+1; }
-      $('#current-user-name').textContent=currentUser;
-      saveAll(); renderActivity(); return;
-    }
-  });
-
-  // Clicking “Users” stat shows tooltip via title (already set in updateStats)
-
+    saveAll(); renderActivity();
+    return;
+  }
 });
 </script>
 </body>
