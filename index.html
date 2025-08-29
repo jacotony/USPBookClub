@@ -478,8 +478,8 @@ function ensureUser(name){ if(!userData[name]) userData[name]=defaultUser(); }
 const me=()=>userData[currentUser]||defaultUser();
 
 /* ========= Utilities ========= */
-const $=(s,root=document)=>root.querySelector(s);
-const $=(s,root=document)=>Array.from(root.querySelectorAll(s));
+const $  = (sel, root=document) => root.querySelector(sel);                 // one node
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));  // many nodes
 const now=()=>new Date().toISOString();
 const timeAgo=(iso)=>{const d=new Date(iso);const s=(Date.now()-d)/1000;if(s<60)return`${Math.floor(s)}s ago`;const m=s/60;if(m<60)return`${Math.floor(m)}m ago`;const h=m/60;if(h<24)return`${Math.floor(h)}h ago`;return`${Math.floor(h/24)}d ago`};
 const escapeHtml=(s='')=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
@@ -561,7 +561,6 @@ function renderActivity(){
 /* ========= Rendering ========= */
 function bookCoverBlock(book){
   if (book.image) {
-    // Try to create Goodreads link from title and author
     const searchQuery = encodeURIComponent(`${book.title} ${book.author}`);
     const goodreadsUrl = `https://www.goodreads.com/search?q=${searchQuery}`;
     return `<a href="${goodreadsUrl}" target="_blank" rel="noopener"><img class="book-cover" loading="lazy" alt="Cover of ${escapeHtml(book.title)}" src="${escapeAttr(book.image)}" style="cursor:pointer" title="View on Goodreads"/></a>`;
@@ -682,9 +681,7 @@ function renderTopRecommenders(){
   const counts = {};
   books.forEach(b => {
     const name = b.recommender;
-    if (name) {
-      counts[name] = (counts[name] || 0) + 1;
-    }
+    if (name) counts[name] = (counts[name] || 0) + 1;
   });
   
   const sorted = Object.entries(counts)
@@ -824,7 +821,7 @@ function openFinishModal(book, mode){
   finishContext={bookId:book.id, mode, rating:5};
   $('#finish-heading').textContent = mode==='finish'?'Rate this book':'Previously Read — give it a rating';
   $('#finish-title').textContent = `${book.title} by ${book.author}`;
-  $('#finish-stars .star').forEach((s,i)=>{s.classList.toggle('filled', i<5);});
+  $$('#finish-stars .star').forEach((s,i)=>{s.classList.toggle('filled', i<5);});
   $('#finish-modal').style.display='flex';
 }
 
@@ -963,8 +960,8 @@ function clearAllData() {
 }
 
 function showSection(id, btn){
-  $('.section').forEach(s=>s.classList.remove('active'));
-  $('.nav-btn').forEach(b=>b.classList.remove('active'));
+  $$('.section').forEach(s=>s.classList.remove('active'));
+  $$('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   btn.classList.add('active');
   if(id==='my-books') renderMyLists();
@@ -1054,11 +1051,11 @@ async function init(){
     chooseOpenLibrary(parseInt(item.dataset.i,10));
   });
 
-  // Rating stars (new post) - start with 0 rating
-  $('#rating-stars .star').forEach(star=>{
+  // Rating stars (new post)
+  $$('#rating-stars .star').forEach(star=>{
     star.addEventListener('click',function(){
       currentRating = parseInt(this.dataset.rating,10);
-      $('#rating-stars .star').forEach((s,i)=>s.classList.toggle('filled', i<currentRating));
+      $$('#rating-stars .star').forEach((s,i)=>s.classList.toggle('filled', i<currentRating));
       $('#rating-feedback').textContent = `${currentRating} star${currentRating === 1 ? '' : 's'} selected`;
       $('#rating-feedback').style.color = 'var(--pine)';
     });
@@ -1112,7 +1109,7 @@ async function init(){
 
     // reset form
     e.target.reset(); currentRating=0;
-    $('#rating-stars .star').forEach(s=>s.classList.remove('filled'));
+    $$('#rating-stars .star').forEach(s=>s.classList.remove('filled'));
     $('#rating-feedback').textContent = 'Click stars to rate (required)';
     $('#rating-feedback').style.color = 'var(--muted)';
   });
@@ -1154,7 +1151,7 @@ async function init(){
     }
     if(action==='comment-rating'){
       const r=parseInt(btn.dataset.rating,10); commentRatings.set(id,r);
-      const stars=$(`[data-role="comment-stars"][data-id="${id}"] .star`);
+      const stars=$$(`[data-role="comment-stars"][data-id="${id}"] .star`);
       stars.forEach((s,i)=>s.classList.toggle('filled', i<r));
     }
   });
@@ -1173,9 +1170,9 @@ async function init(){
   });
 
   // Finish modal stars + buttons
-  $('#finish-stars .star').forEach((s,i)=> s.addEventListener('click',()=> {
+  $$('#finish-stars .star').forEach((s,i)=> s.addEventListener('click',()=> {
     finishContext.rating=i+1;
-    $('#finish-stars .star').forEach((b,j)=>b.classList.toggle('filled', j<i+1));
+    $$('#finish-stars .star').forEach((b,j)=>b.classList.toggle('filled', j<i+1));
   }));
   $('#finish-save').addEventListener('click', saveFinishRating);
   $('#finish-cancel').addEventListener('click', closeFinishModal);
