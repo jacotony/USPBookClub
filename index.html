@@ -56,17 +56,18 @@
   .search-filter{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
   .chip{background:#e8efe9;border:1px solid #d9e4dc;color:#2e4a3a;padding:6px 10px;border-radius:999px;font-size:12px}
 
-  .activity{background:#fff;border-radius:15px;padding:16px 18px;margin-bottom:18px;border-left:4px solid var(--accent);box-shadow:0 6px 18px rgba(0,0,0,.08)}
-  .activity-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-  .activity h3{color:#6b765f}
-  .activity-body{max-height:260px;overflow:auto}
-  .activity.expanded .activity-body{max-height:520px}
-  .activity-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f1f1f1}
+  /* Activity: compact */
+  .activity{background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:14px;border-left:4px solid var(--accent);box-shadow:0 6px 18px rgba(0,0,0,.08)}
+  .activity-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .activity h3{color:#6b765f;font-size:14px;margin:0}
+  .activity-body{max-height:140px;overflow:auto}
+  .activity.expanded .activity-body{max-height:360px}
+  .activity-item{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid #f3f3f3;font-size:13px}
   .activity-item:last-child{border-bottom:none}
-  .activity-badge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#f3eee4}
-  .activity-meta{font-size:12px;color:#888}
-  .activity-actions{display:flex;align-items:center;gap:8px;margin-top:6px}
-  .liked-by-line{font-size:.85rem;color:#3f4e46;margin-top:4px}
+  .activity-badge{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#f3eee4;font-size:14px}
+  .activity-meta{font-size:11px;color:#888}
+  .activity-actions{display:flex;align-items:center;gap:6px;margin-top:4px}
+  .liked-by-line{font-size:.8rem;color:#3f4e46;margin-top:2px}
 
   .book-feed{display:flex;flex-direction:column;gap:24px}
   .book-post{background:#fff;border-radius:15px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.1);transition:.25s;border-left:4px solid var(--pine)}
@@ -188,8 +189,6 @@
       <h3>Top Readers</h3>
       <div id="readers-list"></div>
     </div>
-
-    <!-- CHANGED: Replaced Top Commenters with Most Active -->
     <div id="top-active" class="reading-list" style="margin-bottom:20px">
       <h3>Most Active</h3>
       <div id="most-active-list"></div>
@@ -234,6 +233,7 @@
                   <option value="five">5★ Ratings</option>
                   <option value="prev">Previously Read</option>
                   <option value="like">Likes</option>
+                  <option value="note">Admin Notes</option>
                 </select>
                 <button id="activity-toggle" class="pill-btn" type="button">Show more</button>
               </div>
@@ -278,14 +278,6 @@
         <section id="add" class="section">
           <div class="add-book-form">
             <h2 style="margin-bottom:10px;color:var(--ink)">Share a Book Recommendation</h2>
-
-            <!-- Posting preferences (for Teams) -->
-            <div class="form-row" style="margin-bottom:10px">
-              <div class="form-group"><label><input id="pref-post-new" type="checkbox" checked/> Post on <strong>new book</strong></label></div>
-              <div class="form-group"><label><input id="pref-post-finish" type="checkbox" checked/> Post when someone <strong>finishes a book</strong></label></div>
-              <div class="form-group"><label><input id="pref-post-5" type="checkbox" checked/> Post for <strong>new 5★ ratings</strong></label></div>
-            </div>
-            <button id="prefs-save" class="btn" type="button" style="margin-bottom:20px">Save Preferences</button>
 
             <!-- Google Books Search -->
             <div class="form-row">
@@ -400,26 +392,50 @@
           <h2 style="margin-bottom:12px;color:var(--ink)">Preferences</h2>
 
           <div class="reading-list">
+            <h3>Posting Preferences</h3>
+            <div class="form-row" style="margin-bottom:10px">
+              <div class="form-group"><label><input id="pref-post-new" type="checkbox"/> Post on <strong>new book</strong></label></div>
+              <div class="form-group"><label><input id="pref-post-finish" type="checkbox"/> Post when someone <strong>finishes a book</strong></label></div>
+              <div class="form-group"><label><input id="pref-post-5" type="checkbox"/> Post for <strong>new 5★ ratings</strong></label></div>
+            </div>
+            <button id="prefs-save" class="btn" type="button">Save Preferences</button>
+          </div>
+
+          <div class="reading-list">
             <h3>Export / Backup</h3>
             <p style="color:var(--muted);margin-bottom:8px">Downloads Excel-friendly CSV files (books.csv and comments.csv).</p>
             <button id="export-csv-btn" class="btn" type="button">Download CSVs</button>
           </div>
 
-          <div class="reading-list">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <h3>Admin</h3>
-              <button id="toggle-danger" class="pill-btn" type="button">Show Danger Zone</button>
+          <!-- Admin is now always visible -->
+          <div class="reading-list" id="admin-tools">
+            <h3>Admin / Maintenance</h3>
+            <div class="form-row">
+              <div class="form-group" style="flex:1 1 200px">
+                <label for="admin-pw">Admin Password</label>
+                <input id="admin-pw" class="input" type="password" placeholder="Enter admin password"/>
+                <p style="color:var(--muted);font-size:12px;margin-top:6px">Required for destructive actions.</p>
+              </div>
+              <div class="form-group" style="flex:1 1 200px;display:flex;gap:8px;align-items:flex-end">
+                <button id="sync-now-btn" class="btn" type="button">Sync From Server</button>
+                <button id="save-now-btn" class="btn" type="button">Save To Server</button>
+              </div>
             </div>
-          </div>
 
-          <div class="reading-list" id="data-management" style="display:none">
-            <h3>Data Management (Danger Zone)</h3>
+            <div class="form-row">
+              <div class="form-group" style="flex:2 1 420px">
+                <label for="admin-note">Post Admin Note to Activity</label>
+                <textarea id="admin-note" class="textarea" placeholder="Short note…"></textarea>
+              </div>
+              <div class="form-group" style="flex:0 0 auto;display:flex;align-items:flex-end">
+                <button id="post-note-btn" class="btn" type="button">Post Note</button>
+              </div>
+            </div>
+
             <div class="form-row">
               <div class="form-group">
                 <button id="clear-data-btn" class="btn btn-danger" type="button">Clear All Data</button>
-                <p style="color:var(--muted);font-size:12px;margin-top:4px">
-                  Requires admin password and confirmation.
-                </p>
+                <p style="color:var(--muted);font-size:12px;margin-top:4px">Wipes books, users, activity after password confirmation.</p>
               </div>
             </div>
           </div>
@@ -468,9 +484,9 @@
 <script>
 /* ========= JSONBin Storage & State ========= */
 const JSONBIN_API = 'https://api.jsonbin.io/v3';
-const BIN_ID = '68b1dc30ae596e708fdb3ff1';   // Your actual bin ID
-const API_KEY = '$2a$10$LYh6e0ns1sOKv23ek6kbD.7UJoIW.UclGVfzMvSeDzeSLfshEvQZi'; // Your X-MASTER-KEY
-const ADMIN_PASSWORD = 'bookclubadmin'; // change if desired
+const BIN_ID = '68b1dc30ae596e708fdb3ff1';
+const API_KEY = '$2a$10$LYh6e0ns1sOKv23ek6kbD.7UJoIW.UclGVfzMvSeDzeSLfshEvQZi';
+const ADMIN_PASSWORD = 'Prob1234'; // << updated
 
 let currentUser=''; 
 let books=[]; 
@@ -485,12 +501,12 @@ let currentRating=0;
 let finishContext=null; 
 let activityExpanded=false;
 
-/* CHANGED: keep Google Books search results so we can fill cleanly */
+/* Google Books search cache */
 let gResults = [];
 
 /* ========= Utilities ========= */
-const $  = (sel, root=document) => root.querySelector(sel);        // single
-const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel)); // many
+const $  = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 const now=()=>new Date().toISOString();
 const timeAgo=(iso)=>{const d=new Date(iso);const s=(Date.now()-d)/1000;if(s<60)return`${Math.floor(s)}s ago`;const m=s/60;if(m<60)return`${Math.floor(m)}m ago`;const h=m/60;if(h<24)return`${Math.floor(h)}h ago`;return`${Math.floor(h/24)}d ago`};
 const escapeHtml=(s='')=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
@@ -499,26 +515,12 @@ const stripHtml=(s='')=>String(s).replace(/<[^>]*>/g,'').trim();
 const showToast=(msg,isError=false)=>{const t=$('#toast');t.textContent=msg;t.classList.toggle('error',isError);t.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove('show'),isError?3000:1700);};
 const formatStars=(n)=>'★'.repeat(n)+'☆'.repeat(5-n);
 const debounce=(fn,ms=350)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};};
-const truncate=(s,n=400)=> s && s.length>n ? s.slice(0,n-1)+'…' : s;
-
-function setLoading(element, loading) {
-  element.classList.toggle('loading', loading);
-  if (loading && !element.querySelector('.spinner')) {
-    const span = document.createElement('span');
-    span.className = 'spinner';
-    element.prepend(span);
-  } else if (!loading) {
-    const spinner = element.querySelector('.spinner');
-    if (spinner) spinner.remove();
-  }
-}
 
 /* ========= Local & Remote Persistence ========= */
 async function loadAll(){
   if(isLoading) return; 
   isLoading = true;
-  
-  // Load local cache first
+
   try{
     const cached = JSON.parse(localStorage.getItem('bookclub_payload')||'{}');
     if(cached.books) books = cached.books;
@@ -526,27 +528,20 @@ async function loadAll(){
     if(cached.activity) activity = cached.activity;
     if(cached.sitePrefs) sitePrefs = Object.assign(sitePrefs, cached.sitePrefs);
     currentUser = localStorage.getItem('bookclub_currentUser') || '';
-  }catch(e){
-    console.error('Failed to load local cache:', e);
-  }
+  }catch(e){ console.error('Failed to load local cache:', e); }
 
-  // Then try JSONBin
   try{
     const response = await fetch(`${JSONBIN_API}/b/${BIN_ID}/latest`, {
       method: 'GET',
       headers: { 'X-Master-Key': API_KEY }
     });
-    if(!response.ok){
-      const errorText = await response.text();
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
-    }
+    if(!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
     const record = data.record || {};
     books   = record.books   || [];
     userData= record.userData|| {};
     activity= record.activity|| [];
     sitePrefs = Object.assign({teamsWebhook:'',postNew:true,postFinish:true,postFive:true}, record.sitePrefs || {});
-    // Cache
     localStorage.setItem('bookclub_payload', JSON.stringify({books, userData, activity, sitePrefs}));
     showToast('Data synced successfully!');
   }catch(e){
@@ -558,15 +553,12 @@ async function loadAll(){
 }
 
 async function saveAll(){
-  // Save locally
   try{
     const payload = {books, userData, activity, sitePrefs};
     localStorage.setItem('bookclub_payload', JSON.stringify(payload));
     localStorage.setItem('bookclub_currentUser', currentUser);
-  }catch(e){
-    console.error('Failed to save locally:', e);
-  }
-  // Save to JSONBin
+  }catch(e){ console.error('Failed to save locally:', e); }
+
   try{
     const payload = {books, userData, activity, sitePrefs};
     const response = await fetch(`${JSONBIN_API}/b/${BIN_ID}`, {
@@ -577,10 +569,7 @@ async function saveAll(){
       },
       body: JSON.stringify(payload)
     });
-    if(!response.ok){
-      const errorText = await response.text();
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
-    }
+    if(!response.ok) throw new Error(`HTTP ${response.status}`);
   }catch(e){
     console.error('Failed to save to JSONBin:', e);
     showToast('Saved locally - server sync failed. Will retry.', true);
@@ -597,18 +586,12 @@ async function postToTeams(type, text){
   if(!url) return;
   const allow = (type==='share'  && sitePrefs.postNew)
              || (type==='finish' && sitePrefs.postFinish)
-             || (type==='five'   && sitePrefs.postFive);
+             || (type==='five'   && sitePrefs.postFive)
+             || (type==='note'); // admin notes always allowed
   if(!allow) return;
   try{ 
-    await fetch(url,{
-      method:'POST',
-      mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({text})
-    }); 
-  }catch(e){ 
-    console.error('Teams post failed',e); 
-  }
+    await fetch(url,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({text})}); 
+  }catch(e){ console.error('Teams post failed',e); }
 }
 
 /* ========= Activity ========= */
@@ -619,7 +602,7 @@ function postActivity(type,payload){
   renderActivity();
   saveAll();
 }
-function activityIcon(type){ return ({share:'📣',finish:'🏁','five':'🏆','prev':'📖','like':'👍'}[type]||'📝'); }
+function activityIcon(type){ return ({share:'📣',finish:'🏁','five':'🏆','prev':'📖','like':'👍','note':'🛠️'}[type]||'📝'); }
 
 /* ========= Ratings helpers ========= */
 function ratingCount(book){
@@ -654,51 +637,32 @@ function renderTagsDisplay() {
     <span class="tag removable" data-tag="${escapeAttr(tag)}">${escapeHtml(tag)} ×</span>
   `).join('');
 }
-
 function addTag(tag) {
   const cleanTag = tag.trim().toLowerCase();
   if (!cleanTag || currentTags.includes(cleanTag)) return;
-  currentTags.push(cleanTag);
-  renderTagsDisplay();
-  $('#tag-input').value = '';
-  hideSuggestions();
+  currentTags.push(cleanTag); renderTagsDisplay();
+  $('#tag-input').value = ''; hideSuggestions();
 }
-
-function removeTag(tag) {
-  currentTags = currentTags.filter(t => t !== tag);
-  renderTagsDisplay();
-}
-
+function removeTag(tag) { currentTags = currentTags.filter(t => t !== tag); renderTagsDisplay(); }
 function showSuggestions(input) {
-  const query = input.toLowerCase().trim();
-  if (!query) return hideSuggestions();
+  const query = input.toLowerCase().trim(); if (!query) return hideSuggestions();
   const filtered = tagSuggestions.filter(tag => tag.includes(query) && !currentTags.includes(tag)).slice(0, 8);
-  const container = $('#tag-suggestions');
-  if (!filtered.length) return hideSuggestions();
+  const container = $('#tag-suggestions'); if (!filtered.length) return hideSuggestions();
   container.innerHTML = filtered.map(tag => `<div class="suggestion-item" data-tag="${escapeAttr(tag)}">${escapeHtml(tag)}</div>`).join('');
   container.style.display='block';
 }
 function hideSuggestions(){ $('#tag-suggestions').style.display='none'; }
 
-/* CHANGED: smarter auto-tagging */
 function generateSmartTags({categories=[], description=''},{genre='' }={}){
   const tags = new Set();
-
-  // Base from genre
-  const g = (genre||'').toLowerCase();
-  if(g) tags.add(g);
-
-  // From Google Books categories
+  const g = (genre||'').toLowerCase(); if(g) tags.add(g);
   (categories||[]).forEach(cat=>{
     const c = String(cat).toLowerCase();
-    // normalize some common category strings
     if(c.includes('science fiction')) tags.add('sci-fi');
     else if(c.includes('young adult')) tags.add('young-adult');
     else if(c.includes('histor')) tags.add('historical-fiction');
     else tags.add(c.replace(/\s+/g,'-'));
   });
-
-  // From description keywords
   const d = (description||'').toLowerCase();
   const kw = [
     ['time travel','time-travel'],['space','space'],['alien','aliens'],['robot','robots'],
@@ -714,11 +678,8 @@ function generateSmartTags({categories=[], description=''},{genre='' }={}){
     ['page-turner','page-turner'],['classic','classic'],['inspiring','inspiring'],
   ];
   kw.forEach(([needle, tag])=>{ if(d.includes(needle)) tags.add(tag); });
-
-  // Cap to 8, keep deterministic order
   return Array.from(tags).slice(0,8);
 }
-
 function autoPopulateTagsFromBook({genre='', description='', categories=[]}) {
   const auto = generateSmartTags({categories, description},{genre});
   auto.forEach(t=>{ if(!currentTags.includes(t)) currentTags.push(t); });
@@ -736,15 +697,8 @@ function bookCoverBlock(book){
     return `<div class="book-cover-placeholder">No Cover</div>`;
   }
 }
-function likedByLine(arr=[]){
-  if(!arr.length) return '';
-  const names = arr.join(', ');
-  return `<div class="liked-by"><em>Liked by:</em> ${escapeHtml(names)}</div>`;
-}
-function tagChips(tags){
-  if(!tags||!tags.length) return '';
-  return `<div>${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>`;
-}
+function likedByLine(arr=[]){ if(!arr.length) return ''; const names = arr.join(', '); return `<div class="liked-by"><em>Liked by:</em> ${escapeHtml(names)}</div>`; }
+function tagChips(tags){ if(!tags||!tags.length) return ''; return `<div>${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>`; }
 function bookCard(book){
   const liked=currentUser && (book.postLikedBy||[]).includes(currentUser);
   const synopsis=book.synopsis||'';
@@ -816,6 +770,7 @@ function renderActivity(){
     else if(type==='finish')text=`<strong>${escapeHtml(payload.user)}</strong> finished <em>${escapeHtml(payload.title)}</em> — ${payload.rating}★.`;
     else if(type==='five')  text=`<strong>${escapeHtml(payload.user)}</strong> rated <em>${escapeHtml(payload.title)}</em> <strong>5★</strong>.`;
     else if(type==='like')  text=`<strong>${escapeHtml(payload.user)}</strong> liked <em>${escapeHtml(payload.title)}</em>.`;
+    else if(type==='note')  text=`<strong>Admin</strong>: ${escapeHtml(payload.message||'Note')}`;
     else                    text=`<strong>${escapeHtml(payload.user)}</strong> marked previously read <em>${escapeHtml(payload.title)}</em>.`;
     const likedByNames = likedBy.length ? `<div class="liked-by-line"><em>Liked by:</em> ${escapeHtml(likedBy.join(', '))}</div>` : '';
     const meLiked = currentUser && likedBy.includes(currentUser);
@@ -891,7 +846,7 @@ function updateStats(){
   $('#total-users').textContent=String(usersCount);
   renderTopRecommenders();
   renderTopReaders();
-  renderMostActive(); // CHANGED
+  renderMostActive();
 }
 function renderTopRecommenders(){
   const counts = {};
@@ -908,25 +863,18 @@ function renderTopRecommenders(){
 }
 function renderTopReaders(){
   const counts = {};
-  Object.entries(userData||{}).forEach(([name, data])=>{
-    counts[name] = (data.readList||[]).length;
-  });
+  Object.entries(userData||{}).forEach(([name, data])=>{ counts[name] = (data.readList||[]).length; });
   const sorted = Object.entries(counts).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const container = $('#readers-list');
   if (!sorted.length) { container.innerHTML = '<p style="color:#999;font-style:italic">No finished books yet</p>'; return; }
   container.innerHTML = sorted.map(([name,count])=>`
-    <div class="list-item">
-      <div><strong>${escapeHtml(name)}</strong></div>
-      <span class="chip">${count} read</span>
-    </div>`).join('');
+    <div class="list-item"><div><strong>${escapeHtml(name)}</strong></div><span class="chip">${count} read</span></div>`).join('');
 }
 
-/* CHANGED: New "Most Active" leaderboard */
+/* Most Active leaderboard */
 function renderMostActive(){
   const container = $('#most-active-list');
   const scoreMap = {};
-
-  // seed known names
   const seed = new Set([
     ...Object.keys(userData||{}),
     ...books.map(b=>b.recommender).filter(Boolean),
@@ -934,56 +882,24 @@ function renderMostActive(){
     ...books.flatMap(b=> (b.postLikedBy||[])),
     ...books.flatMap(b=> (b.comments||[]).flatMap(c=>c.likedBy||[]))
   ]);
-
-  seed.forEach(name=>{
-    if(name && name.toLowerCase()!=='anonymous'){
-      scoreMap[name]={posts:0,comments:0,likes:0};
-    }
-  });
-
-  // posts shared
-  books.forEach(b=>{
-    const n=b.recommender;
-    if(n && scoreMap[n]) scoreMap[n].posts += 1;
-  });
-
-  // comments written
-  books.forEach(b=>{
-    (b.comments||[]).forEach(c=>{
-      const n=c.commenter||'';
-      if(n && scoreMap[n]) scoreMap[n].comments += 1;
-    });
-  });
-
-  // likes given (current state: post likes + comment likes)
+  seed.forEach(name=>{ if(name && name.toLowerCase()!=='anonymous'){ scoreMap[name]={posts:0,comments:0,likes:0}; }});
+  books.forEach(b=>{ const n=b.recommender; if(n && scoreMap[n]) scoreMap[n].posts += 1; });
+  books.forEach(b=>{ (b.comments||[]).forEach(c=>{ const n=c.commenter||''; if(n && scoreMap[n]) scoreMap[n].comments += 1; }); });
   Object.keys(scoreMap).forEach(n=>{
     const postLikesGiven = books.filter(b=> (b.postLikedBy||[]).includes(n)).length;
     const commentLikesGiven = books.reduce((s,b)=> s + (b.comments||[]).filter(c=> (c.likedBy||[]).includes(n)).length, 0);
     scoreMap[n].likes = postLikesGiven + commentLikesGiven;
   });
-
-  // weighted score: posts*3 + comments*2 + likes*1
-  const rows = Object.entries(scoreMap).map(([name,stats])=>{
-    const score = stats.posts*3 + stats.comments*2 + stats.likes*1;
-    return {name, score, ...stats};
-  }).filter(r=>r.score>0).sort((a,b)=>b.score-a.score).slice(0,5);
-
-  if(!rows.length){
-    container.innerHTML = '<p style="color:#999;font-style:italic">No activity yet</p>';
-    return;
-  }
-
+  const rows = Object.entries(scoreMap).map(([name,stats])=>({name, score: stats.posts*3 + stats.comments*2 + stats.likes, ...stats}))
+                .filter(r=>r.score>0).sort((a,b)=>b.score-a.score).slice(0,5);
+  if(!rows.length){ container.innerHTML = '<p style="color:#999;font-style:italic">No activity yet</p>'; return; }
   container.innerHTML = rows.map(r=>`
     <div class="list-item">
-      <div>
-        <strong>${escapeHtml(r.name)}</strong>
-        <div style="font-size:12px;color:#6b765f;margin-top:2px">
-          ${r.posts} posted • ${r.comments} comments • ${r.likes} likes
-        </div>
+      <div><strong>${escapeHtml(r.name)}</strong>
+        <div style="font-size:12px;color:#6b765f;margin-top:2px">${r.posts} posted • ${r.comments} comments • ${r.likes} likes</div>
       </div>
       <span class="chip">${r.score} actions</span>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 function getUniqueRecommenders(){ return Array.from(new Set(books.map(b=>b.recommender).filter(Boolean))).sort((a,b)=>a.localeCompare(b)); }
@@ -1032,9 +948,8 @@ function applyFilters(){
       return true;
     });
 
-  if(term){
-    list.sort((a,b)=> b._score - a._score || b.id - a.id);
-  }else if(sort==='new'){ list.sort((a,b)=>b.id-a.id); }
+  if(term){ list.sort((a,b)=> b._score - a._score || b.id - a.id); }
+  else if(sort==='new'){ list.sort((a,b)=>b.id-a.id); }
   else if(sort==='likes'){ list.sort((a,b)=>(b.postLikes||0)-(a.postLikes||0)); }
   else if(sort==='rating'){ list.sort((a,b)=>averageRatingForBook(b)-averageRatingForBook(a)); }
   else if(sort==='title'){ list.sort((a,b)=>a.title.localeCompare(b.title)); }
@@ -1050,13 +965,13 @@ const searchGoogleBooks = debounce(async (q)=>{
   if(!q||q.trim().length<2){ box.style.display='none'; box.innerHTML=''; gResults=[]; return; }
 
   try{
-    setLoading(input, true);
+    input.classList.add('loading');
     const query = encodeURIComponent(q.trim());
     const url = `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=10`;
     const r=await fetch(url);
     if (!r.ok) throw new Error(`Search failed: ${r.status}`);
     const data=await r.json();
-    setLoading(input, false);
+    input.classList.remove('loading');
 
     const items = data.items || [];
     if(!items.length){ 
@@ -1089,23 +1004,27 @@ const searchGoogleBooks = debounce(async (q)=>{
     `).join('');
     box.style.display='block';
   }catch(e){
-    setLoading(input, false);
+    input.classList.remove('loading');
     console.error(e);
     box.innerHTML='<div class="result-item"><div style="color:#b74a4a">Search failed. Try again.</div></div>';
     box.style.display='block';
   }
 });
 
-/* ========= CSV Export ========= */
-function download(filename, text) {
-  const blob = new Blob([text], {type:'text/csv;charset=utf-8;'});
+/* ========= CSV Export (Excel-friendly) ========= */
+function toCsvRow(arr){
+  const norm = (v)=>String(v??'').replaceAll('"','""');
+  return arr.map(norm).map(v=>`"${v}"`).join(',');
+}
+function downloadCsv(filename, rows){
+  const BOM = '\uFEFF'; // help Excel detect UTF-8
+  const blob = new Blob([BOM + rows.join('\r\n')], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = filename;
   document.body.appendChild(a); a.click();
   URL.revokeObjectURL(url); a.remove();
 }
-function toCsvRow(arr){ return arr.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(','); }
 function exportCsvs(){
   const booksHeader = toCsvRow(['id','title','author','genre','recommender','image','avg_rating','ratings_count','tags','synopsis','reason']);
   const booksRows = books.map(b=>toCsvRow([
@@ -1113,11 +1032,11 @@ function exportCsvs(){
     averageRatingForBook(b).toFixed(2), ratingCount(b),
     (b.tags||[]).join('|'), (b.synopsis||''), (b.reason||'')
   ]));
-  download('books.csv',[booksHeader,...booksRows].join('\n'));
+  downloadCsv('books.csv',[booksHeader,...booksRows]);
 
   const commentsHeader = toCsvRow(['book_id','book_title','comment_id','commenter','likes','text']);
   const commentsRows = books.flatMap(b=>(b.comments||[]).map(c=>toCsvRow([b.id,b.title,c.id,c.commenter||'',c.likes||0,c.text||''])));
-  download('comments.csv',[commentsHeader,...commentsRows].join('\n'));
+  downloadCsv('comments.csv',[commentsHeader,...commentsRows]);
 }
 
 /* ========= UI Actions ========= */
@@ -1149,7 +1068,6 @@ function closeFinishModal(){
 
 /* ========= Bootstrapping ========= */
 document.addEventListener('DOMContentLoaded', async () => {
-  // Load
   await loadAll();
 
   // Restore session
@@ -1160,6 +1078,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#login-section').style.display='none';
     $('#main-app').style.display='block';
   }
+
+  // Prefs UI initial state
+  $('#pref-post-new').checked    = !!sitePrefs.postNew;
+  $('#pref-post-finish').checked = !!sitePrefs.postFinish;
+  $('#pref-post-5').checked      = !!sitePrefs.postFive;
+  $('#pref-teams-url').value     = sitePrefs.teamsWebhook || '';
 
   // Initial renders
   populateRecommenderFilter();
@@ -1193,8 +1117,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateStats();
   });
   $('#logout-btn').addEventListener('click', ()=>{
-    currentUser='';
-    localStorage.removeItem('bookclub_currentUser');
+    currentUser=''; localStorage.removeItem('bookclub_currentUser');
     $('#user-info').style.display='none';
     $('#main-app').style.display='none';
     $('#login-section').style.display='block';
@@ -1215,62 +1138,44 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#book-results').addEventListener('click', (e)=>{
     const el = e.target.closest('.result-item'); if(!el) return;
     const index = Number(el.getAttribute('data-i'));
-    const data = gResults.find(r=>r.index===index);
-    if(!data) return;
-    // Clean fill (prevents author/title/genre mashups)
+    const data = gResults.find(r=>r.index===index); if(!data) return;
     $('#title').value = data.title || '';
     $('#author').value = data.author || '';
     $('#book-image').value = data.cover || '';
     $('#synopsis').value = stripHtml(data.description || '');
-
-    // Smart auto-tags from categories + description + current genre
     currentTags = [];
     autoPopulateTagsFromBook({
       genre: $('#genre').value,
       description: data.description || '',
       categories: data.categories || []
     });
-
     $('#book-results').style.display='none';
   });
 
-  /* Add: Tags input */
+  /* Tags input */
   $('#tags-container').addEventListener('click', ()=> $('#tag-input').focus());
   $('#tag-input').addEventListener('input', (e)=> showSuggestions(e.target.value));
   $('#tag-input').addEventListener('keydown', (e)=>{
-    if(e.key==='Enter' || e.key===','){
-      e.preventDefault();
-      const val=e.target.value.trim().replace(/,$/, '');
-      if(val) addTag(val);
-    }else if(e.key==='Backspace' && !e.target.value){
-      currentTags.pop(); renderTagsDisplay();
-    }
+    if(e.key==='Enter' || e.key===','){ e.preventDefault(); const val=e.target.value.trim().replace(/,$/, ''); if(val) addTag(val); }
+    else if(e.key==='Backspace' && !e.target.value){ currentTags.pop(); renderTagsDisplay(); }
   });
   $('#tag-suggestions').addEventListener('click', (e)=>{
-    const item=e.target.closest('.suggestion-item'); if(!item) return;
-    addTag(item.getAttribute('data-tag'));
+    const item=e.target.closest('.suggestion-item'); if(!item) return; addTag(item.getAttribute('data-tag'));
   });
   document.addEventListener('click', (e)=>{
     if(!$('#tags-container').contains(e.target)) hideSuggestions();
-    if(!$('#book-search').contains?.(e?.target) && !$('#book-results').contains(e.target)){
-      $('#book-results').style.display='none';
-    }
+    if(!$('#book-search').contains?.(e?.target) && !$('#book-results').contains(e.target)){ $('#book-results').style.display='none'; }
   });
   $('#tags-display').addEventListener('click', (e)=>{
-    const tagEl=e.target.closest('.tag.removable'); if(!tagEl) return;
-    removeTag(tagEl.getAttribute('data-tag'));
+    const tagEl=e.target.closest('.tag.removable'); if(!tagEl) return; removeTag(tagEl.getAttribute('data-tag'));
   });
 
-  /* Update auto-tags if genre changes (non-destructive) */
+  /* Genre change can add gentle auto-tags */
   $('#genre').addEventListener('change', ()=>{
-    autoPopulateTagsFromBook({
-      genre: $('#genre').value,
-      description: $('#synopsis').value || '',
-      categories: []
-    });
+    autoPopulateTagsFromBook({ genre: $('#genre').value, description: $('#synopsis').value || '', categories: [] });
   });
 
-  /* Add: Rating stars (share form) */
+  /* Rating stars (share form) */
   $$('#rating-stars .star').forEach(star=>{
     star.addEventListener('click', ()=>{
       const val = Number(star.getAttribute('data-rating'));
@@ -1291,57 +1196,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#finish-save').addEventListener('click', ()=>{
     if(!finishContext) return closeFinishModal();
     let book = books.find(b=>String(b.id)===String(finishContext.bookId));
-
-    /* CHANGED: Fallback if book not in feed (ensure read flow still works) */
     if(!book){
       ensureUser(currentUser);
       const mine = me();
       const shadow = [...(mine.currentReading||[]), ...(mine.wishList||[]), ...(mine.readList||[])]
         .find(x=>String(x.id)===String(finishContext.bookId));
       if(shadow){
-        book = {
-          id: shadow.id,
-          title: shadow.title || 'Untitled',
-          author: shadow.author || 'Unknown',
-          genre: 'other',
-          recommender: shadow.recommender || '',
-          image: '',
-          synopsis: '',
-          reason: '',
-          rating: 0,
-          userRatings: [],
-          tags: [],
-          comments: [],
-          postLikes: 0,
-          postLikedBy: []
-        };
+        book = { id: shadow.id, title: shadow.title||'Untitled', author: shadow.author||'Unknown', genre:'other', recommender: shadow.recommender||'', image:'', synopsis:'', reason:'', rating:0, userRatings:[], tags:[], comments:[], postLikes:0, postLikedBy:[] };
         books.unshift(book);
       }else{
         showToast('Could not locate this book details. Try finishing from the feed.', true);
-        closeFinishModal();
-        return;
+        closeFinishModal(); return;
       }
     }
-
     const rating = currentRating || 0;
 
-    // add to my read list (and remove from other lists)
+    // Add to my read list, remove from other lists
     ensureUser(currentUser);
     const mine = me();
-    if(!mine.readList.some(x=>x.id===book.id)){
-      mine.readList.push({id:book.id,title:book.title,author:book.author,_rating:rating});
-    }else{
-      const rec = mine.readList.find(x=>x.id===book.id); rec._rating = rating;
-    }
+    if(!mine.readList.some(x=>x.id===book.id)){ mine.readList.push({id:book.id,title:book.title,author:book.author,_rating:rating}); }
+    else { mine.readList.find(x=>x.id===book.id)._rating = rating; }
     mine.currentReading = (mine.currentReading||[]).filter(x=>x.id!==book.id);
     mine.wishList = (mine.wishList||[]).filter(x=>x.id!==book.id);
 
-    // add/update user rating on the book
+    // Save rating
     book.userRatings = book.userRatings||[];
     const existing = book.userRatings.find(r=>r.user===currentUser);
     if(existing) existing.rating = rating; else book.userRatings.push({user:currentUser, rating});
 
-    // activity + Teams
+    // Add a comment reflecting the finish action
+    book.comments = book.comments||[];
+    book.comments.push({id:Date.now()+Math.random(), commenter: currentUser, text: `finished this book — ${rating}★`, likes:0, likedBy:[]});
+
+    // Activity + Teams
     postActivity('finish',{user:currentUser, title:book.title, author:book.author, rating});
     if(rating===5) postActivity('five',{user:currentUser, title:book.title, author:book.author, rating});
     postToTeams('finish', `${currentUser} finished "${book.title}" — ${rating}★`);
@@ -1356,7 +1243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#finish-cancel').addEventListener('click', closeFinishModal);
   $('#finish-modal').addEventListener('click', (e)=>{ if(e.target.id==='finish-modal') closeFinishModal(); });
 
-  /* Add: Form submit */
+  /* Add Book submit */
   $('#book-form').addEventListener('submit', (e)=>{
     e.preventDefault();
     if(!currentUser){ showToast('Please log in with your name first.', true); return; }
@@ -1374,14 +1261,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       id: Date.now(),
       title, author, genre, recommender, image,
       synopsis, reason,
-      rating: currentRating, // owner's rating
-      userRatings: [], // additional ratings by others
+      rating: currentRating,
+      userRatings: [],
       tags: [...currentTags],
       comments: [],
       postLikes: 0,
       postLikedBy: []
     };
     books.unshift(book);
+
+    // Auto-add to my read list with my rating
+    ensureUser(currentUser);
+    const mine = me();
+    if(!mine.readList.some(x=>x.id===book.id)){
+      mine.readList.push({id:book.id,title:book.title,author:book.author,_rating:currentRating});
+      // Also remove from other lists if present
+      mine.currentReading = mine.currentReading.filter(x=>x.id!==book.id);
+      mine.wishList = mine.wishList.filter(x=>x.id!==book.id);
+    }
 
     // Activity + Teams
     postActivity('share',{user:recommender, title, author, rating:currentRating});
@@ -1401,11 +1298,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     populateRecommenderFilter();
     applyFilters();
     renderProfessionalBooks();
+    renderMyLists();
     updateStats();
     showToast('Book shared!');
   });
 
-  /* Add: Save posting prefs */
+  /* Prefs: Save posting prefs */
   $('#prefs-save').addEventListener('click', ()=>{
     sitePrefs.postNew = $('#pref-post-new').checked;
     sitePrefs.postFinish = $('#pref-post-finish').checked;
@@ -1414,7 +1312,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     showToast('Posting preferences saved.');
   });
 
-  /* Prefs: Save Teams URL */
+  /* Prefs: Teams URL */
   $('#save-teams-btn').addEventListener('click', ()=>{
     const url = $('#pref-teams-url').value.trim();
     sitePrefs.teamsWebhook = url;
@@ -1425,30 +1323,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* Prefs: Export */
   $('#export-csv-btn').addEventListener('click', exportCsvs);
 
-  /* Prefs: Danger zone toggle + clear */
-  $('#toggle-danger').addEventListener('click', ()=>{
-    const dm=$('#data-management');
-    dm.style.display = dm.style.display==='none' ? 'block' : 'none';
+  /* Admin tools */
+  $('#sync-now-btn').addEventListener('click', async ()=>{ await loadAll(); populateRecommenderFilter(); applyFilters(); renderActivity(); renderProfessionalBooks(); renderMyLists(); updateStats(); });
+  $('#save-now-btn').addEventListener('click', async ()=>{ await saveAll(); showToast('Saved to server'); });
+  $('#post-note-btn').addEventListener('click', ()=>{
+    const note = ($('#admin-note').value||'').trim();
+    if(!note){ showToast('Enter a note first.', true); return; }
+    postActivity('note', {message: note});
+    postToTeams('note', `Admin note: ${note}`);
+    $('#admin-note').value='';
+    showToast('Note posted to activity.');
   });
   $('#clear-data-btn').addEventListener('click', ()=>{
-    const pw = prompt('Enter admin password to confirm:');
-    if(pw!==ADMIN_PASSWORD) { showToast('Incorrect password.', true); return; }
+    const pw = ($('#admin-pw').value||'').trim();
+    if(pw!==ADMIN_PASSWORD){ showToast('Incorrect password.', true); return; }
     if(!confirm('This will erase ALL data (books, users, activity). Are you sure?')) return;
     books=[]; userData={}; activity=[]; sitePrefs={teamsWebhook:'',postNew:true,postFinish:true,postFive:true};
     saveAll();
-    populateRecommenderFilter();
-    applyFilters();
-    renderActivity();
-    renderProfessionalBooks();
-    renderMyLists();
-    updateStats();
+    populateRecommenderFilter(); applyFilters(); renderActivity(); renderProfessionalBooks(); renderMyLists(); updateStats();
     showToast('All data cleared.');
   });
 
   /* Feed interactions (event delegation) */
   document.addEventListener('click', (e)=>{
-    const btn = e.target.closest('[data-action]');
-    if(!btn) return;
+    const btn = e.target.closest('[data-action]'); if(!btn) return;
     const action = btn.getAttribute('data-action');
     const bookId = btn.getAttribute('data-id');
     const cid    = btn.getAttribute('data-cid');
@@ -1456,8 +1354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if(action==='like'){
       if(!currentUser){ showToast('Log in to like posts.', true); return; }
-      const b=books.find(x=>String(x.id)===String(bookId));
-      if(!b) return;
+      const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
       b.postLikedBy=b.postLikedBy||[];
       if(b.postLikedBy.includes(currentUser)){
         b.postLikedBy=b.postLikedBy.filter(n=>n!==currentUser);
@@ -1467,9 +1364,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         b.postLikes=(b.postLikes||0)+1;
         postActivity('like',{user:currentUser,title:b.title});
       }
-      saveAll();
-      applyFilters();
-      return;
+      saveAll(); applyFilters(); return;
     }
 
     if(action==='wish'){
@@ -1478,8 +1373,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       ensureUser(currentUser);
       const mine = me();
       if(!mine.wishList.some(x=>x.id===b.id)) mine.wishList.push({id:b.id,title:b.title,author:b.author});
-      saveAll(); renderMyLists(); updateStats(); showToast('Added to Want to Read');
-      return;
+      saveAll(); renderMyLists(); updateStats(); showToast('Added to Want to Read'); return;
     }
 
     if(action==='reading'){
@@ -1489,19 +1383,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       const mine = me();
       if(!mine.currentReading.some(x=>x.id===b.id)) {
         mine.currentReading.push({id:b.id,title:b.title,author:b.author});
-        // Remove from wish if present
         mine.wishList = mine.wishList.filter(x=>x.id!==b.id);
       }
-      saveAll(); renderMyLists(); updateStats(); showToast('Added to Currently Reading');
-      return;
+      saveAll(); renderMyLists(); updateStats(); showToast('Added to Currently Reading'); return;
     }
 
     if(action==='finish'){
       if(!currentUser){ showToast('Log in to finish books.', true); return; }
-      const b=books.find(x=>String(x.id)===String(bookId)); 
+      const b=books.find(x=>String(x.id)===String(bookId));
       if(b) openFinishModal(b);
       else{
-        // allow finishing from lists even if not in feed yet
         ensureUser(currentUser);
         const mine = me();
         const shadow = [...(mine.currentReading||[]), ...(mine.wishList||[]), ...(mine.readList||[])]
@@ -1517,34 +1408,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       ensureUser(currentUser);
       const mine = me();
       if(!mine.readList.some(x=>x.id===b.id)) mine.readList.push({id:b.id,title:b.title,author:b.author,_rating:0});
-      // clean up other lists
       mine.currentReading = mine.currentReading.filter(x=>x.id!==b.id);
       mine.wishList = mine.wishList.filter(x=>x.id!==b.id);
       postActivity('prev',{user:currentUser,title:b.title,author:b.author});
-      saveAll(); renderMyLists(); updateStats(); showToast('Marked as Previously Read');
-      return;
+      saveAll(); renderMyLists(); updateStats(); showToast('Marked as Previously Read'); return;
     }
 
-    if(action==='remove-current'){
-      ensureUser(currentUser);
-      me().currentReading = me().currentReading.filter(x=>String(x.id)!==String(bookId));
-      saveAll(); renderMyLists(); updateStats();
-      return;
-    }
-
-    if(action==='remove-wish'){
-      ensureUser(currentUser);
-      me().wishList = me().wishList.filter(x=>String(x.id)!==String(bookId));
-      saveAll(); renderMyLists(); updateStats();
-      return;
-    }
-
-    if(action==='remove-read'){
-      ensureUser(currentUser);
-      me().readList = me().readList.filter(x=>String(x.id)!==String(bookId));
-      saveAll(); renderMyLists(); updateStats();
-      return;
-    }
+    if(action==='remove-current'){ ensureUser(currentUser); me().currentReading = me().currentReading.filter(x=>String(x.id)!==String(bookId)); saveAll(); renderMyLists(); updateStats(); return; }
+    if(action==='remove-wish'){ ensureUser(currentUser); me().wishList = me().wishList.filter(x=>String(x.id)!==String(bookId)); saveAll(); renderMyLists(); updateStats(); return; }
+    if(action==='remove-read'){ ensureUser(currentUser); me().readList = me().readList.filter(x=>String(x.id)!==String(bookId)); saveAll(); renderMyLists(); updateStats(); return; }
 
     if(action==='add-comment'){
       const wrap = btn.closest('.comment-form'); if(!wrap) return;
@@ -1554,8 +1426,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
       b.comments = b.comments||[];
       b.comments.push({id:Date.now()+Math.random(), commenter:name, text, likes:0, likedBy:[]});
-      saveAll(); applyFilters(); updateStats(); showToast('Comment added!');
-      return;
+      saveAll(); applyFilters(); updateStats(); showToast('Comment added!'); return;
     }
 
     if(action==='like-comment'){
@@ -1563,41 +1434,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
       const c=(b.comments||[]).find(x=>String(x.id)===String(cid)); if(!c) return;
       c.likedBy = c.likedBy||[];
-      if(c.likedBy.includes(currentUser)){
-        c.likedBy = c.likedBy.filter(n=>n!==currentUser);
-        c.likes = Math.max(0,(c.likes||0)-1);
-      }else{
-        c.likedBy.push(currentUser);
-        c.likes = (c.likes||0)+1;
-      }
-      saveAll(); applyFilters(); updateStats();
-      return;
+      if(c.likedBy.includes(currentUser)){ c.likedBy = c.likedBy.filter(n=>n!==currentUser); c.likes = Math.max(0,(c.likes||0)-1); }
+      else { c.likedBy.push(currentUser); c.likes = (c.likes||0)+1; }
+      saveAll(); applyFilters(); updateStats(); return;
     }
 
     if(action==='like-activity'){
       if(!currentUser){ showToast('Log in to like activity.', true); return; }
       const a = activity.find(x=>String(x.id)===String(aid)); if(!a) return;
       a.likedBy = a.likedBy||[];
-      if(a.likedBy.includes(currentUser)){
-        a.likedBy=a.likedBy.filter(n=>n!==currentUser);
-        a.likes=Math.max(0,(a.likes||0)-1);
-      }else{
-        a.likedBy.push(currentUser);
-        a.likes=(a.likes||0)+1;
-      }
-      saveAll(); renderActivity();
-      return;
+      if(a.likedBy.includes(currentUser)){ a.likedBy=a.likedBy.filter(n=>n!==currentUser); a.likes=Math.max(0,(a.likes||0)-1); }
+      else { a.likedBy.push(currentUser); a.likes=(a.likes||0)+1; }
+      saveAll(); renderActivity(); return;
     }
   });
 });
 
-/* Helper for auto-tagging after Google Books fill, if needed by other code */
+/* Helper for optional re-tagging */
 function maybeAutoTagsFromForm(){
-  const b = {
-    genre: $('#genre').value,
-    description: $('#synopsis').value||'',
-    categories: []
-  };
+  const b = { genre: $('#genre').value, description: $('#synopsis').value||'', categories: [] };
   autoPopulateTagsFromBook(b);
 }
 </script>
