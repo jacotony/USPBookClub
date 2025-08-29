@@ -1,18 +1,4 @@
-Here’s your full file with only the requested changes applied.
 
-* Stats tile now shows **total read** (all users) and the label reads **“read”**.
-* Leaderboard still capped at **3**, and **“System” is excluded** from all three lists.
-* Before login, **Trending** now appears next to **Activity** in a horizontal layout (compact height).
-* After login, the **tab bar (Book Feed / Add Book / My Lists / Preferences)** appears at the top of the app, followed by the search row, then the feed.
-* Search row is **more compact** so the “Collapse all comments” + Sort stay on one line.
-* Book cards now show **“Recommended on …”** (or **“Just now”** for \~90s after posting).
-* Comments show the **date** (no time).
-* Comment section button text changed to **“See Comments”**.
-* Trending sections (landing + feed) both capped at **3**.
-
----
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,7 +17,7 @@ Here’s your full file with only the requested changes applied.
 <style>
   :root{
     --pine:#2f4a3e; --spruce:#3e5a4c; --sage:#8ca093; --silver:#c2c7c9;
-    --mist:#efe6db; --accent:#d59a63; --ink:#232826; --muted:#5b6660;
+    --mist:#efe6db; --accent:#d59a63; --ink:#232826; --muted:#ap5b6660;
     --line:#dfe5e1; --gold:#b8860b; --glass:rgba(255,255,255,.18);
     --glass-2:rgba(255,255,255,.28); --shadow:0 14px 28px rgba(0,0,0,.10)
   }
@@ -491,13 +477,12 @@ Here’s your full file with only the requested changes applied.
     </div>
   </div>
 
-<script>
 /* ========= JSONBin Storage & State ========= */
 const JSONBIN_API = 'https://api.jsonbin.io/v3';
 const BIN_ID = '68b1dc30ae596e708fdb3ff1';   // Your actual bin ID
 const API_KEY = '$2a$10$LYh6e0ns1sOKv23ek6kbD.7UJoIW.UclGVfzMvSeDzeSLfshEvQZi'; // Your X-MASTER-KEY
 const ADMIN_PASSWORD = 'Prob1234'; // updated per your note
-
+  
 let currentUser='';
 let books=[]; 
 let userData={}; 
