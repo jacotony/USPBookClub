@@ -413,10 +413,12 @@ async function saveAll(){
     console.error('Failed to save locally:', e);
   }
   
-  // Then sync to JSONBin
+  // Then sync to JSONBin - try both keys
   try{
     const payload = {books, userData, activity, sitePrefs};
-    const response = await fetch(`${JSONBIN_API}/b/${BIN_ID}`, {
+    console.log('Attempting to save to JSONBin...');
+    
+    let response = await fetch(`${JSONBIN_API}/b/${BIN_ID}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -425,8 +427,22 @@ async function saveAll(){
       body: JSON.stringify(payload)
     });
     
+    if(!response.ok && response.status === 401) {
+      // Try with Access Key if Master Key fails
+      console.log('Master key failed for save, trying Access key...');
+      response = await fetch(`${JSONBIN_API}/b/${BIN_ID}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Access-Key': '$2a$10$NtOiloGyBsDjGUeS6fln1e9MM74lC3pKTeTkv8rsGtrut5GJlDbfm'
+        },
+        body: JSON.stringify(payload)
+      });
+    }
+    
     if(!response.ok){
       const errorText = await response.text();
+      console.error('JSONBin save error:', response.status, errorText);
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
     
@@ -434,7 +450,7 @@ async function saveAll(){
     
   }catch(e){
     console.error('Failed to save to JSONBin:', e);
-    showToast('Saved locally - server sync failed. Will retry.', true);
+    showToast(`Save failed: ${e.message}`, true);
   }
 }
 
