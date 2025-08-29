@@ -1,3 +1,5 @@
+ALMOST PERFECT!
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,9 +69,6 @@
 
   /* search row smaller */
   .search{display:grid;grid-template-columns:2fr 1fr repeat(3,1fr);gap:8px;margin:8px 0}
-  /* ONLY shorten the feed search bar (not other forms) */
-  #feed .search{grid-template-columns:minmax(240px,460px) 1fr repeat(3,1fr);}
-
   .chip{background:#e8efe9;border:1px solid #d9e4dc;color:#2e4a3a;padding:5px 10px;border-radius:999px;font-size:12px}
 
   .section{display:none}.section.active{display:block}
@@ -163,8 +162,7 @@
         </div>
         <div class="stat"><strong id="total-reviews">0</strong> comments</div>
         <div class="stat"><strong id="avg-rating">0.0</strong> avg ★</div>
-        <!-- CHANGED: label now just 'read' -->
-        <div class="stat" title="Your finished books"><strong id="books-read">0</strong> read</div>
+        <div class="stat" title="Your finished books"><strong id="books-read">0</strong> you read</div>
         <div class="stat" id="users-chip">
           <strong id="total-users">0</strong> users
         </div>
@@ -541,7 +539,7 @@ const me=()=>userData[currentUser]||defaultUser();
 
 /* ========= PWA setup ========= */
 function setupPWA(){
-  const manifest={name:"Book Club",short_name:"Book Club",start_url:".",display:"standalone",background_color:"#ffffff",theme_color:"#2f4a3e",icons:[{src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAAAAABQFZ1hAAAAC0lEQVR42u3BAQ0AAADCoPdPbQ43oAAAAAB4p1nNAAE=",sizes:"192x192",type:"image/png"}]}};
+  const manifest={name:"Book Club",short_name:"Book Club",start_url:".",display:"standalone",background_color:"#ffffff",theme_color:"#2f4a3e",icons:[{src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAAAAABQFZ1hAAAAC0lEQVR42u3BAQ0AAADCoPdPbQ43oAAAAAB4p1nNAAE=",sizes:"192x192",type:"image/png"}]};
   const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
   const url=URL.createObjectURL(blob);
   const link=$('#app-manifest'); if(link) link.href=url;
@@ -824,7 +822,7 @@ function trendingScore(b){
   return comments*2+likes*1.5+ratings;
 }
 function renderTrending(){
-  const top=[...books].sort((a,b)=>trendingScore(b)-trendingScore(a)).slice(0,3); // max 3
+  const top=[...books].sort((a,b)=>trendingScore(b)-trendingScore(a)).slice(0,3);
   const c=$('#trending');
   if(!top.length){c.innerHTML=`<div class="small" style="color:#7a857f">No activity yet</div>`;return;}
   c.innerHTML=top.map(b=>`
