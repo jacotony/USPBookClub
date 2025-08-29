@@ -1019,10 +1019,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadAll();
   setupPWA();
 
-  // Initial UI states
-  $('#login-section').style.display='block';
-  $('#main-app').style.display='none';
-  $('#user-bar').style.display='none';
+ $('#login-section').style.display='block';
+$('#main-app').style.display='block';   // keep the tabs & pages visible
+$('#user-bar').style.display='none';    // just hide the “Welcome, …” bar
+
 
   // Render base
   populateCategoryOptions();
