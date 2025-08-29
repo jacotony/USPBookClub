@@ -194,14 +194,15 @@
     </div>
 
     <nav class="nav">
-      <button class="nav-btn active" id="feed-btn">Book Feed</button>
-      <button class="nav-btn" id="add-btn">Add Book</button>
-      <button class="nav-btn" id="my-books-btn">My Lists</button>
-      <button class="nav-btn" id="professional-btn">Professional Books</button>
-      <button class="nav-btn" id="prefs-btn">Preferences</button>
+      <button class="nav-btn active" id="feed-btn" type="button">Book Feed</button>
+      <button class="nav-btn" id="add-btn" type="button">Add Book</button>
+      <button class="nav-btn" id="my-books-btn" type="button">My Lists</button>
+      <button class="nav-btn" id="professional-btn" type="button">Professional Books</button>
+      <button class="nav-btn" id="prefs-btn" type="button">Preferences</button>
     </nav>
 
     <main class="content">
+      <!-- LOGIN -->
       <section id="login-section" class="login-screen">
         <form class="login-form" id="login-form">
           <h2>Welcome to Book Club!</h2>
@@ -216,7 +217,9 @@
         </form>
       </section>
 
+      <!-- APP -->
       <section id="main-app" style="display:none">
+        <!-- FEED -->
         <section id="feed" class="section active">
           <div class="activity" id="activity">
             <div class="activity-head">
@@ -269,16 +272,170 @@
           <div id="books-feed" class="book-feed"></div>
         </section>
 
+        <!-- ADD -->
         <section id="add" class="section">
           <div class="add-book-form">
             <h2 style="margin-bottom:10px;color:var(--ink)">Share a Book Recommendation</h2>
 
-            <div class="form-row">
+            <!-- Posting preferences (for Teams) -->
+            <div class="form-row" style="margin-bottom:10px">
               <div class="form-group"><label><input id="pref-post-new" type="checkbox" checked/> Post on <strong>new book</strong></label></div>
               <div class="form-group"><label><input id="pref-post-finish" type="checkbox" checked/> Post when someone <strong>finishes a book</strong></label></div>
               <div class="form-group"><label><input id="pref-post-5" type="checkbox" checked/> Post for <strong>new 5★ ratings</strong></label></div>
             </div>
-            <button id="prefs-save" class="btn" type="button">Save Preferences</button>
+            <button id="prefs-save" class="btn" type="button" style="margin-bottom:20px">Save Preferences</button>
+
+            <!-- Google Books Search -->
+            <div class="form-row">
+              <div class="form-group dropdown" style="flex:2 1 380px">
+                <label for="book-search">Search books to auto-fill (Google Books)</label>
+                <input id="book-search" class="input" type="text" placeholder="Start typing a title or author..."/>
+                <div id="book-results" class="results" style="display:none"></div>
+              </div>
+            </div>
+
+            <form id="book-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="title">Book Title *</label>
+                  <input class="input" type="text" id="title" required/>
+                </div>
+                <div class="form-group">
+                  <label for="author">Author *</label>
+                  <input class="input" type="text" id="author" required/>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="genre">Category</label>
+                  <select class="select" id="genre">
+                    <option value="fiction">Fiction</option>
+                    <option value="non-fiction">Non-Fiction</option>
+                    <option value="biography">Biography</option>
+                    <option value="self-help">Self-Help</option>
+                    <option value="other">Other</option>
+                    <option value="professional">Professional</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="recommender">Your Name</label>
+                  <input class="input" type="text" id="recommender" required/>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="book-image">Book Cover Image (optional)</label>
+                  <input class="input" type="url" id="book-image" placeholder="https://example.com/book-cover.jpg"/>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="synopsis">Synopsis (auto-filled when available)</label>
+                <textarea class="textarea" id="synopsis" placeholder="Book description..."></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="reason">Why I recommend this book *</label>
+                <textarea class="textarea" id="reason" placeholder="What did you love about it? Why should others read it?" required></textarea>
+              </div>
+
+              <!-- Tags -->
+              <div class="form-group">
+                <label>Tags</label>
+                <div class="tags-input-container" id="tags-container">
+                  <div class="tags-display" id="tags-display"></div>
+                  <input type="text" class="tag-input" id="tag-input" placeholder="Add tags (e.g., sci-fi, leadership)..."/>
+                  <div class="suggestions" id="tag-suggestions" style="display:none"></div>
+                </div>
+              </div>
+
+              <!-- Rating -->
+              <div class="form-group">
+                <label>Your Rating *</label>
+                <div class="stars" id="rating-stars" aria-label="rating stars" style="margin-top:6px">
+                  <button class="star" type="button" data-rating="1">★</button>
+                  <button class="star" type="button" data-rating="2">★</button>
+                  <button class="star" type="button" data-rating="3">★</button>
+                  <button class="star" type="button" data-rating="4">★</button>
+                  <button class="star" type="button" data-rating="5">★</button>
+                </div>
+                <div id="rating-feedback" style="font-size:14px;color:var(--muted);margin-top:4px">Click stars to rate (required)</div>
+              </div>
+
+              <button type="submit" class="btn">Share Book</button>
+            </form>
+          </div>
+        </section>
+
+        <!-- MY LISTS -->
+        <section id="my-books" class="section">
+          <h2 style="margin-bottom:12px;color:var(--ink)">My Reading Lists</h2>
+          <div class="reading-list">
+            <h3>Currently Reading</h3>
+            <div id="current-reading"></div>
+          </div>
+          <div class="reading-list">
+            <h3>Want to Read</h3>
+            <div id="wish-list"></div>
+          </div>
+          <div class="reading-list">
+            <h3>Previously Read</h3>
+            <div id="read-list"></div>
+          </div>
+        </section>
+
+        <!-- PROFESSIONAL -->
+        <section id="professional" class="section">
+          <h2 style="margin-bottom:10px;color:var(--ink)">Professional Development Books</h2>
+          <p style="margin-bottom:18px;color:var(--muted)">Books for professional growth</p>
+          <div id="professional-books" class="book-feed"></div>
+        </section>
+
+        <!-- PREFS -->
+        <section id="prefs" class="section">
+          <h2 style="margin-bottom:12px;color:var(--ink)">Preferences</h2>
+
+          <div class="reading-list">
+            <h3>Export / Backup</h3>
+            <p style="color:var(--muted);margin-bottom:8px">Downloads Excel-friendly CSV files (books.csv and comments.csv).</p>
+            <button id="export-csv-btn" class="btn" type="button">Download CSVs</button>
+          </div>
+
+          <div class="reading-list">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <h3>Admin</h3>
+              <button id="toggle-danger" class="pill-btn" type="button">Show Danger Zone</button>
+            </div>
+          </div>
+
+          <div class="reading-list" id="data-management" style="display:none">
+            <h3>Data Management (Danger Zone)</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <button id="clear-data-btn" class="btn btn-danger" type="button">Clear All Data</button>
+                <p style="color:var(--muted);font-size:12px;margin-top:4px">
+                  Requires admin password and confirmation.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="reading-list">
+            <h3>Teams Channel Notifications</h3>
+            <p style="color:var(--muted);margin-bottom:8px">
+              Optional. Add an <em>Incoming Webhook</em> to your Teams <strong>channel</strong>, then paste the URL here.
+            </p>
+            <div class="form-row">
+              <div class="form-group" style="flex:2 1 520px">
+                <label for="pref-teams-url">Teams Webhook URL</label>
+                <input id="pref-teams-url" class="input" type="url" placeholder="https://outlook.office.com/webhook/..."/>
+              </div>
+              <div class="form-group" style="flex:0 0 auto;display:flex;align-items:flex-end">
+                <button id="save-teams-btn" class="btn" type="button">Save Teams URL</button>
+              </div>
+            </div>
           </div>
         </section>
       </section>
@@ -287,7 +444,8 @@
 
   <div id="toast" class="toast"></div>
 
-  <div id="finish-modal" class="modal">
+  <!-- Finish / Rate Modal -->
+  <div id="finish-modal" class="modal" aria-hidden="true">
     <div class="card">
       <h3 id="finish-heading" style="margin-bottom:8px">Rate this book</h3>
       <p id="finish-title" style="color:var(--muted);margin-bottom:8px"></p>
@@ -308,134 +466,33 @@
 <script>
 /* ========= JSONBin Storage & State ========= */
 const JSONBIN_API = 'https://api.jsonbin.io/v3';
-const BIN_ID = '68b1dc59ae596e708fdb401d';   // Your actual bin ID
+const BIN_ID = '68b1dc30ae596e708fdb3ff1';   // Your actual bin ID
 const API_KEY = '$2a$10$LYh6e0ns1sOKv23ek6kbD.7UJoIW.UclGVfzMvSeDzeSLfshEvQZi'; // Your X-MASTER-KEY
+const ADMIN_PASSWORD = 'bookclubadmin'; // change if desired
 
 let currentUser=''; 
 let books=[]; 
 let userData={}; 
 let activity=[]; 
 let currentBooks=[]; 
+let sitePrefs={teamsWebhook:'',postNew:true,postFinish:true,postFive:true};
+
+let isLoading=false;
+let currentTags = [];
 let currentRating=0;
 let finishContext=null; 
 let activityExpanded=false;
-let sitePrefs={teamsWebhook:'',postNew:true,postFinish:true,postFive:true};
-let isLoading=false;
-let currentTags = [];
-
-// Common tag suggestions based on genre and popular book categories
-const tagSuggestions = [
-  'sci-fi', 'fantasy', 'romance', 'mystery', 'thriller', 'horror', 'historical-fiction',
-  'young-adult', 'contemporary', 'classic', 'literary-fiction', 'dystopian',
-  'leadership', 'business', 'productivity', 'entrepreneurship', 'marketing', 
-  'personal-development', 'psychology', 'philosophy', 'history', 'science',
-  'technology', 'health', 'fitness', 'cooking', 'travel', 'memoir',
-  'comedy', 'drama', 'action', 'adventure', 'coming-of-age', 'family',
-  'friendship', 'war', 'politics', 'economics', 'environment', 'social-justice',
-  'quick-read', 'page-turner', 'thought-provoking', 'emotional', 'inspiring',
-  'educational', 'practical', 'reference', 'beginner-friendly', 'advanced'
-];
-
-async function loadAll(){
-  if(isLoading) return; 
-  isLoading = true;
-  
-  // First load from localStorage for instant display
-  try{
-    const cached = JSON.parse(localStorage.getItem('bookclub_payload')||'{}');
-    if(cached.books) books = cached.books;
-    if(cached.userData) userData = cached.userData;
-    if(cached.activity) activity = cached.activity;
-    if(cached.sitePrefs) sitePrefs = Object.assign(sitePrefs, cached.sitePrefs);
-    currentUser = localStorage.getItem('bookclub_currentUser') || '';
-  }catch(e){
-    console.error('Failed to load local cache:', e);
-  }
-
-  // Then sync with JSONBin
-  try{
-    const response = await fetch(`${JSONBIN_API}/b/${BIN_ID}/latest`, {
-      method: 'GET',
-      headers: {
-        'X-Master-Key': API_KEY
-      }
-    });
-    
-    if(!response.ok){
-      const errorText = await response.text();
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
-    }
-    
-    const data = await response.json();
-    const record = data.record || {};
-    
-    books = record.books || [];
-    userData = record.userData || {};
-    activity = record.activity || [];
-    sitePrefs = Object.assign({teamsWebhook:'',postNew:true,postFinish:true,postFive:true}, record.sitePrefs || {});
-    
-    // Cache locally
-    localStorage.setItem('bookclub_payload', JSON.stringify({books, userData, activity, sitePrefs}));
-    
-    showToast('Data synced successfully!');
-    
-  }catch(e){
-    console.error('Failed to sync with JSONBin:', e);
-    showToast('Using local data - server sync failed. Check connection.', true);
-  }
-  
-  isLoading = false;
-}
-
-async function saveAll(){
-  // Always save locally first
-  try{
-    const payload = {books, userData, activity, sitePrefs};
-    localStorage.setItem('bookclub_payload', JSON.stringify(payload));
-    localStorage.setItem('bookclub_currentUser', currentUser);
-  }catch(e){
-    console.error('Failed to save locally:', e);
-  }
-  
-  // Then sync to JSONBin
-  try{
-    const payload = {books, userData, activity, sitePrefs};
-    const response = await fetch(`${JSONBIN_API}/b/${BIN_ID}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': API_KEY
-      },
-      body: JSON.stringify(payload)
-    });
-    
-    if(!response.ok){
-      const errorText = await response.text();
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
-    }
-    
-    console.log('Data saved to JSONBin successfully');
-    
-  }catch(e){
-    console.error('Failed to save to JSONBin:', e);
-    showToast('Saved locally - server sync failed. Will retry.', true);
-  }
-}
-
-const defaultUser=()=>({readList:[],wishList:[],currentReading:[]});
-function ensureUser(name){ if(!userData[name]) userData[name]=defaultUser(); }
-const me=()=>userData[currentUser]||defaultUser();
 
 /* ========= Utilities ========= */
-const $  = (sel, root=document) => root.querySelector(sel);
-const $ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+const $  = (sel, root=document) => root.querySelector(sel);        // single
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel)); // many
 const now=()=>new Date().toISOString();
 const timeAgo=(iso)=>{const d=new Date(iso);const s=(Date.now()-d)/1000;if(s<60)return`${Math.floor(s)}s ago`;const m=s/60;if(m<60)return`${Math.floor(m)}m ago`;const h=m/60;if(h<24)return`${Math.floor(h)}h ago`;return`${Math.floor(h/24)}d ago`};
 const escapeHtml=(s='')=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 const escapeAttr=(s='')=>escapeHtml(s).replaceAll('"','&quot;');
 const showToast=(msg,isError=false)=>{const t=$('#toast');t.textContent=msg;t.classList.toggle('error',isError);t.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove('show'),isError?3000:1700);};
 const formatStars=(n)=>'★'.repeat(n)+'☆'.repeat(5-n);
-const debounce=(fn,ms=300)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};};
+const debounce=(fn,ms=350)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};};
 const truncate=(s,n=400)=> s && s.length>n ? s.slice(0,n-1)+'…' : s;
 
 function setLoading(element, loading) {
@@ -450,11 +507,91 @@ function setLoading(element, loading) {
   }
 }
 
+/* ========= Local & Remote Persistence ========= */
+async function loadAll(){
+  if(isLoading) return; 
+  isLoading = true;
+  
+  // Load local cache first
+  try{
+    const cached = JSON.parse(localStorage.getItem('bookclub_payload')||'{}');
+    if(cached.books) books = cached.books;
+    if(cached.userData) userData = cached.userData;
+    if(cached.activity) activity = cached.activity;
+    if(cached.sitePrefs) sitePrefs = Object.assign(sitePrefs, cached.sitePrefs);
+    currentUser = localStorage.getItem('bookclub_currentUser') || '';
+  }catch(e){
+    console.error('Failed to load local cache:', e);
+  }
+
+  // Then try JSONBin
+  try{
+    const response = await fetch(`${JSONBIN_API}/b/${BIN_ID}/latest`, {
+      method: 'GET',
+      headers: { 'X-Master-Key': API_KEY }
+    });
+    if(!response.ok){
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+    const data = await response.json();
+    const record = data.record || {};
+    books   = record.books   || [];
+    userData= record.userData|| {};
+    activity= record.activity|| [];
+    sitePrefs = Object.assign({teamsWebhook:'',postNew:true,postFinish:true,postFive:true}, record.sitePrefs || {});
+    // Cache
+    localStorage.setItem('bookclub_payload', JSON.stringify({books, userData, activity, sitePrefs}));
+    showToast('Data synced successfully!');
+  }catch(e){
+    console.error('Failed to sync with JSONBin:', e);
+    showToast('Using local data - server sync failed. Check connection.', true);
+  }
+
+  isLoading = false;
+}
+
+async function saveAll(){
+  // Save locally
+  try{
+    const payload = {books, userData, activity, sitePrefs};
+    localStorage.setItem('bookclub_payload', JSON.stringify(payload));
+    localStorage.setItem('bookclub_currentUser', currentUser);
+  }catch(e){
+    console.error('Failed to save locally:', e);
+  }
+  // Save to JSONBin
+  try{
+    const payload = {books, userData, activity, sitePrefs};
+    const response = await fetch(`${JSONBIN_API}/b/${BIN_ID}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': API_KEY
+      },
+      body: JSON.stringify(payload)
+    });
+    if(!response.ok){
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+  }catch(e){
+    console.error('Failed to save to JSONBin:', e);
+    showToast('Saved locally - server sync failed. Will retry.', true);
+  }
+}
+
+const defaultUser=()=>({readList:[],wishList:[],currentReading:[]});
+function ensureUser(name){ if(!userData[name]) userData[name]=defaultUser(); }
+const me=()=>userData[currentUser]||defaultUser();
+
 /* ========= Teams Channel Posting ========= */
 async function postToTeams(type, text){
   const url = sitePrefs.teamsWebhook?.trim();
   if(!url) return;
-  const allow = (type==='new' && sitePrefs.postNew) || (type==='finish' && sitePrefs.postFinish) || (type==='five' && sitePrefs.postFive);
+  const allow = (type==='share'  && sitePrefs.postNew)
+             || (type==='finish' && sitePrefs.postFinish)
+             || (type==='five'   && sitePrefs.postFive);
   if(!allow) return;
   try{ 
     await fetch(url,{
@@ -470,34 +607,45 @@ async function postToTeams(type, text){
 
 /* ========= Activity ========= */
 function postActivity(type,payload){
-  const item = {id:Date.now(), type, payload, at:now(), likes:0, likedBy:[]};
+  const item = {id:Date.now()+Math.random(), type, payload, at:now(), likes:0, likedBy:[]};
   activity.unshift(item);
   if(activity.length>200) activity.length=200;
-  saveAll(); renderActivity();
+  renderActivity();
+  saveAll();
 }
 function activityIcon(type){ return ({share:'📣',finish:'🏁','five':'🏆','prev':'📖','like':'👍'}[type]||'📝'); }
 
 /* ========= Ratings helpers ========= */
 function ratingCount(book){
-  const base = book.rating ? 1 : 0;
+  const base = typeof book.rating === 'number' ? 1 : 0;
   const extra = (book.userRatings?.length)||0;
   return base + extra;
 }
 function averageRatingForBook(book){
   const vals=[];
-  if(book.rating) vals.push(book.rating);
+  if(typeof book.rating === 'number') vals.push(book.rating);
   (book.userRatings||[]).forEach(r=>{ if(typeof r.rating==='number') vals.push(r.rating); });
   if(!vals.length) return 0;
   return vals.reduce((a,b)=>a+b,0)/vals.length;
 }
 
 /* ========= Tags System ========= */
+const tagSuggestions = [
+  'sci-fi','fantasy','romance','mystery','thriller','horror','historical-fiction',
+  'young-adult','contemporary','classic','literary-fiction','dystopian',
+  'leadership','business','productivity','entrepreneurship','marketing',
+  'personal-development','psychology','philosophy','history','science',
+  'technology','health','fitness','cooking','travel','memoir',
+  'comedy','drama','action','adventure','coming-of-age','family',
+  'friendship','war','politics','economics','environment','social-justice',
+  'quick-read','page-turner','thought-provoking','emotional','inspiring',
+  'educational','practical','reference','beginner-friendly','advanced'
+];
+
 function renderTagsDisplay() {
   const container = $('#tags-display');
   container.innerHTML = currentTags.map(tag => `
-    <span class="tag removable" data-tag="${escapeAttr(tag)}">
-      ${escapeHtml(tag)} ×
-    </span>
+    <span class="tag removable" data-tag="${escapeAttr(tag)}">${escapeHtml(tag)} ×</span>
   `).join('');
 }
 
@@ -517,67 +665,34 @@ function removeTag(tag) {
 
 function showSuggestions(input) {
   const query = input.toLowerCase().trim();
-  if (!query) {
-    hideSuggestions();
-    return;
-  }
-  
-  const filtered = tagSuggestions
-    .filter(tag => tag.includes(query) && !currentTags.includes(tag))
-    .slice(0, 8);
-  
+  if (!query) return hideSuggestions();
+  const filtered = tagSuggestions.filter(tag => tag.includes(query) && !currentTags.includes(tag)).slice(0, 8);
   const container = $('#tag-suggestions');
-  if (filtered.length === 0) {
-    hideSuggestions();
-    return;
-  }
-  
-  container.innerHTML = filtered.map(tag => `
-    <div class="suggestion-item" data-tag="${escapeAttr(tag)}">
-      ${escapeHtml(tag)}
-    </div>
-  `).join('');
-  container.style.display = 'block';
+  if (!filtered.length) return hideSuggestions();
+  container.innerHTML = filtered.map(tag => `<div class="suggestion-item" data-tag="${escapeAttr(tag)}">${escapeHtml(tag)}</div>`).join('');
+  container.style.display='block';
 }
-
-function hideSuggestions() {
-  $('#tag-suggestions').style.display = 'none';
-}
+function hideSuggestions(){ $('#tag-suggestions').style.display='none'; }
 
 function autoPopulateTagsFromBook(book) {
-  // Auto-populate tags based on genre and book data
   const autoTags = [];
-  
-  // Add genre-based tags
   const genreMap = {
-    'fiction': ['fiction'],
-    'non-fiction': ['non-fiction'],
-    'biography': ['biography', 'memoir'],
-    'self-help': ['self-help', 'personal-development'],
-    'professional': ['business', 'professional', 'leadership']
+    'fiction':['fiction'],
+    'non-fiction':['non-fiction'],
+    'biography':['biography','memoir'],
+    'self-help':['self-help','personal-development'],
+    'professional':['business','professional','leadership']
   };
-  
-  if (genreMap[book.genre]) {
-    autoTags.push(...genreMap[book.genre]);
-  }
-  
-  // Try to extract tags from description
-  const description = (book.description || '').toLowerCase();
-  const keywords = ['sci-fi', 'science fiction', 'fantasy', 'romance', 'mystery', 'thriller', 'horror'];
-  keywords.forEach(keyword => {
-    if (description.includes(keyword)) {
-      const tag = keyword.replace('science fiction', 'sci-fi');
-      if (!autoTags.includes(tag)) autoTags.push(tag);
+  if (genreMap[book.genre]) autoTags.push(...genreMap[book.genre]);
+  const description = (book.description||'').toLowerCase();
+  const keywords = ['sci-fi','science fiction','fantasy','romance','mystery','thriller','horror'];
+  keywords.forEach(k=>{
+    if(description.includes(k)) {
+      const tag = k.replace('science fiction','sci-fi');
+      if(!autoTags.includes(tag)) autoTags.push(tag);
     }
   });
-  
-  // Add unique tags to current tags
-  autoTags.forEach(tag => {
-    if (!currentTags.includes(tag)) {
-      currentTags.push(tag);
-    }
-  });
-  
+  autoTags.forEach(t=>{ if(!currentTags.includes(t)) currentTags.push(t); });
   renderTagsDisplay();
 }
 
@@ -586,7 +701,8 @@ function bookCoverBlock(book){
   if (book.image) {
     const searchQuery = encodeURIComponent(`${book.title} ${book.author}`);
     const goodreadsUrl = `https://www.goodreads.com/search?q=${searchQuery}`;
-    return `<a href="${goodreadsUrl}" target="_blank" rel="noopener"><img class="book-cover" loading="lazy" alt="Cover of ${escapeHtml(book.title)}" src="${escapeAttr(book.image)}" style="cursor:pointer" title="View on Goodreads"/></a>`;
+    return `<a href="${goodreadsUrl}" target="_blank" rel="noopener">
+      <img class="book-cover" loading="lazy" alt="Cover of ${escapeHtml(book.title)}" src="${escapeAttr(book.image)}" style="cursor:pointer" title="View on Goodreads"/></a>`;
   } else {
     return `<div class="book-cover-placeholder">No Cover</div>`;
   }
@@ -638,10 +754,10 @@ function bookCard(book){
       ${(book.comments||[]).map(c=>`
         <div class="comment" data-comment-id="${c.id}">
           <div class="comment-header">
-            <span class="commenter-name">${escapeHtml(c.commenter)}</span>
+            <span class="commenter-name">${escapeHtml(c.commenter||'Anonymous')}</span>
             <button class="like-comment-btn ${(c.likedBy||[]).includes(currentUser)?'liked':''}" type="button" data-action="like-comment" data-id="${book.id}" data-cid="${c.id}">👍 ${c.likes||0}</button>
           </div>
-          <div class="comment-text">${escapeHtml(c.text)}</div>
+          <div class="comment-text">${escapeHtml(c.text||'')}</div>
         </div>`).join('')}
       <div class="add-comment">
         <div class="comment-form" data-id="${book.id}">
@@ -729,10 +845,9 @@ function renderMyLists(){
 
 /* ========= Stats / Top Lists / Filters ========= */
 function updateStats(){
-  // global averages over all individual ratings
   let ratingSum=0, ratingN=0;
   books.forEach(b=>{
-    if(b.rating){ ratingSum+=b.rating; ratingN++; }
+    if(typeof b.rating==='number'){ ratingSum+=b.rating; ratingN++; }
     (b.userRatings||[]).forEach(r=>{ if(typeof r.rating==='number'){ratingSum+=r.rating; ratingN++;} });
   });
   const totalBooks=books.length;
@@ -749,7 +864,6 @@ function updateStats(){
   renderTopReaders();
   renderTopCommenters();
 }
-
 function renderTopRecommenders(){
   const counts = {};
   books.forEach(b => { const name = b.recommender; if (name) counts[name] = (counts[name] || 0) + 1; });
@@ -871,170 +985,497 @@ const searchGoogleBooks = debounce(async (q)=>{
       box.style.display='block';
       return; 
     }
-    
     const rows = items.map((item, index) => {
       const info = item.volumeInfo || {};
-      const title = info.title || 'Unknown Title';
-      const authors = (info.authors || []).join(', ') || 'Unknown Author';
-      const thumbnail = info.imageLinks?.thumbnail || '';
-      const description = info.description || '';
-      const categories = info.categories || [];
-      
       return {
-        title,
-        author: authors,
-        cover: thumbnail,
-        description,
-        categories,
+        title: info.title || 'Unknown Title',
+        author: (info.authors || []).join(', ') || 'Unknown Author',
+        cover: info.imageLinks?.thumbnail || '',
+        description: info.description || '',
+        categories: info.categories || [],
         index
       };
     });
 
-    box.innerHTML=rows.map((r)=>`
+    box.innerHTML = rows.map(r => `
       <div class="result-item" data-i="${r.index}">
-        <img class="result-cover" src="${r.cover||''}" alt="" onerror="this.style.display='none'"/>
+        <img class="result-cover" src="${escapeAttr(r.cover || '')}" alt="" onerror="this.style.display='none'"/>
         <div>
           <div><strong>${escapeHtml(r.title)}</strong></div>
-group dropdown" style="flex:2 1 380px">
-                <label for="book-search">Search books to auto-fill (Google Books)</label>
-                <input id="book-search" class="input" type="text" placeholder="Start typing a title or author..."/>
-                <div id="book-results" class="results" style="display:none"></div>
-              </div>
-            </div>
+          <div>${escapeHtml(r.author)}</div>
+          ${r.categories?.length ? `<div class="chip">${escapeHtml(r.categories[0])}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+    box.style.display='block';
+  }catch(e){
+    setLoading(input, false);
+    console.error(e);
+    box.innerHTML='<div class="result-item"><div style="color:#b74a4a">Search failed. Try again.</div></div>';
+    box.style.display='block';
+  }
+});
 
-            <form id="book-form">
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="title">Book Title *</label>
-                  <input class="input" type="text" id="title" required/>
-                </div>
-                <div class="form-group">
-                  <label for="author">Author *</label>
-                  <input class="input" type="text" id="author" required/>
-                </div>
-              </div>
+/* ========= CSV Export ========= */
+function download(filename, text) {
+  const blob = new Blob([text], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  URL.revokeObjectURL(url); a.remove();
+}
+function toCsvRow(arr){ return arr.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(','); }
+function exportCsvs(){
+  const booksHeader = toCsvRow(['id','title','author','genre','recommender','image','avg_rating','ratings_count','tags','synopsis','reason']);
+  const booksRows = books.map(b=>toCsvRow([
+    b.id,b.title,b.author,b.genre,b.recommender,b.image||'',
+    averageRatingForBook(b).toFixed(2), ratingCount(b),
+    (b.tags||[]).join('|'), (b.synopsis||''), (b.reason||'')
+  ]));
+  download('books.csv',[booksHeader,...booksRows].join('\n'));
 
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="genre">Category</label>
-                  <select class="select" id="genre">
-                    <option value="fiction">Fiction</option>
-                    <option value="non-fiction">Non-Fiction</option>
-                    <option value="biography">Biography</option>
-                    <option value="self-help">Self-Help</option>
-                    <option value="other">Other</option>
-                    <option value="professional">Professional</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="recommender">Your Name</label>
-                  <input class="input" type="text" id="recommender" required/>
-                </div>
-              </div>
+  const commentsHeader = toCsvRow(['book_id','book_title','comment_id','commenter','likes','text']);
+  const commentsRows = books.flatMap(b=>(b.comments||[]).map(c=>toCsvRow([b.id,b.title,c.id,c.commenter||'',c.likes||0,c.text||''])));
+  download('comments.csv',[commentsHeader,...commentsRows].join('\n'));
+}
 
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="book-image">Book Cover Image (optional)</label>
-                  <input class="input" type="url" id="book-image" placeholder="https://example.com/book-cover.jpg"/>
-                </div>
-              </div>
+/* ========= UI Actions ========= */
+function openSection(id){
+  $$('.section').forEach(s=>s.classList.remove('active'));
+  $('#'+id).classList.add('active');
+  $$('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(id==='feed') $('#feed-btn').classList.add('active');
+  if(id==='add')  $('#add-btn').classList.add('active');
+  if(id==='my-books') $('#my-books-btn').classList.add('active');
+  if(id==='professional') $('#professional-btn').classList.add('active');
+  if(id==='prefs') $('#prefs-btn').classList.add('active');
+}
 
-              <div class="form-group">
-                <label for="synopsis">Synopsis (auto-filled when available)</label>
-                <textarea class="textarea" id="synopsis" placeholder="Book description..."></textarea>
-              </div>
+/* ========= Modal ========= */
+function openFinishModal(book){
+  finishContext = {bookId: book.id};
+  currentRating = 0;
+  $('#finish-title').textContent = `${book.title} — ${book.author}`;
+  $$('#finish-stars .star').forEach(star=>star.classList.remove('filled'));
+  $('#finish-modal').style.display='flex';
+  $('#finish-modal').setAttribute('aria-hidden','false');
+}
+function closeFinishModal(){
+  $('#finish-modal').style.display='none';
+  $('#finish-modal').setAttribute('aria-hidden','true');
+  finishContext=null; currentRating=0;
+}
 
-              <div class="form-group">
-                <label for="reason">Why I recommend this book *</label>
-                <textarea class="textarea" id="reason" placeholder="What did you love about it? Why should others read it?" required></textarea>
-              </div>
+/* ========= Bootstrapping ========= */
+document.addEventListener('DOMContentLoaded', async () => {
+  // Load
+  await loadAll();
 
-              <div class="form-group">
-                <label>Tags</label>
-                <div class="tags-input-container" id="tags-container">
-                  <div class="tags-display" id="tags-display"></div>
-                  <input type="text" class="tag-input" id="tag-input" placeholder="Add tags (e.g., sci-fi, leadership)..."/>
-                  <div class="suggestions" id="tag-suggestions" style="display:none"></div>
-                </div>
-              </div>
+  // Restore session
+  if(currentUser){
+    ensureUser(currentUser);
+    $('#current-user-name').textContent=currentUser;
+    $('#user-info').style.display='flex';
+    $('#login-section').style.display='none';
+    $('#main-app').style.display='block';
+  }
 
-              <div class="form-group">
-                <label>Your Rating *</label>
-                <div class="stars" id="rating-stars" aria-label="rating stars" style="margin-top:6px">
-                  <button class="star" type="button" data-rating="1">★</button>
-                  <button class="star" type="button" data-rating="2">★</button>
-                  <button class="star" type="button" data-rating="3">★</button>
-                  <button class="star" type="button" data-rating="4">★</button>
-                  <button class="star" type="button" data-rating="5">★</button>
-                </div>
-                <div id="rating-feedback" style="font-size:14px;color:var(--muted);margin-top:4px">Click stars to rate (required)</div>
-              </div>
+  // Initial renders
+  populateRecommenderFilter();
+  applyFilters();
+  renderActivity();
+  renderProfessionalBooks();
+  renderMyLists();
+  updateStats();
 
-              <button type="submit" class="btn">Share Book</button>
-            </form>
-          </div>
-        </section>
+  /* Nav */
+  $('#feed-btn').addEventListener('click', ()=>{ openSection('feed'); applyFilters(); });
+  $('#add-btn').addEventListener('click', ()=> openSection('add'));
+  $('#my-books-btn').addEventListener('click', ()=>{ openSection('my-books'); renderMyLists(); });
+  $('#professional-btn').addEventListener('click', ()=>{ openSection('professional'); renderProfessionalBooks(); });
+  $('#prefs-btn').addEventListener('click', ()=> openSection('prefs'));
 
-        <section id="my-books" class="section">
-          <h2 style="margin-bottom:12px;color:var(--ink)">My Reading Lists</h2>
-          <div class="reading-list">
-            <h3>Currently Reading</h3>
-            <div id="current-reading"></div>
-          </div>
-          <div class="reading-list">
-            <h3>Want to Read</h3>
-            <div id="wish-list"></div>
-          </div>
-          <div class="reading-list">
-            <h3>Previously Read</h3>
-            <div id="read-list"></div>
-          </div>
-        </section>
+  /* Login */
+  $('#login-form').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const name = ($('#username-input').value||'').trim();
+    if(!name) return;
+    currentUser = name;
+    ensureUser(currentUser);
+    $('#current-user-name').textContent=currentUser;
+    $('#user-info').style.display='flex';
+    $('#login-section').style.display='none';
+    $('#main-app').style.display='block';
+    $('#recommender').value = currentUser;
+    saveAll();
+    renderMyLists();
+    updateStats();
+  });
+  $('#logout-btn').addEventListener('click', ()=>{
+    currentUser='';
+    localStorage.removeItem('bookclub_currentUser');
+    $('#user-info').style.display='none';
+    $('#main-app').style.display='none';
+    $('#login-section').style.display='block';
+  });
 
-        <section id="professional" class="section">
-          <h2 style="margin-bottom:10px;color:var(--ink)">Professional Development Books</h2>
-          <p style="margin-bottom:18px;color:var(--muted)">Books for professional growth</p>
-          <div id="professional-books" class="book-feed"></div>
-        </section>
+  /* Filters */
+  $('#activity-toggle').addEventListener('click', ()=>{ activityExpanded=!activityExpanded; renderActivity(); });
+  $('#activity-filter').addEventListener('change', renderActivity);
+  $('#search-input').addEventListener('input', applyFilters);
+  $('#tag-filter').addEventListener('input', applyFilters);
+  $('#category-filter').addEventListener('change', applyFilters);
+  $('#recommender-filter').addEventListener('change', applyFilters);
+  $('#min-rating').addEventListener('change', applyFilters);
+  $('#sort-by').addEventListener('change', applyFilters);
 
-        <section id="prefs" class="section">
-          <h2 style="margin-bottom:12px;color:var(--ink)">Preferences</h2>
+  /* Add: Google Books search */
+  $('#book-search').addEventListener('input', (e)=> searchGoogleBooks(e.target.value));
+  $('#book-results').addEventListener('click', (e)=>{
+    const item = e.target.closest('.result-item');
+    if(!item) return;
+    const index = Number(item.getAttribute('data-i'));
+    const titleEl = item.querySelector('strong');
+    const authorEl = item.querySelector('div:nth-child(2)');
 
-          <div class="reading-list">
-            <h3>Export / Backup</h3>
-            <p style="color:var(--muted);margin-bottom:8px">Downloads Excel-friendly CSV files (books.csv and comments.csv).</p>
-            <button id="export-csv-btn" class="btn" type="button">Download CSVs</button>
-          </div>
+    // Since we built the list from the API directly, re-fetch data from DOM attributes is enough
+    $('#title').value = titleEl ? titleEl.textContent : '';
+    $('#author').value = authorEl ? authorEl.textContent : '';
+    const img = item.querySelector('img');
+    $('#book-image').value = img ? img.getAttribute('src') : '';
+    // Try to pull extra data by re-querying Google Books with exact title (best-effort)
+    // Keep it simple: we already have a cover; user can edit further.
 
-          <div class="reading-list">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <h3>Admin</h3>
-              <button id="toggle-danger" class="pill-btn" type="button">Show Danger Zone</button>
-            </div>
-          </div>
+    // Prefill synopsis if possible via another quick call (optional best-effort)
+    // Skipped for reliability; user can paste.
 
-          <div class="reading-list" id="data-management" style="display:none">
-            <h3>Data Management (Danger Zone)</h3>
-            <div class="form-row">
-              <div class="form-group">
-                <button id="clear-data-btn" class="btn btn-danger" type="button">Clear All Data</button>
-                <p style="color:var(--muted);font-size:12px;margin-top:4px">
-                  Requires admin password and confirmation.
-                </p>
-              </div>
-            </div>
-          </div>
+    // Auto-tags based on selected item (best-effort category in chip)
+    currentTags = [];
+    const chip = item.querySelector('.chip');
+    if(chip) currentTags.push(chip.textContent.toLowerCase());
+    renderTagsDisplay();
 
-          <div class="reading-list">
-            <h3>Teams Channel Notifications</h3>
-            <p style="color:var(--muted);margin-bottom:8px">
-              Optional. Add an <em>Incoming Webhook</em> to your Teams <strong>channel</strong>, then paste the URL here.
-            </p>
-            <div class="form-row">
-              <div class="form-group" style="flex:2 1 520px">
-                <label for="pref-teams-url">Teams Webhook URL</label>
-                <input id="pref-teams-url" class="input" type="url" placeholder="https://outlook.office.com/webhook/..."/>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-
+    $('#book-results').style.display='none';
+  });
+
+  /* Add: Tags input */
+  $('#tags-container').addEventListener('click', ()=> $('#tag-input').focus());
+  $('#tag-input').addEventListener('input', (e)=> showSuggestions(e.target.value));
+  $('#tag-input').addEventListener('keydown', (e)=>{
+    if(e.key==='Enter' || e.key===','){
+      e.preventDefault();
+      const val=e.target.value.trim().replace(/,$/,'');
+      if(val) addTag(val);
+    }else if(e.key==='Backspace' && !e.target.value){
+      currentTags.pop(); renderTagsDisplay();
+    }
+  });
+  $('#tag-suggestions').addEventListener('click', (e)=>{
+    const item=e.target.closest('.suggestion-item'); if(!item) return;
+    addTag(item.getAttribute('data-tag'));
+  });
+  document.addEventListener('click', (e)=>{
+    if(!$('#tags-container').contains(e.target)) hideSuggestions();
+    if(!$('#book-search').contains?.(e?.target) && !$('#book-results').contains(e.target)){
+      $('#book-results').style.display='none';
+    }
+  });
+  $('#tags-display').addEventListener('click', (e)=>{
+    const tagEl=e.target.closest('.tag.removable'); if(!tagEl) return;
+    removeTag(tagEl.getAttribute('data-tag'));
+  });
+
+  /* Add: Rating stars (share form) */
+  $$('#rating-stars .star').forEach(star=>{
+    star.addEventListener('click', ()=>{
+      const val = Number(star.getAttribute('data-rating'));
+      currentRating = val;
+      $$('#rating-stars .star').forEach(s=> s.classList.toggle('filled', Number(s.getAttribute('data-rating'))<=val));
+      $('#rating-feedback').textContent = `You selected ${val} star${val===1?'':'s'}.`;
+    });
+  });
+
+  /* Finish modal stars */
+  $$('#finish-stars .star').forEach(star=>{
+    star.addEventListener('click', ()=>{
+      const val = Number(star.getAttribute('data-rating'));
+      currentRating = val;
+      $$('#finish-stars .star').forEach(s=> s.classList.toggle('filled', Number(s.getAttribute('data-rating'))<=val));
+    });
+  });
+  $('#finish-save').addEventListener('click', ()=>{
+    if(!finishContext) return closeFinishModal();
+    const book = books.find(b=>b.id===finishContext.bookId);
+    if(!book) return closeFinishModal();
+    const rating = currentRating || 0;
+    // add to my read list
+    ensureUser(currentUser);
+    const mine = me();
+    if(!mine.readList.some(x=>x.id===book.id)){
+      mine.readList.push({id:book.id,title:book.title,author:book.author,_rating:rating});
+      // remove from currentReading if present
+      mine.currentReading = mine.currentReading.filter(x=>x.id!==book.id);
+      // remove from wish if present
+      mine.wishList = mine.wishList.filter(x=>x.id!==book.id);
+    }else{
+      const rec = mine.readList.find(x=>x.id===book.id); rec._rating = rating;
+    }
+    // add to book userRatings
+    book.userRatings = book.userRatings||[];
+    const existing = book.userRatings.find(r=>r.user===currentUser);
+    if(existing) existing.rating = rating; else book.userRatings.push({user:currentUser, rating});
+
+    // activity + Teams
+    postActivity('finish',{user:currentUser, title:book.title, author:book.author, rating});
+    if(rating===5) postActivity('five',{user:currentUser, title:book.title, author:book.author, rating});
+    postToTeams('finish', `${currentUser} finished "${book.title}" — ${rating}★`);
+    if(rating===5) postToTeams('five', `${currentUser} rated "${book.title}" 5★`);
+
+    saveAll();
+    closeFinishModal();
+    renderMyLists();
+    applyFilters();
+    updateStats();
+  });
+  $('#finish-cancel').addEventListener('click', closeFinishModal);
+  $('#finish-modal').addEventListener('click', (e)=>{ if(e.target.id==='finish-modal') closeFinishModal(); });
+
+  /* Add: Form submit */
+  $('#book-form').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    if(!currentUser){ showToast('Please log in with your name first.', true); return; }
+
+    const title = $('#title').value.trim();
+    const author= $('#author').value.trim();
+    const genre = $('#genre').value;
+    const recommender = ($('#recommender').value||currentUser).trim();
+    const image = $('#book-image').value.trim();
+    const synopsis = $('#synopsis').value.trim();
+    const reason = $('#reason').value.trim();
+    if(!title || !author || !reason || !currentRating){ showToast('Title, author, rating, and reason are required.', true); return; }
+
+    const book = {
+      id: Date.now(),
+      title, author, genre, recommender, image,
+      synopsis, reason,
+      rating: currentRating, // owner's rating
+      userRatings: [], // additional ratings by others
+      tags: [...currentTags],
+      comments: [],
+      postLikes: 0,
+      postLikedBy: []
+    };
+    books.unshift(book);
+
+    // Activity + Teams
+    postActivity('share',{user:recommender, title, author, rating:currentRating});
+    if(currentRating===5) postActivity('five',{user:recommender, title, author, rating:5});
+    postToTeams('share', `${recommender} shared "${title}" by ${author} — ${currentRating}★`);
+    if(currentRating===5) postToTeams('five', `${recommender} rated "${title}" 5★`);
+
+    // Reset form
+    $('#book-form').reset();
+    currentTags=[]; renderTagsDisplay();
+    currentRating=0; $$('#rating-stars .star').forEach(s=>s.classList.remove('filled'));
+    $('#rating-feedback').textContent='Click stars to rate (required)';
+    $('#book-results').style.display='none';
+
+    // Sync & render
+    saveAll();
+    populateRecommenderFilter();
+    applyFilters();
+    renderProfessionalBooks();
+    updateStats();
+    showToast('Book shared!');
+  });
+
+  /* Add: Save posting prefs */
+  $('#prefs-save').addEventListener('click', ()=>{
+    sitePrefs.postNew = $('#pref-post-new').checked;
+    sitePrefs.postFinish = $('#pref-post-finish').checked;
+    sitePrefs.postFive = $('#pref-post-5').checked;
+    saveAll();
+    showToast('Posting preferences saved.');
+  });
+
+  /* Prefs: Save Teams URL */
+  $('#save-teams-btn').addEventListener('click', ()=>{
+    const url = $('#pref-teams-url').value.trim();
+    sitePrefs.teamsWebhook = url;
+    saveAll();
+    showToast('Teams webhook URL saved.');
+  });
+
+  /* Prefs: Export */
+  $('#export-csv-btn').addEventListener('click', exportCsvs);
+
+  /* Prefs: Danger zone toggle + clear */
+  $('#toggle-danger').addEventListener('click', ()=>{
+    const dm=$('#data-management');
+    dm.style.display = dm.style.display==='none' ? 'block' : 'none';
+  });
+  $('#clear-data-btn').addEventListener('click', ()=>{
+    const pw = prompt('Enter admin password to confirm:');
+    if(pw!==ADMIN_PASSWORD) { showToast('Incorrect password.', true); return; }
+    if(!confirm('This will erase ALL data (books, users, activity). Are you sure?')) return;
+    books=[]; userData={}; activity=[]; sitePrefs={teamsWebhook:'',postNew:true,postFinish:true,postFive:true};
+    saveAll();
+    populateRecommenderFilter();
+    applyFilters();
+    renderActivity();
+    renderProfessionalBooks();
+    renderMyLists();
+    updateStats();
+    showToast('All data cleared.');
+  });
+
+  /* Feed interactions (event delegation) */
+  document.addEventListener('click', (e)=>{
+    const btn = e.target.closest('[data-action]');
+    if(!btn) return;
+    const action = btn.getAttribute('data-action');
+    const bookId = btn.getAttribute('data-id');
+    const cid    = btn.getAttribute('data-cid');
+    const aid    = btn.getAttribute('data-aid');
+
+    if(action==='like'){
+      if(!currentUser){ showToast('Log in to like posts.', true); return; }
+      const b=books.find(x=>String(x.id)===String(bookId));
+      if(!b) return;
+      b.postLikedBy=b.postLikedBy||[];
+      if(b.postLikedBy.includes(currentUser)){
+        b.postLikedBy=b.postLikedBy.filter(n=>n!==currentUser);
+        b.postLikes=Math.max(0,(b.postLikes||0)-1);
+      }else{
+        b.postLikedBy.push(currentUser);
+        b.postLikes=(b.postLikes||0)+1;
+        postActivity('like',{user:currentUser,title:b.title});
+      }
+      saveAll();
+      applyFilters();
+      return;
+    }
+
+    if(action==='wish'){
+      if(!currentUser){ showToast('Log in to add to your list.', true); return; }
+      const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
+      ensureUser(currentUser);
+      const mine = me();
+      if(!mine.wishList.some(x=>x.id===b.id)) mine.wishList.push({id:b.id,title:b.title,author:b.author});
+      saveAll(); renderMyLists(); updateStats(); showToast('Added to Want to Read');
+      return;
+    }
+
+    if(action==='reading'){
+      if(!currentUser){ showToast('Log in to add to your list.', true); return; }
+      const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
+      ensureUser(currentUser);
+      const mine = me();
+      if(!mine.currentReading.some(x=>x.id===b.id)) {
+        mine.currentReading.push({id:b.id,title:b.title,author:b.author});
+        // Remove from wish if present
+        mine.wishList = mine.wishList.filter(x=>x.id!==b.id);
+      }
+      saveAll(); renderMyLists(); updateStats(); showToast('Added to Currently Reading');
+      return;
+    }
+
+    if(action==='finish'){
+      if(!currentUser){ showToast('Log in to finish books.', true); return; }
+      const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
+      openFinishModal(b);
+      return;
+    }
+
+    if(action==='prev'){
+      if(!currentUser){ showToast('Log in to use Previously Read.', true); return; }
+      const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
+      ensureUser(currentUser);
+      const mine = me();
+      if(!mine.readList.some(x=>x.id===b.id)) mine.readList.push({id:b.id,title:b.title,author:b.author,_rating:0});
+      // clean up other lists
+      mine.currentReading = mine.currentReading.filter(x=>x.id!==b.id);
+      mine.wishList = mine.wishList.filter(x=>x.id!==b.id);
+      postActivity('prev',{user:currentUser,title:b.title,author:b.author});
+      saveAll(); renderMyLists(); updateStats(); showToast('Marked as Previously Read');
+      return;
+    }
+
+    if(action==='remove-current'){
+      ensureUser(currentUser);
+      me().currentReading = me().currentReading.filter(x=>String(x.id)!==String(bookId));
+      saveAll(); renderMyLists(); updateStats();
+      return;
+    }
+
+    if(action==='remove-wish'){
+      ensureUser(currentUser);
+      me().wishList = me().wishList.filter(x=>String(x.id)!==String(bookId));
+      saveAll(); renderMyLists(); updateStats();
+      return;
+    }
+
+    if(action==='remove-read'){
+      ensureUser(currentUser);
+      me().readList = me().readList.filter(x=>String(x.id)!==String(bookId));
+      saveAll(); renderMyLists(); updateStats();
+      return;
+    }
+
+    if(action==='add-comment'){
+      const wrap = btn.closest('.comment-form'); if(!wrap) return;
+      const name = wrap.querySelector('[data-field="name"]').value.trim() || currentUser || 'Anonymous';
+      const text = wrap.querySelector('[data-field="text"]').value.trim();
+      if(!text){ showToast('Comment cannot be empty.', true); return; }
+      const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
+      b.comments = b.comments||[];
+      b.comments.push({id:Date.now()+Math.random(), commenter:name, text, likes:0, likedBy:[]});
+      saveAll(); applyFilters(); showToast('Comment added!');
+      return;
+    }
+
+    if(action==='like-comment'){
+      if(!currentUser){ showToast('Log in to like comments.', true); return; }
+      const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
+      const c=(b.comments||[]).find(x=>String(x.id)===String(cid)); if(!c) return;
+      c.likedBy = c.likedBy||[];
+      if(c.likedBy.includes(currentUser)){
+        c.likedBy = c.likedBy.filter(n=>n!==currentUser);
+        c.likes = Math.max(0,(c.likes||0)-1);
+      }else{
+        c.likedBy.push(currentUser);
+        c.likes = (c.likes||0)+1;
+      }
+      saveAll(); applyFilters();
+      return;
+    }
+
+    if(action==='like-activity'){
+      if(!currentUser){ showToast('Log in to like activity.', true); return; }
+      const a = activity.find(x=>String(x.id)===String(aid)); if(!a) return;
+      a.likedBy = a.likedBy||[];
+      if(a.likedBy.includes(currentUser)){
+        a.likedBy=a.likedBy.filter(n=>n!==currentUser);
+        a.likes=Math.max(0,(a.likes||0)-1);
+      }else{
+        a.likedBy.push(currentUser);
+        a.likes=(a.likes||0)+1;
+      }
+      saveAll(); renderActivity();
+      return;
+    }
+  });
+});
+
+/* Helper for auto-tagging after Google Books fill, if needed by other code */
+function maybeAutoTagsFromForm(){
+  const b = {
+    genre: $('#genre').value,
+    description: $('#synopsis').value||''
+  };
+  autoPopulateTagsFromBook(b);
+}
+</script>
+</body>
+</html>
