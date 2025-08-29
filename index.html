@@ -188,9 +188,11 @@
       <h3>Top Readers</h3>
       <div id="readers-list"></div>
     </div>
-    <div id="top-commenters" class="reading-list" style="margin-bottom:20px">
-      <h3>Top Commenters</h3>
-      <div id="commenters-list"></div>
+
+    <!-- CHANGED: Replaced Top Commenters with Most Active -->
+    <div id="top-active" class="reading-list" style="margin-bottom:20px">
+      <h3>Most Active</h3>
+      <div id="most-active-list"></div>
     </div>
 
     <nav class="nav">
@@ -332,7 +334,7 @@
               </div>
 
               <div class="form-group">
-                <label for="synopsis">Synopsis (auto-filled when available)</label>
+                <label for="synopsis">Synopsis (auto-fills when available)</label>
                 <textarea class="textarea" id="synopsis" placeholder="Book description..."></textarea>
               </div>
 
@@ -343,10 +345,10 @@
 
               <!-- Tags -->
               <div class="form-group">
-                <label>Tags</label>
+                <label>Tags <span style="font-weight:400;color:var(--muted)">(auto-suggested from genre & description — you can edit)</span></label>
                 <div class="tags-input-container" id="tags-container">
                   <div class="tags-display" id="tags-display"></div>
-                  <input type="text" class="tag-input" id="tag-input" placeholder="Add tags (e.g., sci-fi, leadership)..."/>
+                  <input type="text" class="tag-input" id="tag-input" placeholder='Add tags (e.g., "sci-fi", "leadership")…'/>
                   <div class="suggestions" id="tag-suggestions" style="display:none"></div>
                 </div>
               </div>
@@ -468,7 +470,7 @@
 const JSONBIN_API = 'https://api.jsonbin.io/v3';
 const BIN_ID = '68b1dc30ae596e708fdb3ff1';   // Your actual bin ID
 const API_KEY = '$2a$10$LYh6e0ns1sOKv23ek6kbD.7UJoIW.UclGVfzMvSeDzeSLfshEvQZi'; // Your X-MASTER-KEY
-const ADMIN_PASSWORD = 'bookclubadmin'; // change if desired
+const ADMIN_PASSWORD = 'Prob1234'; // updated per your note
 
 let currentUser=''; 
 let books=[]; 
@@ -483,6 +485,9 @@ let currentRating=0;
 let finishContext=null; 
 let activityExpanded=false;
 
+/* CHANGED: keep Google Books search results so we can fill cleanly */
+let gResults = [];
+
 /* ========= Utilities ========= */
 const $  = (sel, root=document) => root.querySelector(sel);        // single
 const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel)); // many
@@ -490,6 +495,7 @@ const now=()=>new Date().toISOString();
 const timeAgo=(iso)=>{const d=new Date(iso);const s=(Date.now()-d)/1000;if(s<60)return`${Math.floor(s)}s ago`;const m=s/60;if(m<60)return`${Math.floor(m)}m ago`;const h=m/60;if(h<24)return`${Math.floor(h)}h ago`;return`${Math.floor(h/24)}d ago`};
 const escapeHtml=(s='')=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 const escapeAttr=(s='')=>escapeHtml(s).replaceAll('"','&quot;');
+const stripHtml=(s='')=>String(s).replace(/<[^>]*>/g,'').trim();
 const showToast=(msg,isError=false)=>{const t=$('#toast');t.textContent=msg;t.classList.toggle('error',isError);t.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove('show'),isError?3000:1700);};
 const formatStars=(n)=>'★'.repeat(n)+'☆'.repeat(5-n);
 const debounce=(fn,ms=350)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};};
@@ -674,25 +680,48 @@ function showSuggestions(input) {
 }
 function hideSuggestions(){ $('#tag-suggestions').style.display='none'; }
 
-function autoPopulateTagsFromBook(book) {
-  const autoTags = [];
-  const genreMap = {
-    'fiction':['fiction'],
-    'non-fiction':['non-fiction'],
-    'biography':['biography','memoir'],
-    'self-help':['self-help','personal-development'],
-    'professional':['business','professional','leadership']
-  };
-  if (genreMap[book.genre]) autoTags.push(...genreMap[book.genre]);
-  const description = (book.description||'').toLowerCase();
-  const keywords = ['sci-fi','science fiction','fantasy','romance','mystery','thriller','horror'];
-  keywords.forEach(k=>{
-    if(description.includes(k)) {
-      const tag = k.replace('science fiction','sci-fi');
-      if(!autoTags.includes(tag)) autoTags.push(tag);
-    }
+/* CHANGED: smarter auto-tagging */
+function generateSmartTags({categories=[], description=''},{genre='' }={}){
+  const tags = new Set();
+
+  // Base from genre
+  const g = (genre||'').toLowerCase();
+  if(g) tags.add(g);
+
+  // From Google Books categories
+  (categories||[]).forEach(cat=>{
+    const c = String(cat).toLowerCase();
+    // normalize some common category strings
+    if(c.includes('science fiction')) tags.add('sci-fi');
+    else if(c.includes('young adult')) tags.add('young-adult');
+    else if(c.includes('histor')) tags.add('historical-fiction');
+    else tags.add(c.replace(/\s+/g,'-'));
   });
-  autoTags.forEach(t=>{ if(!currentTags.includes(t)) currentTags.push(t); });
+
+  // From description keywords
+  const d = (description||'').toLowerCase();
+  const kw = [
+    ['time travel','time-travel'],['space','space'],['alien','aliens'],['robot','robots'],
+    ['detective','mystery'],['murder','thriller'],['crime','thriller'],
+    ['magic','fantasy'],['wizard','fantasy'],['dragon','fantasy'],
+    ['romance','romance'],['love story','romance'],
+    ['startup','entrepreneurship'],['business','business'],['leadership','leadership'],
+    ['psychology','psychology'],['philosophy','philosophy'],['history','history'],
+    ['memoir','memoir'],['biography','biography'],
+    ['self-help','self-help'],['productivity','productivity'],
+    ['war','war'],['economics','economics'],['politics','politics'],
+    ['dystopian','dystopian'],['post-apocalyptic','dystopian'],
+    ['page-turner','page-turner'],['classic','classic'],['inspiring','inspiring'],
+  ];
+  kw.forEach(([needle, tag])=>{ if(d.includes(needle)) tags.add(tag); });
+
+  // Cap to 8, keep deterministic order
+  return Array.from(tags).slice(0,8);
+}
+
+function autoPopulateTagsFromBook({genre='', description='', categories=[]}) {
+  const auto = generateSmartTags({categories, description},{genre});
+  auto.forEach(t=>{ if(!currentTags.includes(t)) currentTags.push(t); });
   renderTagsDisplay();
 }
 
@@ -862,7 +891,7 @@ function updateStats(){
   $('#total-users').textContent=String(usersCount);
   renderTopRecommenders();
   renderTopReaders();
-  renderTopCommenters();
+  renderMostActive(); // CHANGED
 }
 function renderTopRecommenders(){
   const counts = {};
@@ -891,20 +920,70 @@ function renderTopReaders(){
       <span class="chip">${count} read</span>
     </div>`).join('');
 }
-function renderTopCommenters(){
-  const counts = {};
-  books.forEach(b => (b.comments||[]).forEach(c=>{
-    const n=c.commenter||'Anonymous';
-    counts[n]=(counts[n]||0)+1;
-  }));
-  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const container = $('#commenters-list');
-  if (!sorted.length) { container.innerHTML = '<p style="color:#999;font-style:italic">No comments yet</p>'; return; }
-  container.innerHTML = sorted.map(([name,count])=>`
+
+/* CHANGED: New "Most Active" leaderboard */
+function renderMostActive(){
+  const container = $('#most-active-list');
+  const scoreMap = {};
+
+  // seed known names
+  const seed = new Set([
+    ...Object.keys(userData||{}),
+    ...books.map(b=>b.recommender).filter(Boolean),
+    ...books.flatMap(b=>(b.comments||[]).map(c=>c.commenter||'Anonymous')),
+    ...books.flatMap(b=> (b.postLikedBy||[])),
+    ...books.flatMap(b=> (b.comments||[]).flatMap(c=>c.likedBy||[]))
+  ]);
+
+  seed.forEach(name=>{
+    if(name && name.toLowerCase()!=='anonymous'){
+      scoreMap[name]={posts:0,comments:0,likes:0};
+    }
+  });
+
+  // posts shared
+  books.forEach(b=>{
+    const n=b.recommender;
+    if(n && scoreMap[n]) scoreMap[n].posts += 1;
+  });
+
+  // comments written
+  books.forEach(b=>{
+    (b.comments||[]).forEach(c=>{
+      const n=c.commenter||'';
+      if(n && scoreMap[n]) scoreMap[n].comments += 1;
+    });
+  });
+
+  // likes given (current state: post likes + comment likes)
+  Object.keys(scoreMap).forEach(n=>{
+    const postLikesGiven = books.filter(b=> (b.postLikedBy||[]).includes(n)).length;
+    const commentLikesGiven = books.reduce((s,b)=> s + (b.comments||[]).filter(c=> (c.likedBy||[]).includes(n)).length, 0);
+    scoreMap[n].likes = postLikesGiven + commentLikesGiven;
+  });
+
+  // weighted score: posts*3 + comments*2 + likes*1
+  const rows = Object.entries(scoreMap).map(([name,stats])=>{
+    const score = stats.posts*3 + stats.comments*2 + stats.likes*1;
+    return {name, score, ...stats};
+  }).filter(r=>r.score>0).sort((a,b)=>b.score-a.score).slice(0,5);
+
+  if(!rows.length){
+    container.innerHTML = '<p style="color:#999;font-style:italic">No activity yet</p>';
+    return;
+  }
+
+  container.innerHTML = rows.map(r=>`
     <div class="list-item">
-      <div><strong>${escapeHtml(name)}</strong></div>
-      <span class="chip">${count} comment${count===1?'':'s'}</span>
-    </div>`).join('');
+      <div>
+        <strong>${escapeHtml(r.name)}</strong>
+        <div style="font-size:12px;color:#6b765f;margin-top:2px">
+          ${r.posts} posted • ${r.comments} comments • ${r.likes} likes
+        </div>
+      </div>
+      <span class="chip">${r.score} actions</span>
+    </div>
+  `).join('');
 }
 
 function getUniqueRecommenders(){ return Array.from(new Set(books.map(b=>b.recommender).filter(Boolean))).sort((a,b)=>a.localeCompare(b)); }
@@ -968,7 +1047,7 @@ function applyFilters(){
 const searchGoogleBooks = debounce(async (q)=>{
   const box=$('#book-results');
   const input = $('#book-search');
-  if(!q||q.trim().length<2){ box.style.display='none'; box.innerHTML=''; return; }
+  if(!q||q.trim().length<2){ box.style.display='none'; box.innerHTML=''; gResults=[]; return; }
 
   try{
     setLoading(input, true);
@@ -981,11 +1060,12 @@ const searchGoogleBooks = debounce(async (q)=>{
 
     const items = data.items || [];
     if(!items.length){ 
+      gResults=[];
       box.innerHTML='<div class="result-item"><div style="color:#999;font-style:italic">No results found</div></div>';
       box.style.display='block';
       return; 
     }
-    const rows = items.map((item, index) => {
+    gResults = items.map((item, index) => {
       const info = item.volumeInfo || {};
       return {
         title: info.title || 'Unknown Title',
@@ -997,7 +1077,7 @@ const searchGoogleBooks = debounce(async (q)=>{
       };
     });
 
-    box.innerHTML = rows.map(r => `
+    box.innerHTML = gResults.map(r => `
       <div class="result-item" data-i="${r.index}">
         <img class="result-cover" src="${escapeAttr(r.cover || '')}" alt="" onerror="this.style.display='none'"/>
         <div>
@@ -1133,28 +1213,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* Add: Google Books search */
   $('#book-search').addEventListener('input', (e)=> searchGoogleBooks(e.target.value));
   $('#book-results').addEventListener('click', (e)=>{
-    const item = e.target.closest('.result-item');
-    if(!item) return;
-    const index = Number(item.getAttribute('data-i'));
-    const titleEl = item.querySelector('strong');
-    const authorEl = item.querySelector('div:nth-child(2)');
+    const el = e.target.closest('.result-item'); if(!el) return;
+    const index = Number(el.getAttribute('data-i'));
+    const data = gResults.find(r=>r.index===index);
+    if(!data) return;
+    // Clean fill (prevents author/title/genre mashups)
+    $('#title').value = data.title || '';
+    $('#author').value = data.author || '';
+    $('#book-image').value = data.cover || '';
+    $('#synopsis').value = stripHtml(data.description || '');
 
-    // Since we built the list from the API directly, re-fetch data from DOM attributes is enough
-    $('#title').value = titleEl ? titleEl.textContent : '';
-    $('#author').value = authorEl ? authorEl.textContent : '';
-    const img = item.querySelector('img');
-    $('#book-image').value = img ? img.getAttribute('src') : '';
-    // Try to pull extra data by re-querying Google Books with exact title (best-effort)
-    // Keep it simple: we already have a cover; user can edit further.
-
-    // Prefill synopsis if possible via another quick call (optional best-effort)
-    // Skipped for reliability; user can paste.
-
-    // Auto-tags based on selected item (best-effort category in chip)
+    // Smart auto-tags from categories + description + current genre
     currentTags = [];
-    const chip = item.querySelector('.chip');
-    if(chip) currentTags.push(chip.textContent.toLowerCase());
-    renderTagsDisplay();
+    autoPopulateTagsFromBook({
+      genre: $('#genre').value,
+      description: data.description || '',
+      categories: data.categories || []
+    });
 
     $('#book-results').style.display='none';
   });
@@ -1165,7 +1240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#tag-input').addEventListener('keydown', (e)=>{
     if(e.key==='Enter' || e.key===','){
       e.preventDefault();
-      const val=e.target.value.trim().replace(/,$/,'');
+      const val=e.target.value.trim().replace(/,$/, '');
       if(val) addTag(val);
     }else if(e.key==='Backspace' && !e.target.value){
       currentTags.pop(); renderTagsDisplay();
@@ -1184,6 +1259,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#tags-display').addEventListener('click', (e)=>{
     const tagEl=e.target.closest('.tag.removable'); if(!tagEl) return;
     removeTag(tagEl.getAttribute('data-tag'));
+  });
+
+  /* Update auto-tags if genre changes (non-destructive) */
+  $('#genre').addEventListener('change', ()=>{
+    autoPopulateTagsFromBook({
+      genre: $('#genre').value,
+      description: $('#synopsis').value || '',
+      categories: []
+    });
   });
 
   /* Add: Rating stars (share form) */
@@ -1206,22 +1290,53 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   $('#finish-save').addEventListener('click', ()=>{
     if(!finishContext) return closeFinishModal();
-    const book = books.find(b=>b.id===finishContext.bookId);
-    if(!book) return closeFinishModal();
+    let book = books.find(b=>String(b.id)===String(finishContext.bookId));
+
+    /* CHANGED: Fallback if book not in feed (ensure read flow still works) */
+    if(!book){
+      ensureUser(currentUser);
+      const mine = me();
+      const shadow = [...(mine.currentReading||[]), ...(mine.wishList||[]), ...(mine.readList||[])]
+        .find(x=>String(x.id)===String(finishContext.bookId));
+      if(shadow){
+        book = {
+          id: shadow.id,
+          title: shadow.title || 'Untitled',
+          author: shadow.author || 'Unknown',
+          genre: 'other',
+          recommender: shadow.recommender || '',
+          image: '',
+          synopsis: '',
+          reason: '',
+          rating: 0,
+          userRatings: [],
+          tags: [],
+          comments: [],
+          postLikes: 0,
+          postLikedBy: []
+        };
+        books.unshift(book);
+      }else{
+        showToast('Could not locate this book details. Try finishing from the feed.', true);
+        closeFinishModal();
+        return;
+      }
+    }
+
     const rating = currentRating || 0;
-    // add to my read list
+
+    // add to my read list (and remove from other lists)
     ensureUser(currentUser);
     const mine = me();
     if(!mine.readList.some(x=>x.id===book.id)){
       mine.readList.push({id:book.id,title:book.title,author:book.author,_rating:rating});
-      // remove from currentReading if present
-      mine.currentReading = mine.currentReading.filter(x=>x.id!==book.id);
-      // remove from wish if present
-      mine.wishList = mine.wishList.filter(x=>x.id!==book.id);
     }else{
       const rec = mine.readList.find(x=>x.id===book.id); rec._rating = rating;
     }
-    // add to book userRatings
+    mine.currentReading = (mine.currentReading||[]).filter(x=>x.id!==book.id);
+    mine.wishList = (mine.wishList||[]).filter(x=>x.id!==book.id);
+
+    // add/update user rating on the book
     book.userRatings = book.userRatings||[];
     const existing = book.userRatings.find(r=>r.user===currentUser);
     if(existing) existing.rating = rating; else book.userRatings.push({user:currentUser, rating});
@@ -1383,8 +1498,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if(action==='finish'){
       if(!currentUser){ showToast('Log in to finish books.', true); return; }
-      const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
-      openFinishModal(b);
+      const b=books.find(x=>String(x.id)===String(bookId)); 
+      if(b) openFinishModal(b);
+      else{
+        // allow finishing from lists even if not in feed yet
+        ensureUser(currentUser);
+        const mine = me();
+        const shadow = [...(mine.currentReading||[]), ...(mine.wishList||[]), ...(mine.readList||[])]
+          .find(x=>String(x.id)===String(bookId));
+        if(shadow) openFinishModal({id:shadow.id, title:shadow.title, author:shadow.author});
+      }
       return;
     }
 
@@ -1431,7 +1554,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const b=books.find(x=>String(x.id)===String(bookId)); if(!b) return;
       b.comments = b.comments||[];
       b.comments.push({id:Date.now()+Math.random(), commenter:name, text, likes:0, likedBy:[]});
-      saveAll(); applyFilters(); showToast('Comment added!');
+      saveAll(); applyFilters(); updateStats(); showToast('Comment added!');
       return;
     }
 
@@ -1447,7 +1570,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         c.likedBy.push(currentUser);
         c.likes = (c.likes||0)+1;
       }
-      saveAll(); applyFilters();
+      saveAll(); applyFilters(); updateStats();
       return;
     }
 
@@ -1472,7 +1595,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 function maybeAutoTagsFromForm(){
   const b = {
     genre: $('#genre').value,
-    description: $('#synopsis').value||''
+    description: $('#synopsis').value||'',
+    categories: []
   };
   autoPopulateTagsFromBook(b);
 }
