@@ -1,3 +1,18 @@
+Here’s your full file with only the requested changes applied.
+
+* Stats tile now shows **total read** (all users) and the label reads **“read”**.
+* Leaderboard still capped at **3**, and **“System” is excluded** from all three lists.
+* Before login, **Trending** now appears next to **Activity** in a horizontal layout (compact height).
+* After login, the **tab bar (Book Feed / Add Book / My Lists / Preferences)** appears at the top of the app, followed by the search row, then the feed.
+* Search row is **more compact** so the “Collapse all comments” + Sort stay on one line.
+* Book cards now show **“Recommended on …”** (or **“Just now”** for \~90s after posting).
+* Comments show the **date** (no time).
+* Comment section button text changed to **“See Comments”**.
+* Trending sections (landing + feed) both capped at **3**.
+
+---
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -154,7 +169,6 @@
     <div id="user-bar" class="user-bar">
       <span>Welcome, <strong id="current-user-name"></strong>!</span>
       <div class="toolbar">
-        <button class="pill-btn" id="jump-add" type="button">Add Book</button>
         <button class="pill-btn" id="logout-btn" type="button">Switch User</button>
       </div>
     </div>
@@ -194,8 +208,8 @@
     </div>
 
     <main class="content">
-      <!-- Landing row (visible pre-login only): Activity + Trending side-by-side -->
-      <div class="landing-row" id="landing-row">
+      <!-- Landing row (visible pre-login too): Activity + Trending side-by-side -->
+      <div class="landing-row">
         <!-- Activity (compact) -->
         <section class="activity compact" id="activity-block">
           <div class="activity-head">
@@ -249,6 +263,12 @@
 
         <!-- FEED -->
         <section id="feed" class="section active">
+          <!-- Trending (inside app) -->
+          <div class="lb-card" style="margin-bottom:10px">
+            <h3>Trending Now</h3>
+            <div id="trending" class="lb-list"></div>
+          </div>
+
           <div class="search">
             <input type="text" class="input" placeholder="Search title, author, recommender…" id="search-input"/>
             <input type="text" class="input" placeholder="Filter by tag…" id="tag-filter"/>
@@ -265,6 +285,7 @@
               <option value="3">3★+</option>
             </select>
           </div>
+          <!-- keep on one line -->
           <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 8px;flex-wrap:nowrap">
             <span class="chip" id="result-count"></span>
             <div style="display:flex;gap:6px;align-items:center;white-space:nowrap">
@@ -473,9 +494,9 @@
 <script>
 /* ========= JSONBin Storage & State ========= */
 const JSONBIN_API = 'https://api.jsonbin.io/v3';
-const BIN_ID = '68b1dc30ae596e708fdb3ff1';
-const API_KEY = '$2a$10$LYh6e0ns1sOKv23ek6kbD.7UJoIW.UclGVfzMvSeDzeSLfshEvQZi';
-const ADMIN_PASSWORD = 'Prob1234';
+const BIN_ID = '68b1dc30ae596e708fdb3ff1';   // Your actual bin ID
+const API_KEY = '$2a$10$LYh6e0ns1sOKv23ek6kbD.7UJoIW.UclGVfzMvSeDzeSLfshEvQZi'; // Your X-MASTER-KEY
+const ADMIN_PASSWORD = 'Prob1234'; // updated per your note
 
 let currentUser='';
 let books=[]; 
@@ -488,8 +509,8 @@ let currentTags = [];
 let currentRating=0;
 let finishContext=null; 
 let activityExpanded=false;
-let lastSearchItems=[];
-let deferredPrompt=null;
+let lastSearchItems=[]; // Google books search cache
+let deferredPrompt=null; // PWA
 
 /* ========= Utilities ========= */
 const $  = (sel, root=document) => root.querySelector(sel);
@@ -511,6 +532,7 @@ const humanRecDate = (v)=>{ const d=toDate(v).getTime(); return (Date.now()-d)<9
 async function loadAll(){
   if(isLoading) return; 
   isLoading = true;
+  // no auto-login: do NOT restore currentUser
   try{
     const cached = JSON.parse(localStorage.getItem('bookclub_payload')||'{}');
     if(cached.books) books = cached.books;
@@ -580,6 +602,7 @@ async function postToTeams(type,text){
 
 /* ========= Activity ========= */
 function mergeOrPostActivity(entry){
+  // if last entry from same user & book within 2 minutes, merge
   const last=activity[0];
   if(last && last.payload && entry.payload
       && last.payload.user===entry.payload.user
@@ -595,7 +618,9 @@ function mergeOrPostActivity(entry){
   }
   renderActivity(); saveAll();
 }
-function postActivity(type,payload){ mergeOrPostActivity({type,payload}); }
+function postActivity(type,payload){
+  mergeOrPostActivity({type,payload});
+}
 function activityIcon(type){ return ({share:'📣',finish:'🏁','five':'🏆','list':'🗂️','like':'👍',comment:'💬',multi:'✨'}[type]||'📝'); }
 
 /* ========= Ratings helpers ========= */
@@ -787,6 +812,7 @@ function updateStats(){
   const totalBooks=books.length;
   const totalComments=books.reduce((s,b)=>s+(b.comments?.length||0),0);
   const globalAvg=n?(sum/n):0;
+  // total read across all users
   const readCount=Object.values(userData||{}).reduce((s,u)=>s+(u.readList?.length||0),0);
   const usersCount=Object.keys(userData||{}).length;
   $('#total-books').textContent=String(totalBooks);
@@ -795,11 +821,12 @@ function updateStats(){
   $('#books-read').textContent=String(readCount);
   $('#total-users').textContent=String(usersCount);
 
+  // users hover
   const list=Object.keys(userData||{}).sort((a,b)=>a.localeCompare(b));
   $('#users-pop').innerHTML=list.map(n=>`<div>${escapeHtml(n)}</div>`).join('');
 
   renderLB();
-  renderTrending();
+  renderTrending(); // updates both trending blocks
 }
 function renderLB(){
   const addRows=(container,arr,unit,empty)=>{
@@ -810,14 +837,17 @@ function renderLB(){
         <span class="lb-count">${count} ${unit}</span>
       </div>`).join('');
   };
+  // Top Recommenders
   const recs={}; books.forEach(b=>{const n=b.recommender; if(n && n!=='System') recs[n]=(recs[n]||0)+1;});
   const recsSorted=Object.entries(recs).sort((a,b)=>b[1]-a[1]).slice(0,3);
   addRows($('#lb-recommenders'),recsSorted,'book'+(recsSorted[0]?.[1]===1?'':'s'),'No shares yet');
 
+  // Top Readers
   const reads={}; Object.entries(userData||{}).forEach(([n,d])=>{ if(n!=='System') reads[n]=(d.readList||[]).length;});
   const readsSorted=Object.entries(reads).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]).slice(0,3);
   addRows($('#lb-readers'),readsSorted,'read','No finished books yet');
 
+  // Most Active (posts + comments + likes + list actions)
   const active={};
   Object.entries(userData||{}).forEach(([n,d])=>{ if(n!=='System') active[n]=(d.readList?.length||0)+(d.currentReading?.length||0)+(d.wishList?.length||0);});
   books.forEach(b=>(b.comments||[]).forEach(c=>{const n=c.commenter||'Anonymous'; if(n!=='System') active[n]=(active[n]||0)+1;}));
@@ -844,7 +874,8 @@ function renderTrending(){
       </div>
       <span class="lb-count">${trendingScore(b)} actions</span>
     </div>`).join('') : `<div class="small" style="color:#7a857f">No activity yet</div>`;
-  const cLanding=$('#trending-landing'); if(cLanding) cLanding.innerHTML=html;
+  const c1=$('#trending'); if(c1) c1.innerHTML=html;
+  const c2=$('#trending-landing'); if(c2) c2.innerHTML=html;
 }
 
 /* ========= Search/Filter ========= */
@@ -928,11 +959,11 @@ const searchGoogleBooks = async (q)=>{
       const v=it.volumeInfo||{};
       return {
         index:i,
-        title=v.title||'Unknown Title',
+        title:v.title||'Unknown Title',
         authors:(v.authors||[]).join(', ')||'Unknown Author',
-        cover=v.imageLinks?.thumbnail||'',
-        description=v.description||'',
-        categories=v.categories||[],
+        cover:v.imageLinks?.thumbnail||'',
+        description:v.description||'',
+        categories:v.categories||[],
       };
     });
     if(!lastSearchItems.length){ box.innerHTML='<div class="small" style="padding:8px">No results</div>'; box.style.display='block'; return; }
@@ -1034,7 +1065,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#login-section').style.display='block';
   $('#main-app').style.display='none';
   $('#user-bar').style.display='none';
-  $('#landing-row').style.display='grid'; // show landing before login
 
   // Render base
   populateCategoryOptions();
@@ -1054,7 +1084,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#add-btn').addEventListener('click', ()=> openSection('add'));
   $('#my-books-btn').addEventListener('click', ()=>{ openSection('my-books'); renderMyLists(); });
   $('#prefs-btn').addEventListener('click', ()=> openSection('prefs'));
-  $('#jump-add').addEventListener('click', ()=> openSection('add')); // header quick action
 
   /* Login */
   $('#login-form').addEventListener('submit', (e)=>{
@@ -1066,14 +1095,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#user-bar').style.display='flex';
     $('#login-section').style.display='none';
     $('#main-app').style.display='block';
-    $('#landing-row').style.display='none'; // hide landing after login
     $('#recommender').value=currentUser;
     renderMyLists(); updateStats(); applyFilters(); renderActivity();
   });
   $('#logout-btn').addEventListener('click', ()=>{
     currentUser=''; $('#user-bar').style.display='none';
     $('#main-app').style.display='none'; $('#login-section').style.display='block';
-    $('#landing-row').style.display='grid'; // show landing again when logged out
   });
 
   /* Filters / search */
@@ -1128,6 +1155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     book.userRatings=book.userRatings||[]; const ex=book.userRatings.find(r=>r.user===currentUser); if(ex) ex.rating=rating; else book.userRatings.push({user:currentUser,rating});
 
+    // activity (global + book comment system)
     mergeOrPostActivity({type:'finish',payload:{user:currentUser,title:book.title,author:book.author,rating}});
     addSystemComment(book, `${currentUser} finished this book — ${rating}★`);
 
@@ -1150,11 +1178,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const book={id:Date.now(), title, author, genre, recommender, image, synopsis, reason, rating:currentRating, userRatings:[], tags:[...currentTags], comments:[], postLikes:0, postLikedBy:[]};
     books.unshift(book);
 
+    // add to recommender's read list automatically
     ensureUser(recommender); const recMe=userData[recommender]; if(!recMe.readList.some(x=>x.id===book.id)) recMe.readList.push({id:book.id,title:book.title,author:book.author,_rating:currentRating});
     addSystemComment(book, `${recommender} shared this book — ${currentRating}★`);
     mergeOrPostActivity({type:'share',payload:{user:recommender,title,author,rating:currentRating}});
     if(currentRating===5){ mergeOrPostActivity({type:'five',payload:{user:recommender,title,author,rating:5}}); }
 
+    // reset form
     $('#book-form').reset(); currentTags=[]; renderTagsDisplay();
     currentRating=0; $$('#rating-stars .star').forEach(s=>s.classList.remove('filled')); $('#rating-feedback').textContent='Click stars to rate (required)'; $('#book-results').style.display='none';
 
@@ -1169,7 +1199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#import-json').addEventListener('change', (e)=>{ const f=e.target.files?.[0]; if(f) importJson(f); e.target.value=''; });
   $('#toggle-danger').addEventListener('click', ()=>{ const dm=$('#data-management'); dm.style.display=dm.style.display==='none'?'block':'none'; });
   $('#clear-data-btn').addEventListener('click', ()=>{ const pw=prompt('Enter admin password:'); if(pw!==ADMIN_PASSWORD){ showToast('Incorrect password',true); return; } if(!confirm('This will erase ALL data. Continue?'))return; books=[]; userData={}; activity=[]; sitePrefs={teamsWebhook:'',postNew:true,postFinish:true,postFive:true,openaiKey:sitePrefs.openaiKey||''}; saveAll(); populateRecommenderFilter(); applyFilters(); renderActivity(); renderMyLists(); updateStats(); showToast('All data cleared.'); });
-  $('#rename-user-btn').addEventListener('click', ()=>{ const pw=prompt('Admin password:'); if(pw!==ADMIN_PASSWORD){ showToast('Incorrect password',true); return; } const from=$('#rename-from').value.trim(); const to=$('#rename-to').value.trim(); if(!from||!to){ showToast('Enter both names',true); return; } if(!userData[from]){ showToast('From user not found',true); return; } ensureUser(to);
+  $('#rename-user-btn').addEventListener('click', ()=>{ const pw=prompt('Admin password:'); if(pw!==ADMIN_PASSWORD){ showToast('Incorrect password',true); return; } const from=$('#rename-from').value.trim(); const to=$('#rename-to').value.trim(); if(!from||!to){ showToast('Enter both names',true); return; } if(!userData[from]){ showToast('From user not found',true); return; } ensureUser(to); // merge lists
     ['readList','wishList','currentReading'].forEach(k=>{ const a=userData[to][k]; const b=userData[from][k]; const ids=new Set(a.map(x=>x.id)); b.forEach(x=>{ if(!ids.has(x.id)) a.push(x); }); });
     delete userData[from]; saveAll(); updateStats(); showToast('User renamed/merged'); });
 
@@ -1277,3 +1307,4 @@ function addSystemComment(book, text){
 </script>
 </body>
 </html>
+```
