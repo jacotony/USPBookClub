@@ -941,26 +941,25 @@ function trendingScore(b){
   const likes=b.postLikes||0;
   const ratings=ratingCount(b);
   return comments*2+likes*1.5+ratings;
-}
-function renderTrending(){
+    function renderTrending(){
   const top=[...books].sort((a,b)=>trendingScore(b)-trendingScore(a)).slice(0,3);
-  const makeRows=(arr)=> arr.length?arr.map(b=>`
+  const makeRows=(arr)=> arr.length ? arr.map(b=>`
     <div class="lb-row" data-jump="${b.id}">
       <div style="display:flex;align-items:center;gap:8px">
-      ${b.image
-  ? `<img src="${escapeAttr(b.image)}" alt="" style="width:28px;height:42px;border-radius:6px;border:1px solid #e6ece8;object-fit:cover">`
-  : `<div style="width:28px;height:42px;border-radius:6px;background:#e9ecef"></div>`}
-     </a>`}
+        ${b.image
+          ? `<img src="${escapeAttr(b.image)}" alt="" style="width:28px;height:42px;border-radius:6px;border:1px solid #e6ece8;object-fit:cover">`
+          : `<div style="width:28px;height:42px;border-radius:6px;background:#e9ecef"></div>`}
+        <div>
           <div><strong>${escapeHtml(b.title)}</strong></div>
           <div class="small" style="color:#20362c">${escapeHtml(b.author)}</div>
         </div>
       </div>
       <span class="lb-count">${Math.round(trendingScore(b))} actions</span>
-    </div>`).join(''):`<div class="small" style="color:#2b3832">No activity yet</div>`;
+    </div>`).join('') : `<div class="small" style="color:#2b3832">No activity yet</div>`;
 
   const c1=$('#trending-prelogin');
   if(c1) c1.innerHTML=makeRows(top);
-  const c2=$('#trending'); 
+  const c2=$('#trending'); // (in case a future section exists)
   if(c2) c2.innerHTML=makeRows(top);
 }
 
