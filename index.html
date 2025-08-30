@@ -65,6 +65,21 @@
   .nav-btn{background:var(--glass);color:#fff;border:2px solid var(--glass-2);padding:8px 14px;border-radius:22px;cursor:pointer;transition:.2s;backdrop-filter:blur(8px);font-size:13px}
   .nav-btn:hover,.nav-btn.active{background:rgba(255,255,255,.34);transform:translateY(-1px)}
 
+  
+  /* === Visibility fix: Book Bar contrast === */
+.nav-btn{
+  color: var(--pine);
+  border-color: var(--pine);
+  background: rgba(255,255,255,.85);
+}
+.nav-btn:hover,
+.nav-btn.active{
+  background: var(--pine);
+  color: #fff;
+  border-color: var(--pine);
+}
+
+
   /* search row smaller */
   .search{display:grid;grid-template-columns:2fr 1fr repeat(3,1fr);gap:8px;margin:8px 0}
   .chip{background:#e8efe9;border:1px solid #d9e4dc;color:#2e4a3a;padding:5px 10px;border-radius:999px;font-size:12px}
