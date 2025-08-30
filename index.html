@@ -1,4 +1,4 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -124,7 +124,7 @@
   .syn,.why{color:#2a3a33;line-height:1.4;font-size:14px}
 
   .actions{display:flex;gap:8px;align-items:center;padding:8px 0;border-top:1px solid #e5ece8;border-bottom:1px solid #e5ece8;margin:8px 0 6px;flex-wrap:wrap}
-  .action{background:#fff;border:2px solid var(--pine);color:var(--pine);padding:6px 10px;border-radius:18px;cursor:pointer;transition:.2s;font-size:13px;display:flex;align-items:center;gap:6px;font-weight:800}
+  .action{background:#fff;border:2px solid var(--pine);color:#var(--pine);padding:6px 10px;border-radius:18px;cursor:pointer;transition:.2s;font-size:13px;display:flex;align-items:center;gap:6px;font-weight:800}
   .action:hover,.action.active{background:var(--pine);color:#fff}
   .action:focus-visible{outline:3px solid #ffe08a;outline-offset:2px}
 
@@ -149,7 +149,7 @@
 
   .login{padding:40px 12px;text-align:center}
   .login-card{background:#faf9f6;padding:28px;border-radius:14px;box-shadow:0 10px 24px rgba(0,0,0,.12);max-width:420px;margin:0 auto;border:1px solid var(--line)}
-  .input,.select,.textarea{width:100%;padding:10px;border:2px solid var(--line);border-radius:8px;font-size:15px;transition:.2s border-color;color:var(--ink);background:#fffefb}
+  .input,.select,.textarea{width:100%;padding:10px;border:2px solid var(--line);border-radius:8px;font-size:15px;transition:.2s border-color;color:#var(--ink);background:#fffefb}
   .textarea{resize:vertical;min-height:90px}
   .input:focus,.select:focus,.textarea:focus{outline:none;border-color:var(--pine)}
   .select{background:#fffefb}
@@ -162,13 +162,10 @@
   .loading{opacity:.6;pointer-events:none}
 
   /* Finish modal overrides (centered, clickable, readable on dark bg) */
-#finish-modal{ right:auto; left:50%; pointer-events:auto; }
-#finish-modal.show{ transform:translate(-50%,0); }
-#finish-modal .small{ color:#e8ecef; } /* override dark-on-dark text */
+  #finish-modal{ right:auto; left:50%; pointer-events:auto; }
+  #finish-modal.show{ transform:translate(-50%,0); }
+  #finish-modal .small{ color:#e8ecef; } /* override dark-on-dark text */
 
-  /* Make the Finish modal interactive and keep it centered */
-#finish-modal { pointer-events: auto; }
-#finish-modal.show { transform: translate(-50%, 0); }
   .spinner{display:inline-block;width:14px;height:14px;border:2px solid #ddd;border-radius:50%;border-top-color:#666;animation:spin .8s linear infinite;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -183,41 +180,18 @@
     .c-form{grid-template-columns:1fr}
     .prelogin-row{grid-template-columns:1fr}
   }
+
   @media (max-width:640px){
-  /* force 1-column on all .search rows even when inline styles set columns */
-  .search{ grid-template-columns:1fr !important; }
+    /* force 1-column on all .search rows even when inline styles set columns */
+    .search{ grid-template-columns:1fr !important; }
 
-  /* let result bar wrap so nothing overflows */
-  .results-bar{ flex-wrap:wrap; gap:6px; }
-  .results-right{ width:100%; justify-content:space-between; }
+    /* let result bar wrap so nothing overflows */
+    .results-bar{ flex-wrap:wrap; gap:6px; }
+    .results-right{ width:100%; justify-content:space-between; }
 
-  /* make popovers use full width when needed */
-  .users-pop{ max-width:calc(100vw - 24px); left:12px !important; right:12px !important; }
-}
-  // Mobile: Enter should add the tag, not submit the whole form
-(() => {
-  const tagInput = document.getElementById('tag-input');
-  if (!tagInput) return;
-
-  const commitTag = () => {
-    const val = tagInput.value.trim();
-    if (val) addTag(val);
-  };
-
-  // iOS/Android: prevent Enter/Go from submitting the form
-  tagInput.addEventListener('keydown', (e) => {
-    const key = e.key || '';
-    if (key === 'Enter' || key.toLowerCase() === 'go' || e.keyCode === 13) {
-      e.preventDefault();
-      commitTag();
-    }
-    // Optional niceties: comma or Tab also commit a tag
-    if (key === ',' || key === 'Tab') {
-      e.preventDefault();
-      commitTag();
-    }
-  });
-})();
+    /* make popovers use full width when needed */
+    .users-pop{ max-width:calc(100vw - 24px); left:12px !important; right:12px !important; }
+  }
 </style>
 </head>
 <body>
@@ -325,7 +299,7 @@
         <!-- FEED -->
         <section id="feed" class="section active">
           <div class="search">
-            <input type="text" class="input" id="tag-input" placeholder="Add tags…" enterkeyhint="done" autocomplete="off" style="border:0;padding:6px;background:transparent"/>
+            <input type="text" class="input" placeholder="Search title, author, recommender…" id="search-input"/>
             <!-- tag filter changed to dropdown -->
             <select class="select" id="tag-filter">
               <option value="">All Tags</option>
@@ -368,7 +342,7 @@
             <!-- Google Books Search -->
             <div class="search" style="grid-template-columns:2fr 1fr">
               <div class="dropdown" style="position:relative">
-                <input id="book-search" class="input" type="text" placeholder="Search Google Books to auto-fill…"/>
+                <input id="book-search" class="input" type="text" placeholder="Search Google Books to auto-fill…" enterkeyhint="search" autocomplete="off"/>
                 <div id="book-results" class="users-pop" style="left:0;right:0;max-height:280px;overflow:auto"></div>
               </div>
               <div>
@@ -419,7 +393,7 @@
                 <label class="small">Tags</label>
                 <div class="tags-input-container" id="tags-container" style="border:2px solid var(--line);border-radius:8px;padding:6px;background:#fffefb">
                   <div id="tags-display" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px"></div>
-                  <input type="text" class="input" id="tag-input" placeholder="Add tags…" style="border:0;padding:6px;background:transparent"/>
+                  <input type="text" class="input" id="tag-input" placeholder="Add tags…" enterkeyhint="done" autocomplete="off" style="border:0;padding:6px;background:transparent"/>
                   <div class="users-pop" id="tag-suggestions" style="display:none"></div>
                 </div>
               </div>
@@ -1106,10 +1080,10 @@ const searchGoogleBooks = async (q)=>{
         title:v.title||'Unknown Title',
         authors:(v.authors||[]).join(', ')||'Unknown Author',
         cover:v.imageLinks?.thumbnail||'',
-        description:v.description||'',
+        description	v: v.description||'',
         categories:v.categories||[],
       };
-    });
+    }).map(({description	v, ...rest}) => ({...rest, description: description	v})); // fix accidental "description	v"
     if(!lastSearchItems.length){ box.innerHTML='<div class="small" style="padding:8px">No results</div>'; box.style.display='block'; return; }
     box.innerHTML=lastSearchItems.map(r=>`
       <div class="lb-row" data-pick="${r.index}">
@@ -1282,15 +1256,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       $('#book-results').style.display='none';
     }
   });
+
   // Prevent Enter in the Google Books search box from submitting the whole form on mobile
-document.getElementById('book-search')?.addEventListener('keydown', (e) => {
-  if ((e.key || '') === 'Enter' || e.keyCode === 13) e.preventDefault();
-});
+  document.getElementById('book-search')?.addEventListener('keydown', (e) => {
+    if ((e.key || '') === 'Enter' || e.keyCode === 13) e.preventDefault();
+  });
+
   /* Tags input */
   $('#tags-display').addEventListener('click', (e)=>{ const x=e.target.closest('.tag'); if(!x) return; const t=x.getAttribute('data-tag'); currentTags=currentTags.filter(y=>y!==t); renderTagsDisplay(); });
   $('#tag-input').addEventListener('input',(e)=>{ const q=e.target.value.toLowerCase().trim(); const s=$('#tag-suggestions'); if(!q){s.style.display='none';return;} const items=tagSuggestions.filter(t=>t.includes(q) && !currentTags.includes(t)).slice(0,8); s.innerHTML=items.map(t=>`<div class="lb-row" data-tagpick="${t}"><div>${t}</div></div>`).join(''); s.style.display=items.length?'block':'none'; });
   document.addEventListener('click',(e)=>{ const t=e.target.closest('[data-tagpick]'); if(t){ addTag(t.getAttribute('data-tagpick')); $('#tag-suggestions').style.display='none'; } });
   $('#synopsis').addEventListener('blur', ()=>{ autoTagsFrom({categories:[],genre:$('#genre').value,synopsis:$('#synopsis').value}); });
+
+  // Mobile: Enter should add the tag, not submit the whole form
+  (()=>{
+    const tagInput=document.getElementById('tag-input');
+    if(!tagInput) return;
+    const commitTag=()=>{ const val=tagInput.value.trim(); if(val) addTag(val); };
+    tagInput.addEventListener('keydown',(e)=>{
+      const key=e.key||'';
+      if (key==='Enter' || e.keyCode===13){ e.preventDefault(); commitTag(); }
+      if (key===',' || key==='Tab'){ e.preventDefault(); commitTag(); }
+    });
+  })();
 
   /* Add: Rating stars (share form) */
   $$('#rating-stars .star').forEach(star=>{
@@ -1352,15 +1340,15 @@ document.getElementById('book-search')?.addEventListener('keydown', (e) => {
   $('#finish-cancel').addEventListener('click', closeFinishModal);
 
   // Close on ESC
-document.addEventListener('keydown',(e)=>{
-  if(e.key==='Escape' && $('#finish-modal').classList.contains('show')) closeFinishModal();
-});
-// Close when clicking outside the modal
-document.addEventListener('click',(e)=>{
-  const m = $('#finish-modal');
-  if(!m || !m.classList.contains('show')) return;
-  if(!m.contains(e.target)) closeFinishModal();
-});
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='Escape' && $('#finish-modal').classList.contains('show')) closeFinishModal();
+  });
+  // Close when clicking outside the modal
+  document.addEventListener('click',(e)=>{
+    const m = $('#finish-modal');
+    if(!m || !m.classList.contains('show')) return;
+    if(!m.contains(e.target)) closeFinishModal();
+  });
   
   /* Add: Form submit */
   $('#book-form').addEventListener('submit', (e)=>{
