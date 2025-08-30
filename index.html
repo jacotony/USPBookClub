@@ -160,6 +160,12 @@
   .toast.show{opacity:1;transform:translateY(0)}
   .toast.error{background:#b74a4a}
   .loading{opacity:.6;pointer-events:none}
+
+  /* Finish modal overrides (centered, clickable, readable on dark bg) */
+#finish-modal{ right:auto; left:50%; pointer-events:auto; }
+#finish-modal.show{ transform:translate(-50%,0); }
+#finish-modal .small{ color:#e8ecef; } /* override dark-on-dark text */
+
   /* Make the Finish modal interactive and keep it centered */
 #finish-modal { pointer-events: auto; }
 #finish-modal.show { transform: translate(-50%, 0); }
@@ -1307,6 +1313,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   $('#finish-cancel').addEventListener('click', closeFinishModal);
 
+  // Close on ESC
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='Escape' && $('#finish-modal').classList.contains('show')) closeFinishModal();
+});
+// Close when clicking outside the modal
+document.addEventListener('click',(e)=>{
+  const m = $('#finish-modal');
+  if(!m || !m.classList.contains('show')) return;
+  if(!m.contains(e.target)) closeFinishModal();
+});
+  
   /* Add: Form submit */
   $('#book-form').addEventListener('submit', (e)=>{
     e.preventDefault();
