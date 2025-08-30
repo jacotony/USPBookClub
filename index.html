@@ -1119,7 +1119,7 @@ function importJson(file){
 function openFinishModal(book){
   finishContext = {bookId: book.id};
   const ur = (book.userRatings||[]).find(r=>r.user===currentUser)?.rating;
-  const mineEntry = me().readList.find(x=>x.id===book.id);
+ const mineEntry = me().readList.find(x => String(x.id) === String(book.id));
   currentRating = ur ?? mineEntry?._rating ?? 0;
   $('#finish-title').textContent = `${book.title} — ${book.author}`;
   $$('#finish-stars .star').forEach(star=>{
@@ -1258,21 +1258,28 @@ $('#finish-save').addEventListener('click', ()=>{
     const book=books.find(b=>b.id===finishContext.bookId); if(!book){ closeFinishModal(); return; }
 
     const rating = Number.isFinite(currentRating) ? currentRating : 0; // allow 0 stars
-    ensureUser(currentUser); const mine=me();
+    ensureUser(currentUser); 
+    const mine = me();
+    const idStr = String(book.id);
 
-    if(!mine.readList.some(x=>x.id===book.id)){
+    // add/update in Read
+    const already = mine.readList.some(x => String(x.id) === idStr);
+    if(!already){
       mine.readList.push({id:book.id,title:book.title,author:book.author,_rating:rating});
-      mine.currentReading = mine.currentReading.filter(x=>x.id!==book.id);
-      mine.wishList = mine.wishList.filter(x=>x.id!==book.id);
+      // remove from other lists (normalize id comparisons)
+      mine.currentReading = mine.currentReading.filter(x => String(x.id) !== idStr);
+      mine.wishList       = mine.wishList.filter(x => String(x.id) !== idStr);
     }else{
-      const rec=mine.readList.find(x=>x.id===book.id);
+      const rec = mine.readList.find(x => String(x.id) === idStr);
       rec._rating = rating;
     }
 
+    // record per-user rating on the main book
     book.userRatings = book.userRatings || [];
     const ex = book.userRatings.find(r=>r.user===currentUser);
     if(ex) ex.rating = rating; else book.userRatings.push({user:currentUser,rating});
 
+    // activity + comments + Teams
     mergeOrPostActivity({
       type:'finish',
       payload:{user:currentUser,title:book.title,author:book.author, ...(rating>0?{rating}: {})}
