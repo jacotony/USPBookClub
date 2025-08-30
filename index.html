@@ -710,9 +710,14 @@ function autoTagsFrom(book){
 
 /* ========= Rendering ========= */
 function bookCoverBlock(book){
+  const link = goodreadsUrl(book);
   if(book.image){
-    return `<img class="cover" loading="lazy" alt="Cover of ${escapeHtml(book.title)}" src="${escapeAttr(book.image)}"/>`;
-  } else { return `<div class="cover-ph">No Cover</div>`; }
+    return `<a href="${link}" target="_blank" rel="noopener">
+      <img class="cover" loading="lazy" alt="Cover of ${escapeHtml(book.title)}" src="${escapeAttr(book.image)}"/>
+    </a>`;
+  } else {
+    return `<a href="${link}" target="_blank" rel="noopener" class="cover-ph">No Cover</a>`;
+  }
 }
 function youStatus(book){
   if(!currentUser) return '';
@@ -942,8 +947,13 @@ function renderTrending(){
   const makeRows=(arr)=> arr.length?arr.map(b=>`
     <div class="lb-row" data-jump="${b.id}">
       <div style="display:flex;align-items:center;gap:8px">
-        ${b.image?`<img src="${escapeAttr(b.image)}" alt="" style="width:28px;height:42px;border-radius:6px;border:1px solid #e6ece8;object-fit:cover">`:`<div style="width:28px;height:42px;border-radius:6px;background:#e9ecef"></div>`}
-        <div>
+        ${b.image
+  ? `<a href="${goodreadsUrl(b)}" target="_blank" rel="noopener">
+       <img src="${escapeAttr(b.image)}" alt="" style="width:28px;height:42px;border-radius:6px;border:1px solid #e6ece8;object-fit:cover">
+     </a>`
+  : `<a href="${goodreadsUrl(b)}" target="_blank" rel="noopener">
+       <div style="width:28px;height:42px;border-radius:6px;background:#e9ecef"></div>
+     </a>`}
           <div><strong>${escapeHtml(b.title)}</strong></div>
           <div class="small" style="color:#20362c">${escapeHtml(b.author)}</div>
         </div>
@@ -1245,32 +1255,45 @@ document.addEventListener('DOMContentLoaded', async () => {
   $$('#finish-stars .star').forEach(star=>{
     star.addEventListener('click', ()=>{ const val=Number(star.getAttribute('data-rating')); currentRating=val; $$('#finish-stars .star').forEach(s=> s.classList.toggle('filled', Number(s.getAttribute('data-rating'))<=val)); });
   });
-  $('#finish-save').addEventListener('click', ()=>{
-    try{
-      if(!finishContext){ closeFinishModal(); return; }
-      if(!currentRating){ showToast('Select a star rating first.', true); return; } // require rating
-      const book=books.find(b=>b.id===finishContext.bookId); if(!book){ closeFinishModal(); return; }
-      ensureUser(currentUser); const mine=me();
-      if(!mine.readList.some(x=>x.id===book.id)){
-        mine.readList.push({id:book.id,title:book.title,author:book.author,_rating:currentRating});
-        mine.currentReading = mine.currentReading.filter(x=>x.id!==book.id);
-        mine.wishList = mine.wishList.filter(x=>x.id!==book.id);
-      }else{
-        const rec=mine.readList.find(x=>x.id===book.id); rec._rating=currentRating;
-      }
-      book.userRatings=book.userRatings||[]; const ex=book.userRatings.find(r=>r.user===currentUser); if(ex) ex.rating=currentRating; else book.userRatings.push({user:currentUser,rating:currentRating});
+$('#finish-save').addEventListener('click', ()=>{
+  try{
+    if(!finishContext){ closeFinishModal(); return; }
+    const book=books.find(b=>b.id===finishContext.bookId); if(!book){ closeFinishModal(); return; }
 
-      mergeOrPostActivity({type:'finish',payload:{user:currentUser,title:book.title,author:book.author,rating:currentRating}});
-      addActionComment(book, `${currentUser} finished this book — ${currentRating}★`, currentUser);
+    const rating = Number.isFinite(currentRating) ? currentRating : 0; // allow 0 stars
+    ensureUser(currentUser); const mine=me();
 
-      if(currentRating===5){ mergeOrPostActivity({type:'five',payload:{user:currentUser,title:book.title,author:book.author,rating:5}}); postToTeams('five', `${currentUser} rated "${book.title}" 5★`); }
-      postToTeams('finish', `${currentUser} finished "${book.title}" — ${currentRating}★`);
-
-      saveAll(); closeFinishModal(); renderMyLists(); applyFilters(); updateStats(); showToast('Marked as read!');
-    }catch(e){
-      console.warn(e); closeFinishModal(); showToast('Saved locally. If something looks off, refresh.',true);
+    if(!mine.readList.some(x=>x.id===book.id)){
+      mine.readList.push({id:book.id,title:book.title,author:book.author,_rating:rating});
+      mine.currentReading = mine.currentReading.filter(x=>x.id!==book.id);
+      mine.wishList = mine.wishList.filter(x=>x.id!==book.id);
+    }else{
+      const rec=mine.readList.find(x=>x.id===book.id);
+      rec._rating = rating;
     }
-  });
+
+    book.userRatings = book.userRatings || [];
+    const ex = book.userRatings.find(r=>r.user===currentUser);
+    if(ex) ex.rating = rating; else book.userRatings.push({user:currentUser,rating});
+
+    mergeOrPostActivity({
+      type:'finish',
+      payload:{user:currentUser,title:book.title,author:book.author, ...(rating>0?{rating}: {})}
+    });
+    addActionComment(book, `${currentUser} finished this book${rating>0?` — ${rating}★`:''}`, currentUser);
+
+    if(rating===5){
+      mergeOrPostActivity({type:'five',payload:{user:currentUser,title:book.title,author:book.author,rating:5}});
+      postToTeams('five', `${currentUser} rated "${book.title}" 5★`);
+    }
+    postToTeams('finish', `${currentUser} finished "${book.title}"${rating>0?` — ${rating}★`:''}`);
+
+    saveAll(); closeFinishModal(); renderMyLists(); applyFilters(); updateStats();
+    showToast('Marked as read!');
+  }catch(e){
+    console.warn(e); closeFinishModal(); showToast('Saved locally. If something looks off, refresh.',true);
+  }
+});
   $('#finish-cancel').addEventListener('click', closeFinishModal);
 
   /* Add: Form submit */
