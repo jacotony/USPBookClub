@@ -941,7 +941,8 @@ function trendingScore(b){
   const likes=b.postLikes||0;
   const ratings=ratingCount(b);
   return comments*2+likes*1.5+ratings;
-    function renderTrending(){
+    function renderTrending()
+}
   const top=[...books].sort((a,b)=>trendingScore(b)-trendingScore(a)).slice(0,3);
   const makeRows=(arr)=> arr.length ? arr.map(b=>`
     <div class="lb-row" data-jump="${b.id}">
