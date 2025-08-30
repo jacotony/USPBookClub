@@ -124,7 +124,7 @@
   .syn,.why{color:#2a3a33;line-height:1.4;font-size:14px}
 
   .actions{display:flex;gap:8px;align-items:center;padding:8px 0;border-top:1px solid #e5ece8;border-bottom:1px solid #e5ece8;margin:8px 0 6px;flex-wrap:wrap}
-  .action{background:#fff;border:2px solid var(--pine);color:#var(--pine);padding:6px 10px;border-radius:18px;cursor:pointer;transition:.2s;font-size:13px;display:flex;align-items:center;gap:6px;font-weight:800}
+  .action{background:#fff;border:2px solid var(--pine);color:var(--pine);padding:6px 10px;border-radius:18px;cursor:pointer;transition:.2s;font-size:13px;display:flex;align-items:center;gap:6px;font-weight:800}
   .action:hover,.action.active{background:var(--pine);color:#fff}
   .action:focus-visible{outline:3px solid #ffe08a;outline-offset:2px}
 
@@ -598,7 +598,7 @@ const me=()=>userData[currentUser]||defaultUser();
 
 /* ========= PWA setup ========= */
 function setupPWA(){
-  const manifest={name:"Book Club",short_name:"Book Club",start_url:".",display:"standalone",background_color:"#ffffff",theme_color:"#2f4a4e",icons:[{src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAAAAABQFZ1hAAAAC0lEQVR42u3BAQ0AAADCoPdPbQ43oAAAAAB4p1nNAAE=",sizes:"192x192",type:"image/png"}]};
+  const manifest={name:"Book Club",short_name:"Book Club",start_url:".",display:"standalone",background_color:"#ffffff",theme_color:"#2f4a3e",icons:[{src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAAAAABQFZ1hAAAAC0lEQVR42u3BAQ0AAADCoPdPbQ43oAAAAAB4p1nNAAE=",sizes:"192x192",type:"image/png"}]};
   const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
   const url=URL.createObjectURL(blob);
   const link=$('#app-manifest'); if(link) link.href=url;
@@ -712,11 +712,11 @@ function autoTagsFrom(book){
 function bookCoverBlock(book){
   const link = goodreadsUrl(book);
   if(book.image){
-    return `<a href="${link}" target="_blank" rel="noopener">
+    return `<a href="${link}" target="_blank" rel="noopener noreferrer">
       <img class="cover" loading="lazy" alt="Cover of ${escapeHtml(book.title)}" src="${escapeAttr(book.image)}"/>
     </a>`;
   } else {
-    return `<a href="${link}" target="_blank" rel="noopener" class="cover-ph">No Cover</a>`;
+    return `<a href="${link}" target="_blank" rel="noopener noreferrer" class="cover-ph">No Cover</a>`;
   }
 }
 function youStatus(book){
@@ -749,7 +749,6 @@ function synBlock(book){
   if(!book.synopsis) return '';
   const long = book.synopsis.length>280;
   const short = truncate(book.synopsis, 280);
-  const id = `syn-${book.id}`;
   return `
   <div class="syn" data-syn="${book.id}">
     <span class="syn-text" data-expanded="false">${escapeHtml(short)}</span>
@@ -936,6 +935,7 @@ function renderLB(){
   const actSorted=Object.entries(active).sort((a,b)=>b[1]-a[1]).slice(0,3);
   addRows($('#lb-active'),actSorted,'actions','No activity yet');
 }
+
 function trendingScore(b){
   const comments=b.comments?.length||0;
   const likes=b.postLikes||0;
@@ -1040,7 +1040,7 @@ function applyFilters(){
   else if(sort==='rating'){ list.sort((a,b)=>averageRatingForBook(b)-averageRatingForBook(a)); }
   else if(sort==='title'){ list.sort((a,b)=>a.title.localeCompare(b.title)); }
 
- currentBooks=list; renderBooks();
+  currentBooks=list; renderBooks();
 }
 
 /* ========= Google Books Search ========= */
@@ -1119,7 +1119,7 @@ function importJson(file){
 function openFinishModal(book){
   finishContext = {bookId: book.id};
   const ur = (book.userRatings||[]).find(r=>r.user===currentUser)?.rating;
- const mineEntry = me().readList.find(x => String(x.id) === String(book.id));
+  const mineEntry = me().readList.find(x => String(x.id) === String(book.id));
   currentRating = ur ?? mineEntry?._rating ?? 0;
   $('#finish-title').textContent = `${book.title} — ${book.author}`;
   $$('#finish-stars .star').forEach(star=>{
@@ -1252,52 +1252,54 @@ document.addEventListener('DOMContentLoaded', async () => {
   $$('#finish-stars .star').forEach(star=>{
     star.addEventListener('click', ()=>{ const val=Number(star.getAttribute('data-rating')); currentRating=val; $$('#finish-stars .star').forEach(s=> s.classList.toggle('filled', Number(s.getAttribute('data-rating'))<=val)); });
   });
-$('#finish-save').addEventListener('click', ()=>{
-  try{
-    if(!finishContext){ closeFinishModal(); return; }
-    const book=books.find(b=>b.id===finishContext.bookId); if(!book){ closeFinishModal(); return; }
 
-    const rating = Number.isFinite(currentRating) ? currentRating : 0; // allow 0 stars
-    ensureUser(currentUser); 
-    const mine = me();
-    const idStr = String(book.id);
+  /* Finish save (Read list fix included) */
+  $('#finish-save').addEventListener('click', ()=>{
+    try{
+      if(!finishContext){ closeFinishModal(); return; }
+      const book=books.find(b=>b.id===finishContext.bookId); if(!book){ closeFinishModal(); return; }
 
-    // add/update in Read
-    const already = mine.readList.some(x => String(x.id) === idStr);
-    if(!already){
-      mine.readList.push({id:book.id,title:book.title,author:book.author,_rating:rating});
-      // remove from other lists (normalize id comparisons)
-      mine.currentReading = mine.currentReading.filter(x => String(x.id) !== idStr);
-      mine.wishList       = mine.wishList.filter(x => String(x.id) !== idStr);
-    }else{
-      const rec = mine.readList.find(x => String(x.id) === idStr);
-      rec._rating = rating;
+      const rating = Number.isFinite(currentRating) ? currentRating : 0; // allow 0 stars
+      ensureUser(currentUser); 
+      const mine = me();
+      const idStr = String(book.id);
+
+      // add/update in Read
+      const already = mine.readList.some(x => String(x.id) === idStr);
+      if(!already){
+        mine.readList.push({id:book.id,title:book.title,author:book.author,_rating:rating});
+        // remove from other lists (normalize id comparisons)
+        mine.currentReading = mine.currentReading.filter(x => String(x.id) !== idStr);
+        mine.wishList       = mine.wishList.filter(x => String(x.id) !== idStr);
+      }else{
+        const rec = mine.readList.find(x => String(x.id) === idStr);
+        rec._rating = rating;
+      }
+
+      // record per-user rating on the main book
+      book.userRatings = book.userRatings || [];
+      const ex = book.userRatings.find(r=>r.user===currentUser);
+      if(ex) ex.rating = rating; else book.userRatings.push({user:currentUser,rating});
+
+      // activity + comments + Teams
+      mergeOrPostActivity({
+        type:'finish',
+        payload:{user:currentUser,title:book.title,author:book.author, ...(rating>0?{rating}: {})}
+      });
+      addActionComment(book, `${currentUser} finished this book${rating>0?` — ${rating}★`:''}`, currentUser);
+
+      if(rating===5){
+        mergeOrPostActivity({type:'five',payload:{user:currentUser,title:book.title,author:book.author,rating:5}});
+        postToTeams('five', `${currentUser} rated "${book.title}" 5★`);
+      }
+      postToTeams('finish', `${currentUser} finished "${book.title}"${rating>0?` — ${rating}★`:''}`);
+
+      saveAll(); closeFinishModal(); renderMyLists(); applyFilters(); updateStats();
+      showToast('Marked as read!');
+    }catch(e){
+      console.warn(e); closeFinishModal(); showToast('Saved locally. If something looks off, refresh.',true);
     }
-
-    // record per-user rating on the main book
-    book.userRatings = book.userRatings || [];
-    const ex = book.userRatings.find(r=>r.user===currentUser);
-    if(ex) ex.rating = rating; else book.userRatings.push({user:currentUser,rating});
-
-    // activity + comments + Teams
-    mergeOrPostActivity({
-      type:'finish',
-      payload:{user:currentUser,title:book.title,author:book.author, ...(rating>0?{rating}: {})}
-    });
-    addActionComment(book, `${currentUser} finished this book${rating>0?` — ${rating}★`:''}`, currentUser);
-
-    if(rating===5){
-      mergeOrPostActivity({type:'five',payload:{user:currentUser,title:book.title,author:book.author,rating:5}});
-      postToTeams('five', `${currentUser} rated "${book.title}" 5★`);
-    }
-    postToTeams('finish', `${currentUser} finished "${book.title}"${rating>0?` — ${rating}★`:''}`);
-
-    saveAll(); closeFinishModal(); renderMyLists(); applyFilters(); updateStats();
-    showToast('Marked as read!');
-  }catch(e){
-    console.warn(e); closeFinishModal(); showToast('Saved locally. If something looks off, refresh.',true);
-  }
-});
+  });
   $('#finish-cancel').addEventListener('click', closeFinishModal);
 
   /* Add: Form submit */
@@ -1389,7 +1391,6 @@ $('#finish-save').addEventListener('click', ()=>{
   });
 
   // Removed "System" sample activity; if needed, require login and use current user instead
-  // (kept to help testing but no longer posts as "System")
   const postSampleBtn=$('#post-sample-btn');
   if(postSampleBtn){
     postSampleBtn.addEventListener('click', ()=>{
@@ -1521,4 +1522,3 @@ function addActionComment(book, text, who){
 </script>
 </body>
 </html>
-
