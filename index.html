@@ -735,6 +735,11 @@ function likedByLine(arr=[]){
 }
 function tagChips(tags){ if(!tags||!tags.length) return ''; return `<div class="tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>`; }
 
+  function goodreadsUrl(book){
+  const q = `${book.title||''} ${book.author||''}`.trim();
+  return `https://www.goodreads.com/search?q=${encodeURIComponent(q)}&search_type=books`;
+}
+
 function synBlock(book){
   if(!book.synopsis) return '';
   const long = book.synopsis.length>280;
