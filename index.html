@@ -160,6 +160,9 @@
   .toast.show{opacity:1;transform:translateY(0)}
   .toast.error{background:#b74a4a}
   .loading{opacity:.6;pointer-events:none}
+  /* Make the Finish modal interactive and keep it centered */
+#finish-modal { pointer-events: auto; }
+#finish-modal.show { transform: translate(-50%, 0); }
   .spinner{display:inline-block;width:14px;height:14px;border:2px solid #ddd;border-radius:50%;border-top-color:#666;animation:spin .8s linear infinite;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -937,14 +940,15 @@ function renderLB(){
 }
 
 function trendingScore(b){
-  const comments=b.comments?.length||0;
-  const likes=b.postLikes||0;
-  const ratings=ratingCount(b);
-  return comments*2+likes*1.5+ratings;
+  const comments = b.comments?.length || 0;
+  const likes = b.postLikes || 0;
+  const ratings = ratingCount(b);
+  return comments * 2 + likes * 1.5 + ratings;
 }
+
 function renderTrending(){
-  const top=[...books].sort((a,b)=>trendingScore(b)-trendingScore(a)).slice(0,3);
-  const makeRows=(arr)=> arr.length ? arr.map(b=>`
+  const top = [...books].sort((a,b)=>trendingScore(b)-trendingScore(a)).slice(0,3);
+  const makeRows = (arr) => arr.length ? arr.map(b=>`
     <div class="lb-row" data-jump="${b.id}">
       <div style="display:flex;align-items:center;gap:8px">
         ${b.image
@@ -956,12 +960,13 @@ function renderTrending(){
         </div>
       </div>
       <span class="lb-count">${Math.round(trendingScore(b))} actions</span>
-    </div>`).join('') : `<div class="small" style="color:#2b3832">No activity yet</div>`;
+    </div>`).join('')
+    : `<div class="small" style="color:#2b3832">No activity yet</div>`;
 
-  const c1=$('#trending-prelogin');
-  if(c1) c1.innerHTML=makeRows(top);
-  const c2=$('#trending'); // (in case a future section exists)
-  if(c2) c2.innerHTML=makeRows(top);
+  const c1 = $('#trending-prelogin');
+  if(c1) c1.innerHTML = makeRows(top);
+  const c2 = $('#trending'); // (in case a future section exists)
+  if(c2) c2.innerHTML = makeRows(top);
 }
 
 /* ========= Search/Filter ========= */
