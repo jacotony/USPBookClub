@@ -947,12 +947,9 @@ function renderTrending(){
   const makeRows=(arr)=> arr.length?arr.map(b=>`
     <div class="lb-row" data-jump="${b.id}">
       <div style="display:flex;align-items:center;gap:8px">
-        ${b.image
-  ? `<a href="${goodreadsUrl(b)}" target="_blank" rel="noopener">
-       <img src="${escapeAttr(b.image)}" alt="" style="width:28px;height:42px;border-radius:6px;border:1px solid #e6ece8;object-fit:cover">
-     </a>`
-  : `<a href="${goodreadsUrl(b)}" target="_blank" rel="noopener">
-       <div style="width:28px;height:42px;border-radius:6px;background:#e9ecef"></div>
+      ${b.image
+  ? `<img src="${escapeAttr(b.image)}" alt="" style="width:28px;height:42px;border-radius:6px;border:1px solid #e6ece8;object-fit:cover">`
+  : `<div style="width:28px;height:42px;border-radius:6px;background:#e9ecef"></div>`}
      </a>`}
           <div><strong>${escapeHtml(b.title)}</strong></div>
           <div class="small" style="color:#20362c">${escapeHtml(b.author)}</div>
