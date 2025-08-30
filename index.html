@@ -183,6 +183,41 @@
     .c-form{grid-template-columns:1fr}
     .prelogin-row{grid-template-columns:1fr}
   }
+  @media (max-width:640px){
+  /* force 1-column on all .search rows even when inline styles set columns */
+  .search{ grid-template-columns:1fr !important; }
+
+  /* let result bar wrap so nothing overflows */
+  .results-bar{ flex-wrap:wrap; gap:6px; }
+  .results-right{ width:100%; justify-content:space-between; }
+
+  /* make popovers use full width when needed */
+  .users-pop{ max-width:calc(100vw - 24px); left:12px !important; right:12px !important; }
+}
+  // Mobile: Enter should add the tag, not submit the whole form
+(() => {
+  const tagInput = document.getElementById('tag-input');
+  if (!tagInput) return;
+
+  const commitTag = () => {
+    const val = tagInput.value.trim();
+    if (val) addTag(val);
+  };
+
+  // iOS/Android: prevent Enter/Go from submitting the form
+  tagInput.addEventListener('keydown', (e) => {
+    const key = e.key || '';
+    if (key === 'Enter' || key.toLowerCase() === 'go' || e.keyCode === 13) {
+      e.preventDefault();
+      commitTag();
+    }
+    // Optional niceties: comma or Tab also commit a tag
+    if (key === ',' || key === 'Tab') {
+      e.preventDefault();
+      commitTag();
+    }
+  });
+})();
 </style>
 </head>
 <body>
@@ -1247,7 +1282,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       $('#book-results').style.display='none';
     }
   });
-
+  // Prevent Enter in the Google Books search box from submitting the whole form on mobile
+document.getElementById('book-search')?.addEventListener('keydown', (e) => {
+  if ((e.key || '') === 'Enter' || e.keyCode === 13) e.preventDefault();
+});
   /* Tags input */
   $('#tags-display').addEventListener('click', (e)=>{ const x=e.target.closest('.tag'); if(!x) return; const t=x.getAttribute('data-tag'); currentTags=currentTags.filter(y=>y!==t); renderTagsDisplay(); });
   $('#tag-input').addEventListener('input',(e)=>{ const q=e.target.value.toLowerCase().trim(); const s=$('#tag-suggestions'); if(!q){s.style.display='none';return;} const items=tagSuggestions.filter(t=>t.includes(q) && !currentTags.includes(t)).slice(0,8); s.innerHTML=items.map(t=>`<div class="lb-row" data-tagpick="${t}"><div>${t}</div></div>`).join(''); s.style.display=items.length?'block':'none'; });
