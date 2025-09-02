@@ -118,7 +118,7 @@
   .syn,.why{color:#2a3a33;line-height:1.4;font-size:14px}
 
   .actions{display:flex;gap:8px;align-items:center;padding:8px 0;border-top:1px solid #e5ece8;border-bottom:1px solid #e5ece8;margin:8px 0 6px;flex-wrap:wrap}
-  .action{background:#fff;border:2px solid var(--pine);color:var(--pine);padding:6px 10px;border-radius:18px;cursor:pointer;transition:.2s;font-size:13px;display:flex;align-items:center;gap:6px;font-weight:800}
+  .action{background:#fff;border:2px solid var(--pine);color:#var(--pine);padding:6px 10px;border-radius:18px;cursor:pointer;transition:.2s;font-size:13px;display:flex;align-items:center;gap:6px;font-weight:800}
   .action:hover,.action.active{background:var(--pine);color:#fff}
   .action:focus-visible{outline:3px solid #ffe08a;outline-offset:2px}
 
@@ -127,8 +127,8 @@
   .comments{margin-top:6px}
   .c-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
   .c-title{font-weight:900;color:#27443a;font-size:13px}
-  .c-toggle{background:#fff;border:2px solid var(--pine);border-radius:999px;font-size:11px;padding:4px 10px;cursor:pointer;color:var(--pine);font-weight:800}
-  .c-toggle:hover{background:var(--pine);color:#fff}
+  .c-toggle{background:#fff;border:2px solid var(--pine);border-radius:999px;font-size:11px;padding:4px 10px;cursor:pointer;color:#2f4a3e;font-weight:800}
+  .c-toggle:hover{background:#2f4a3e;color:#fff}
   .c-list{display:grid;gap:6px;max-height:260px;overflow:auto}
   .c-item{background:#f5f8f6;border:1px solid #dbe5de;border-radius:8px;padding:8px}
   .c-headline{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:13px}
@@ -165,6 +165,10 @@
 
   .results-bar{display:flex;justify-content:space-between;align-items:center;margin:4px 0 8px;gap:8px;flex-wrap:nowrap}
   .results-right{display:flex;gap:6px;align-items:center;white-space:nowrap}
+
+  /* Book-card activity block */
+  .b-activity{margin:6px 0}
+  .b-activity .c-item{background:#fff;border:1px solid #e6ece8}
 
   @media(max-width:840px){
     .top-row{grid-template-columns:1fr}
@@ -639,9 +643,19 @@ function mergeOrPostActivity(entry){
       && last.payload.title===entry.payload.title
       && (Date.now()-new Date(last.at).getTime())<120000){
     last.type='multi';
+    // merge action types
     var acts = (last.payload.actions||[]).concat([entry.type]);
     var dedup = {}; last.payload.actions = acts.filter(function(x){ if(dedup[x])return false; dedup[x]=1; return true; });
+    // keep/merge list action labels
+    if(entry.type==='list' && entry.payload && entry.payload.action){
+      last.payload.listActions = (last.payload.listActions||[]);
+      last.payload.listActions.push(entry.payload.action);
+      var seen={}; last.payload.listActions = last.payload.listActions.filter(function(x){ if(seen[x]) return false; seen[x]=1; return true; });
+    }
+    // keep strongest rating if present
     if(typeof entry.payload.rating!=='undefined'){ last.payload.rating = entry.payload.rating; }
+    // keep bookId for precise linking
+    if(entry.payload.bookId!=null){ last.payload.bookId = entry.payload.bookId; }
     last.at=now();
   }else{
     activity.unshift({type:entry.type,payload:entry.payload,id:Date.now()+Math.random(),likes:0,likedBy:[],at:now()});
@@ -723,6 +737,47 @@ function autoTagsFrom(book){
   renderTagsDisplay();
 }
 
+/* ========= Rendering helpers for activity on cards ========= */
+function eventsForBook(book){
+  var idStr = String(book.id);
+  var arr = (activity||[]).filter(function(a){
+    if(!a || !a.payload) return false;
+    return (String(a.payload.bookId||'')===idStr) || (a.payload.title===book.title);
+  }).sort(function(a,b){ return new Date(b.at)-new Date(a.at); });
+  return arr;
+}
+function describeActivity(a){
+  var user = escapeHtml((a.payload&&a.payload.user)||'Someone');
+  var la = (a.payload&&a.payload.listActions)||[];
+  var actsSet={}; (a.payload&&a.payload.actions||[]).forEach(function(x){actsSet[x]=1;});
+  var rating = (a.payload&&a.payload.rating);
+
+  if(a.type==='share')  return user+' recommended this'+(rating?(' ('+rating+'★)'):'');
+  if(a.type==='finish') return user+' finished this'+(rating?(' — '+rating+'★'):'');
+  if(a.type==='five')   return user+' rated this 5★';
+  if(a.type==='list')   return user+' '+escapeHtml((a.payload&&a.payload.action)||'updated list');
+  if(a.type==='comment')return user+' commented';
+  if(a.type==='like')   return user+' liked this';
+
+  // multi
+  if(actsSet.share && (actsSet.finish || actsSet.five || rating!=null)){
+    return user+' recommended this and rated it '+(rating||5)+'★';
+  }
+  if(actsSet.like && !actsSet.list && !actsSet.share && !actsSet.finish && !actsSet.comment && !actsSet.five){
+    return user+' liked this';
+  }
+  if(actsSet.list && !actsSet.like && !actsSet.share && !actsSet.finish && !actsSet.comment && !actsSet.five){
+    return user+' '+escapeHtml(la.join(' and '));
+  }
+  if(actsSet.like && actsSet.list && !actsSet.share && !actsSet.finish && !actsSet.comment && !actsSet.five){
+    return user+' liked and '+escapeHtml(la.join(' and '));
+  }
+  if(actsSet.comment && !actsSet.like && !actsSet.list && !actsSet.share && !actsSet.finish && !actsSet.five){
+    return user+' commented';
+  }
+  return user+' updated this';
+}
+
 /* ========= Rendering ========= */
 function goodreadsUrl(book){
   var q = ((book.title||'')+' '+(book.author||'')).trim();
@@ -773,6 +828,19 @@ function bookCard(book){
   var count=ratingCount(book);
   var sysCollapsed = ($('#collapse-all') && $('#collapse-all').checked) ? 'style="display:none"' : '';
 
+  // build per-book activity list
+  var evts = eventsForBook(book);
+  var activityHtml = evts.length ? (
+    '<div class="b-activity">'+
+      '<div class="c-head"><span class="c-title">Recent Activity</span></div>'+
+      '<div class="c-list">'+
+        evts.map(function(a){
+          return '<div class="c-item"><div class="c-headline"><span class="small">'+escapeHtml(describeActivity(a))+'</span><span class="small">'+timeAgo(a.at)+' ago</span></div></div>';
+        }).join('')+
+      '</div>'+
+    '</div>'
+  ) : '';
+
   return [
   '<article class="post" id="book-'+book.id+'" data-id="'+book.id+'">',
     '<div class="head">',
@@ -793,740 +861,4 @@ function bookCard(book){
     '</div>',
 
     synBlock(book),
-    (book.reason?('<div class="why"><div class="reason-title">Why '+escapeHtml(book.recommender)+' recommends it</div>'+escapeHtml(book.reason)+'</div>'):''),
-    '<div class="actions">',
-      '<button class="action '+(liked?'active':'')+'" type="button" data-action="like" data-id="'+book.id+'">👍 <span data-like-count>'+(book.postLikes||0)+'</span></button>',
-      '<button class="action" type="button" data-action="wish" data-id="'+book.id+'">📚 Want to Read</button>',
-      '<button class="action" type="button" data-action="reading" data-id="'+book.id+'">📖 Currently Reading</button>',
-      '<button class="action" type="button" data-action="finish" data-id="'+book.id+'">✅ Mark as Read</button>',
-    '</div>',
-    likedByLine(book.postLikedBy),
-
-    '<div class="comments">',
-      '<div class="c-head">',
-        '<span class="c-title">Comments <span class="small">(' + ((book.comments&&book.comments.length)||0) + ')</span></span>',
-        '<button class="c-toggle" type="button" data-action="toggle-comments" data-id="'+book.id+'">See Comments</button>',
-      '</div>',
-      '<div class="c-list" '+sysCollapsed+' data-list="'+book.id+'">',
-        ((book.comments||[]).map(function(c){
-          return [
-            '<div class="c-item" data-comment-id="'+c.id+'">',
-              '<div class="c-headline">',
-                '<span class="c-name">'+escapeHtml(c.commenter||'Anonymous')+' <span class="small" style="color:#20362c;margin-left:6px">'+formatDate(c.id)+'</span></span>',
-                '<button class="c-like '+(((c.likedBy||[]).indexOf(currentUser)>-1)?'liked':'')+'" type="button" data-action="like-comment" data-id="'+book.id+'" data-cid="'+c.id+'">👍 '+(c.likes||0)+'</button>',
-              '</div>',
-              '<div class="c-text">'+escapeHtml(c.text||'')+'</div>',
-            '</div>'
-          ].join('');
-        }).join('')),
-        '<div class="c-form" data-id="'+book.id+'">',
-          '<input type="text" class="c-input" data-field="name" value="'+escapeAttr(currentUser)+'" placeholder="Your name"/>',
-          '<input type="text" class="c-textarea" data-field="text" placeholder="Write your comment…"/>',
-          '<button class="c-btn" type="button" data-action="add-comment" data-id="'+book.id+'">Add Comment</button>',
-        '</div>',
-      '</div>',
-    '</div>',
-  '</article>'
-  ].join('');
-}
-
-function renderActivity(){
-  var list=$('#activity-list');
-  var filter=$('#activity-filter').value;
-  var cap=activityExpanded?40:12;
-  var filtered=filter?activity.filter(function(a){return a.type===filter;}):activity;
-  if(!filtered.length){list.innerHTML='<div class="a-item"><div class="a-badge">👋</div><div>Welcome! Share a book to kick things off.</div></div>';return;}
-  list.innerHTML=filtered.slice(0,cap).map(function(a){
-    var type=a.type,payload=a.payload,at=a.at,likes=a.likes||0;
-    var user = escapeHtml(payload.user);
-    var title = '<em>'+escapeHtml(payload.title)+'</em>';
-    var text='';
-    if(type==='share') text='<strong>'+user+'</strong> shared '+title+' ('+payload.rating+'★)';
-    else if(type==='finish') text='<strong>'+user+'</strong> finished '+title+' — '+payload.rating+'★';
-    else if(type==='five') text='<strong>'+user+'</strong> rated '+title+' <strong>5★</strong>';
-    else if(type==='list') text='<strong>'+user+'</strong> '+escapeHtml(payload.action)+' '+title;
-    else if(type==='comment') text='<strong>'+user+'</strong> commented on '+title;
-    else if(type==='like') text='<strong>'+user+'</strong> liked '+title;
-    else if(type==='multi'){
-      var acts = {}; (payload.actions||[]).forEach(function(x){acts[x]=1;});
-      var rated = (typeof payload.rating!=='undefined');
-      if(acts.share && (acts.finish || acts.five || rated)){
-        text = '<strong>'+user+'</strong> recommended '+title+' and rated it '+(payload.rating||5)+'★';
-      }else if(acts.share){
-        text = '<strong>'+user+'</strong> recommended '+title;
-      }else{
-        text = '<strong>'+user+'</strong> updated '+title;
-      }
-    }
-    return '<div class="a-item"><div class="a-badge">'+activityIcon(type)+'</div><div><div>'+text+'</div><div class="a-meta">'+timeAgo(at)+' ago <span class="pill">'+likes+' 👍</span></div></div></div>';
-  }).join('');
-  $('#activity-toggle').textContent=activityExpanded?'Less':'More';
-}
-
-function renderBooks(){
-  var c=$('#books-feed');
-  if(!currentBooks.length){
-    c.innerHTML='<div style="text-align:center;padding:28px;color:var(--muted)"><h3 style="font-size:1rem;color:#2a3a33">No books found</h3><p class="small">Adjust search/filters or add a new recommendation.</p></div>';
-    $('#result-count').textContent='0 results';return;
-  }
-  c.innerHTML=currentBooks.map(bookCard).join('');
-  $('#result-count').textContent=String(currentBooks.length)+' result'+(currentBooks.length===1?'':'s');
-}
-
-function renderMyLists(){
-  var data=me();
-  function make(arr,actions){
-    return arr.length?arr.map(function(b){
-      return '<div class="lb-row" data-id="'+b.id+'"><div><strong>'+escapeHtml(b.title)+'</strong> by '+escapeHtml(b.author)+'</div><div>'+actions(b)+'</div></div>';
-    }).join(''):'<p class="small" style="font-style:italic">Nothing here yet</p>';
-  }
-  $('#current-reading').innerHTML=make(data.currentReading,function(b){
-    return '<button class="pill-btn" type="button" data-action="finish" data-id="'+b.id+'">Mark Read</button> <button class="pill-btn" type="button" data-action="remove-current" data-id="'+b.id+'">Remove</button>';
-  });
-  $('#wish-list').innerHTML=make(data.wishList,function(b){
-    return '<button class="pill-btn" type="button" data-action="reading" data-id="'+b.id+'">Start</button> <button class="pill-btn" type="button" data-action="remove-wish" data-id="'+b.id+'">Remove</button>';
-  });
-  $('#read-list').innerHTML=make(data.readList,function(b){
-    return '<span class="chip">'+(b._rating||0)+'★</span> <button class="pill-btn" type="button" data-action="remove-read" data-id="'+b.id+'">Remove</button>';
-  });
-}
-
-/* ========= Stats / Leaderboard / Trending ========= */
-function updateStats(){
-  var sum=0,n=0;
-  books.forEach(function(b){
-    if(typeof b.rating==='number'){sum+=b.rating;n++;}
-    (b.userRatings||[]).forEach(function(r){ if(typeof r.rating==='number'){sum+=r.rating;n++;} });
-  });
-  var totalBooks=books.length;
-  var totalComments=books.reduce(function(s,b){return s+(((b.comments&&b.comments.length)||0));},0);
-  var globalAvg=n?(sum/n):0;
-  var readCount=Object.keys(userData||{}).reduce(function(s,k){var u=userData[k]||{}; return s + ((u.readList&&u.readList.length)||0);},0);
-  var usersCount=Object.keys(userData||{}).length;
-  $('#total-books').textContent=String(totalBooks);
-  $('#total-reviews').textContent=String(totalComments);
-  $('#avg-rating').textContent=globalAvg.toFixed(1);
-  $('#books-read').textContent=String(readCount);
-  $('#total-users').textContent=String(usersCount);
-
-  var list=Object.keys(userData||{}).sort(function(a,b){return a.localeCompare(b);});
-  $('#users-pop').innerHTML=list.map(function(nm){return '<div>'+escapeHtml(nm)+'</div>';}).join('');
-
-  renderLB();
-  renderTrending();
-  populateTagFilter();
-}
-function renderLB(){
-  function notSystem(name){ return String(name||'').trim().toLowerCase()!=='system'; }
-  function addRows(container,arr,unit,empty){
-    if(!arr.length){container.innerHTML='<div class="small" style="color:#2b3832">'+empty+'</div>';return;}
-    container.innerHTML=arr.map(function(item){
-      return '<div class="lb-row"><div>'+escapeHtml(item[0])+'</div><span class="lb-count">'+item[1]+' '+unit+'</span></div>';
-    }).join('');
-  }
-  var recs={}; books.forEach(function(b){var n=b.recommender; if(n) recs[n]=(recs[n]||0)+1;});
-  var recsSorted=Object.keys(recs).filter(notSystem).map(function(k){return [k,recs[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,3);
-  addRows($('#lb-recommenders'),recsSorted, (recsSorted[0]&&recsSorted[0][1]===1)?'book':'books','No shares yet');
-
-  var reads={}; Object.keys(userData||{}).forEach(function(n){ if(notSystem(n)) reads[n]=(userData[n].readList||[]).length; });
-  var readsSorted=Object.keys(reads).filter(function(n){return reads[n]>0;}).map(function(n){return [n,reads[n]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,3);
-  addRows($('#lb-readers'),readsSorted,'read','No finished books yet');
-
-  var active={};
-  Object.keys(userData||{}).forEach(function(n){ if(notSystem(n)) active[n]=((userData[n].readList||[]).length)+((userData[n].currentReading||[]).length)+((userData[n].wishList||[]).length);});
-  books.forEach(function(b){ (b.comments||[]).forEach(function(c){ var n=c.commenter||'Anonymous'; if(notSystem(n)) active[n]=(active[n]||0)+1; }); });
-  books.forEach(function(b){ (b.postLikedBy||[]).forEach(function(n){ if(notSystem(n)) active[n]=(active[n]||0)+1; }); });
-  var actSorted=Object.keys(active).map(function(n){return [n,active[n]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,3);
-  addRows($('#lb-active'),actSorted,'actions','No activity yet');
-}
-function trendingScore(b){
-  var comments = (b.comments&&b.comments.length) || 0;
-  var likes = b.postLikes || 0;
-  var ratings = ratingCount(b);
-  return comments * 2 + likes * 1.5 + ratings;
-}
-function renderTrending(){
-  var top = books.slice().sort(function(a,b){return trendingScore(b)-trendingScore(a);}).slice(0,3);
-  function makeRows(arr){
-    if(!arr.length) return '<div class="small" style="color:#2b3832">No activity yet</div>';
-    return arr.map(function(b){
-      var img = b.image ? '<img src="'+escapeAttr(b.image)+'" alt="" style="width:28px;height:42px;border-radius:6px;border:1px solid #e6ece8;object-fit:cover">' : '<div style="width:28px;height:42px;border-radius:6px;background:#e9ecef"></div>';
-      return '<div class="lb-row" data-jump="'+b.id+'"><div style="display:flex;align-items:center;gap:8px">'+img+'<div><div><strong>'+escapeHtml(b.title)+'</strong></div><div class="small" style="color:#20362c">'+escapeHtml(b.author)+'</div></div></div><span class="lb-count">'+Math.round(trendingScore(b))+' actions</span></div>';
-    }).join('');
-  }
-  var c1 = $('#trending-prelogin'); if(c1) c1.innerHTML = makeRows(top);
-}
-
-/* ========= Search/Filter ========= */
-function getUniqueRecommenders(){ 
-  var set={}; books.forEach(function(b){ if(b.recommender) set[b.recommender]=1; });
-  return Object.keys(set).sort(function(a,b){return a.localeCompare(b);});
-}
-function populateRecommenderFilter(){
-  var sel=$('#recommender-filter'); var cur=sel.value;
-  var opts=['<option value="">All Recommenders</option>'].concat(getUniqueRecommenders().map(function(n){return '<option value="'+escapeAttr(n)+'">'+escapeHtml(n)+'</option>'; }));
-  sel.innerHTML=opts.join('');
-  if(getUniqueRecommenders().indexOf(cur)>-1) sel.value=cur;
-}
-function populateCategoryOptions(){
-  var opts=[
-    'Fiction','Non-Fiction','Biography','Memoir','Self-Help','Professional','Business',
-    'Leadership','Entrepreneurship','Marketing','Finance','Personal Development',
-    'History','Science','Technology','Psychology','Philosophy','Spirituality/Religion',
-    'Health & Fitness','Cooking','Travel','Parenting','Education',
-    'Mystery','Thriller','Horror','Romance','Fantasy','Sci-Fi','Dystopian','Young Adult',
-    'Classics','Literary Fiction','Poetry','Comics/Graphic Novel','Reference','Other'
-  ];
-  $('#genre').innerHTML=opts.map(function(o){return '<option value="'+escapeAttr(o.toLowerCase())+'">'+escapeHtml(o)+'</option>';}).join('');
-  var feedCat=$('#category-filter');
-  feedCat.innerHTML=['<option value="">All Categories</option>'].concat(opts.map(function(o){return '<option value="'+escapeAttr(o.toLowerCase())+'">'+escapeHtml(o)+'</option>'; })).join('');
-}
-function getAllTagsUnique(){
-  var set={};
-  books.forEach(function(b){ (b.tags||[]).forEach(function(t){ set[String(t).toLowerCase()]=1; }); });
-  return Object.keys(set).sort();
-}
-function populateTagFilter(){
-  var sel=$('#tag-filter'); if(!sel) return;
-  var cur=sel.value;
-  var all=getAllTagsUnique();
-  sel.innerHTML=['<option value="">All Tags</option>'].concat(all.map(function(t){return '<option value="'+escapeAttr(t)+'">'+escapeHtml(t)+'</option>'; })).join('');
-  if(all.indexOf(cur)>-1) sel.value=cur;
-}
-
-function bookSearchScore(b,t){
-  if(!t) return 1;
-  var term=String(t).toLowerCase();
-  function inStr(s){ return String(s||'').toLowerCase(); }
-  var score=0;
-  var title=inStr(b.title), author=inStr(b.author), rec=inStr(b.recommender), syn=inStr(b.synopsis), rea=inStr(b.reason);
-  var tags=(b.tags||[]).map(function(x){return String(x).toLowerCase();});
-  if(title===term) score+=100;
-  if(title.indexOf(term)===0) score+=60;
-  if(title.indexOf(term)>-1) score+=30;
-  if(author.indexOf(term)===0) score+=30;
-  if(author.indexOf(term)>-1) score+=20;
-  if(rec.indexOf(term)>-1) score+=15;
-  if(rea.indexOf(term)>-1) score+=12;
-  if(syn.indexOf(term)>-1) score+=10;
-  if(tags.some(function(x){return x.indexOf(term)>-1;})) score+=25;
-  return score;
-}
-function applyFilters(){
-  var term=$('#search-input').value.trim();
-  var tagTerm=$('#tag-filter').value.trim().toLowerCase(); 
-  var cat=$('#category-filter').value;
-  var who=$('#recommender-filter').value;
-  var min=parseInt($('#min-rating').value,10)||0;
-  var sort=$('#sort-by').value;
-
-  var list=books
-    .map(function(b){ var o={}; for(var k in b) o[k]=b[k]; o._score=bookSearchScore(b,term); return o; })
-    .filter(function(b){
-      if(term && b._score<=0) return false;
-      if(cat && b.genre!==cat) return false;
-      if(who && b.recommender!==who) return false;
-      if(min && averageRatingForBook(b) < min) return false;
-      if(tagTerm && (b.tags||[]).map(function(t){return String(t).toLowerCase();}).indexOf(tagTerm)===-1) return false;
-      return true;
-    });
-
-  if(term){ list.sort(function(a,b){ return (b._score-a._score) || (b.id-a.id); }); }
-  else if(sort==='new'){ list.sort(function(a,b){ return b.id-a.id; }); }
-  else if(sort==='likes'){ list.sort(function(a,b){ return (b.postLikes||0)-(a.postLikes||0); }); }
-  else if(sort==='rating'){ list.sort(function(a,b){ return averageRatingForBook(b)-averageRatingForBook(a); }); }
-  else if(sort==='title'){ list.sort(function(a,b){ return a.title.localeCompare(b.title); }); }
-
-  currentBooks=list; renderBooks();
-}
-
-/* ========= Google Books Search ========= */
-const searchGoogleBooks = async function(q){
-  var box=$('#book-results');
-  var input=$('#book-search');
-  if(!q||q.trim().length<2){ box.style.display='none'; box.innerHTML=''; lastSearchItems=[]; return; }
-  try{
-    setLoading(input,true);
-    const url='https://www.googleapis.com/books/v1/volumes?q='+encodeURIComponent(q.trim())+'&maxResults=10';
-    const r=await fetch(url); if(!r.ok) throw new Error('Search failed '+r.status);
-    const data=await r.json(); setLoading(input,false);
-    lastSearchItems=(data.items||[]).map(function(it,i){
-      var v=it.volumeInfo||{};
-      return {
-        index:i,
-        title:v.title||'Unknown Title',
-        authors:(v.authors||[]).join(', ')||'Unknown Author',
-        cover:(v.imageLinks&&v.imageLinks.thumbnail)||'',
-        description:v.description||'',
-        categories:v.categories||[]
-      };
-    });
-    if(!lastSearchItems.length){ box.innerHTML='<div class="small" style="padding:8px">No results</div>'; box.style.display='block'; return; }
-    box.innerHTML=lastSearchItems.map(function(r){
-      return '<div class="lb-row" data-pick="'+r.index+'"><div style="display:flex;gap:8px;align-items:center">'+(r.cover?('<img src="'+escapeAttr(r.cover)+'" class="result-cover" style="width:24px;height:36px;border-radius:4px;border:1px solid #e6ece8;object-fit:cover">'):'<div style="width:24px;height:36px;border-radius:4px;background:#e9ecef"></div>')+'<div><strong>'+escapeHtml(r.title)+'</strong><div class="small">'+escapeHtml(r.authors)+'</div></div></div>'+( (r.categories&&r.categories.length)?('<span class="lb-count">'+escapeHtml(r.categories[0])+'</span>') : '' )+'</div>';
-    }).join('');
-    box.style.display='block';
-  }catch(e){
-    setLoading(input,false); console.warn(e);
-    box.innerHTML='<div class="small" style="padding:8px;color:#b74a4a">Search failed. Try again.</div>';
-    box.style.display='block';
-  }
-};
-
-/* ========= Export / Import ========= */
-function download(name, text, mime){
-  mime = mime || 'text/csv;charset=utf-8;';
-  var blob=new Blob([text],{type:mime}); var url=URL.createObjectURL(blob);
-  var a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); a.remove();
-}
-function toCsvRow(arr){
-  function escCsvStr(s){ return String(s==null?'':s).replace(/"/g,'""'); }
-  return arr.map(function(v){return '"'+escCsvStr(v)+'"';}).join(',');
-}
-function exportCsvs(){
-  var booksHeader = toCsvRow(['id','title','author','genre','recommender','image','avg_rating','ratings_count','tags','synopsis','reason']);
-  var booksRows = books.map(function(b){return toCsvRow([b.id,b.title,b.author,b.genre,b.recommender,b.image||'',averageRatingForBook(b).toFixed(2),ratingCount(b),(b.tags||[]).join('|'),(b.synopsis||''),(b.reason||'')]);});
-  download('books.csv',[booksHeader].concat(booksRows).join('\n'));
-
-  var commentsHeader = toCsvRow(['book_id','book_title','comment_id','commenter','likes','text','system']);
-  var commentsRows = books.reduce(function(acc,b){
-    return acc.concat((b.comments||[]).map(function(c){return toCsvRow([b.id,b.title,c.id,c.commenter||'',c.likes||0,c.text||'',c.system?1:0]);}));
-  },[]);
-  download('comments.csv',[commentsHeader].concat(commentsRows).join('\n'));
-}
-function exportJson(){ download('bookclub-export.json',JSON.stringify({books,userData,activity,sitePrefs},null,2),'application/json'); }
-function importJson(file){
-  var fr=new FileReader();
-  fr.onload=function(){
-    try{
-      var data=JSON.parse(fr.result);
-      if(data.books) books=data.books;
-      if(data.userData) userData=data.userData;
-      if(data.activity) activity=data.activity;
-      if(data.sitePrefs) for(var k in data.sitePrefs){ sitePrefs[k]=data.sitePrefs[k]; }
-      saveAll(); populateRecommenderFilter(); populateTagFilter(); applyFilters(); renderActivity(); renderMyLists(); updateStats();
-      showToast('Import complete');
-    }catch(e){ showToast('Invalid JSON',true); }
-  };
-  fr.readAsText(file);
-}
-
-/* ========= Modal ========= */
-function openFinishModal(book){
-  finishContext = {bookId: book.id};
-  var urObj = (book.userRatings||[]).find(function(r){return r.user===currentUser;});
-  var mineEntry = me().readList.find(function(x){return String(x.id) === String(book.id);});
-  currentRating = (urObj?urObj.rating:undefined); if(currentRating==null) currentRating = (mineEntry && mineEntry._rating) || 0;
-  $('#finish-title').textContent = book.title+' — '+book.author;
-  $$('#finish-stars .star').forEach(function(star){
-    var val=Number(star.getAttribute('data-rating'));
-    star.classList.toggle('filled', val<=currentRating);
-  });
-  $('#finish-modal').classList.add('show');
-}
-function closeFinishModal(){ $('#finish-modal').classList.remove('show'); finishContext=null; }
-
-/* ========= Writing assistant ========= */
-function localReason(o){
-  var title=o.title, author=o.author, genre=o.genre, synopsis=o.synopsis, tone=o.tone, tags=o.tags;
-  var bits=[], clean=function(s){ return String(s||'').replace(/\s+/g,' ').trim(); };
-  var s=clean(synopsis);
-  var hook = s ? s.split(/(?<=[.!?])\s+/).slice(0,1).join(' ') : '';
-  if(tone==='hook'){ bits.push('Quick rec: '+title+' is a '+genre+' that grabs you fast and doesn’t let go.'); }
-  else if(tone==='professional'){ bits.push(title+' distills '+genre+' ideas into clear, practical takeaways.'); }
-  else if(tone==='concise'){ bits.push(title+' is a sharp '+genre+' that’s worth your time.'); }
-  else { bits.push('I loved how '+title+' by '+author+' blends '+genre+' themes into something memorable.'); }
-  if(hook) bits.push(hook);
-  if(tags) bits.push('Great for fans of '+tags+'.');
-  return clean(bits.join(' '));
-}
-async function suggestReason(tone){
-  var title=$('#title').value.trim(), author=$('#author').value.trim();
-  var genre=$('#genre').value, synopsis=$('#synopsis').value.trim();
-  var tags=(currentTags||[]).slice(0,6).join(', ');
-  var fallback = localReason({title:title,author:author,genre:genre,synopsis:synopsis,tone:tone,tags:tags});
-  var key=(sitePrefs.openaiKey||'').trim(); if(!key) return fallback;
-  try{
-    const prompt='Write a '+tone+' 2-3 sentence recommendation for "'+title+'" by '+author+'. Category '+genre+'. Tags: '+(tags||'—')+'. Use ~80 words. No spoilers. Avoid slang.';
-    const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:'gpt-4o-mini',messages:[{role:'user',content:prompt}],temperature:0.7,max_tokens:180})});
-    if(!r.ok) throw new Error(await r.text());
-    const j=await r.json(); return (j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content && j.choices[0].message.content.trim()) || fallback;
-  }catch(e){ console.warn(e); return fallback; }
-}
-
-/* ========= Boot ========= */
-let currentBooks=[];
-
-document.addEventListener('DOMContentLoaded', async function(){
-  await loadAll();
-  setupPWA();
-
-  $('#login-section').style.display='block';
-  $('#main-app').style.display='none';
-  $('#user-bar').style.display='none';
-  $('#prelogin-row').style.display='none';
-  $('#main-nav').style.display='none';
-
-  populateCategoryOptions();
-  populateRecommenderFilter();
-  populateTagFilter();
-  applyFilters();
-  renderActivity();
-  renderMyLists();
-  updateStats();
-
-  $('#stat-books').addEventListener('click', function(){ openSection('feed'); window.scrollTo({top:0,behavior:'smooth'}); });
-  $('#users-chip').addEventListener('mouseenter', function(){ var p=$('#users-pop'); p.style.display='block'; var r=$('#users-chip').getBoundingClientRect(); p.style.position='fixed'; p.style.left=(r.left)+'px'; p.style.top=(r.bottom+6)+'px'; });
-  $('#users-pop').addEventListener('mouseleave', function(){ $('#users-pop').style.display='none'; });
-
-  $('#feed-btn').addEventListener('click', function(){ openSection('feed'); applyFilters(); });
-  $('#add-btn').addEventListener('click', function(){ openSection('add'); });
-  $('#my-books-btn').addEventListener('click', function(){ openSection('my-books'); renderMyLists(); });
-  $('#prefs-btn').addEventListener('click', function(){ openSection('prefs'); });
-
-  $('#login-form').addEventListener('submit', function(e){
-    e.preventDefault();
-    var name=($('#username-input').value||'').trim();
-    if(!name) return;
-    currentUser=name; ensureUser(currentUser);
-    $('#current-user-name').textContent=currentUser;
-    $('#user-bar').style.display='flex';
-    $('#login-section').style.display='none';
-    $('#main-app').style.display='block';
-    $('#main-nav').style.display='flex';
-    $('#recommender').value=currentUser;
-    $('#prelogin-row').style.display='grid';
-    renderMyLists(); updateStats(); applyFilters(); renderActivity();
-  });
-  $('#logout-btn').addEventListener('click', function(){
-    currentUser=''; $('#user-bar').style.display='none';
-    $('#main-app').style.display='none'; $('#login-section').style.display='block';
-    $('#prelogin-row').style.display='none';
-    $('#main-nav').style.display='none';
-  });
-
-  $('#activity-toggle').addEventListener('click', function(){ activityExpanded=!activityExpanded; renderActivity(); });
-  $('#activity-filter').addEventListener('change', renderActivity);
-  $('#search-input').addEventListener('input', applyFilters);
-  $('#tag-filter').addEventListener('change', applyFilters);
-  $('#category-filter').addEventListener('change', applyFilters);
-  $('#recommender-filter').addEventListener('change', applyFilters);
-  $('#min-rating').addEventListener('change', applyFilters);
-  $('#sort-by').addEventListener('change', applyFilters);
-  $('#collapse-all').addEventListener('change', renderBooks);
-
-  var debounceT=null;
-  $('#book-search').addEventListener('input',function(e){ clearTimeout(debounceT); debounceT=setTimeout(function(){searchGoogleBooks(e.target.value);},300); });
-  document.addEventListener('click',function(e){
-    var pick=e.target.closest && e.target.closest('[data-pick]'); if(pick){
-      var i=Number(pick.getAttribute('data-pick')); var it=lastSearchItems[i]; if(!it) return;
-      $('#title').value=it.title; $('#author').value=it.authors; $('#book-image').value=it.cover||''; $('#synopsis').value=it.description||'';
-      currentTags=[]; if(it.categories && it.categories.length) currentTags=currentTags.concat(it.categories.slice(0,3).map(function(x){return x.toLowerCase();})); renderTagsDisplay();
-      autoTagsFrom({categories:it.categories,genre:$('#genre').value,synopsis:it.description});
-      $('#book-results').style.display='none';
-    }
-  });
-  var bs = document.getElementById('book-search');
-  if(bs){ bs.addEventListener('keydown', function(e){ if((e.key||'')==='Enter' || e.keyCode===13) e.preventDefault(); }); }
-
-  $('#tags-display').addEventListener('click', function(e){ var x=e.target.closest && e.target.closest('.tag'); if(!x) return; var t=x.getAttribute('data-tag'); currentTags=currentTags.filter(function(y){return y!==t;}); renderTagsDisplay(); });
-  $('#tag-input').addEventListener('input',function(e){
-    var q=(e.target.value||'').toLowerCase().trim(); var s=$('#tag-suggestions'); if(!q){s.style.display='none';return;}
-    var items=tagSuggestions.filter(function(t){return t.indexOf(q)>-1 && currentTags.indexOf(t)===-1;}).slice(0,8);
-    s.innerHTML=items.map(function(t){return '<div class="lb-row" data-tagpick="'+t+'"><div>'+t+'</div></div>';}).join('');
-    s.style.display=items.length?'block':'none';
-  });
-  document.addEventListener('click',function(e){
-    var t=e.target.closest && e.target.closest('[data-tagpick]'); if(t){ addTag(t.getAttribute('data-tagpick')); var s=$('#tag-suggestions'); if(s) s.style.display='none'; }
-  });
-  $('#synopsis').addEventListener('blur', function(){ autoTagsFrom({categories:[],genre:$('#genre').value,synopsis:$('#synopsis').value}); });
-
-  (function(){
-    var tagInput = document.getElementById('tag-input');
-    if(!tagInput) return;
-    function commitTag(){ var val=(tagInput.value||'').trim(); if(val) addTag(val); }
-    tagInput.addEventListener('keydown', function(e){
-      var key=e.key||'';
-      if(key==='Enter' || String(key).toLowerCase()==='go' || e.keyCode===13 || key===',' || key==='Tab'){
-        e.preventDefault(); commitTag();
-      }
-    });
-  })();
-
-  $$('#rating-stars .star').forEach(function(star){
-    star.addEventListener('click', function(){
-      var val=Number(star.getAttribute('data-rating')); currentRating=val;
-      $$('#rating-stars .star').forEach(function(s){ s.classList.toggle('filled', Number(s.getAttribute('data-rating'))<=val); });
-      $('#rating-feedback').textContent='You selected '+val+' star'+(val===1?'':'s')+'.';
-    });
-  });
-
-  $$('#finish-stars .star').forEach(function(star){
-    star.addEventListener('click', function(){
-      var val=Number(star.getAttribute('data-rating')); currentRating=val;
-      $$('#finish-stars .star').forEach(function(s){ s.classList.toggle('filled', Number(s.getAttribute('data-rating'))<=val); });
-    });
-  });
-
-  $('#finish-save').addEventListener('click', function(){
-    try{
-      if(!finishContext){ closeFinishModal(); return; }
-      var book=books.find(function(b){return b.id===finishContext.bookId;}); if(!book){ closeFinishModal(); return; }
-
-      var rating = isFinite(currentRating) ? currentRating : 0;
-      ensureUser(currentUser); 
-      var mine = me();
-      var idStr = String(book.id);
-
-      var already = mine.readList.some(function(x){return String(x.id)===idStr;});
-      if(!already){
-        mine.readList.push({id:book.id,title:book.title,author:book.author,_rating:rating});
-        mine.currentReading = mine.currentReading.filter(function(x){return String(x.id)!==idStr;});
-        mine.wishList       = mine.wishList.filter(function(x){return String(x.id)!==idStr;});
-      }else{
-        var rec = mine.readList.find(function(x){return String(x.id)===idStr;});
-        rec._rating = rating;
-      }
-
-      book.userRatings = book.userRatings || [];
-      var ex = book.userRatings.find(function(r){return r.user===currentUser;});
-      if(ex) ex.rating = rating; else book.userRatings.push({user:currentUser,rating:rating});
-
-      var payload={user:currentUser,title:book.title,author:book.author};
-      if(rating>0) payload.rating=rating;
-      mergeOrPostActivity({type:'finish',payload:payload});
-      addActionComment(book, currentUser+' finished this book'+(rating>0?(' — '+rating+'★'):''), currentUser);
-
-      if(rating===5){
-        mergeOrPostActivity({type:'five',payload:{user:currentUser,title:book.title,author:book.author,rating:5}});
-        postToTeams('five', currentUser+' rated "'+book.title+'" 5★');
-      }
-      postToTeams('finish', currentUser+' finished "'+book.title+'"'+(rating>0?(' — '+rating+'★'):''));
-
-      saveAll(); closeFinishModal(); renderMyLists(); applyFilters(); updateStats();
-      showToast('Marked as read!');
-    }catch(e){
-      console.warn(e); closeFinishModal(); showToast('Saved locally. If something looks off, refresh.',true);
-    }
-  });
-  $('#finish-cancel').addEventListener('click', closeFinishModal);
-
-  document.addEventListener('keydown',function(e){
-    if(e.key==='Escape' && $('#finish-modal').classList.contains('show')) closeFinishModal();
-  });
-  document.addEventListener('click',function(e){
-    var m = $('#finish-modal'); if(!m || !m.classList.contains('show')) return;
-    if(!m.contains(e.target)) closeFinishModal();
-  });
-  
-  $('#book-form').addEventListener('submit', function(e){
-    e.preventDefault();
-    if(!currentUser){ showToast('Please log in first.', true); return; }
-    var title=$('#title').value.trim(), author=$('#author').value.trim();
-    var genre=$('#genre').value, recommender=(($('#recommender').value)||currentUser).trim();
-    var image=$('#book-image').value.trim(), synopsis=$('#synopsis').value.trim(), reason=$('#reason').value.trim();
-    if(!title||!author||!reason||!currentRating){ showToast('Title, author, rating, and reason are required.',true); return; }
-
-    var book={id:Date.now(), title:title, author:author, genre:genre, recommender:recommender, image:image, synopsis:synopsis, reason:reason, rating:currentRating, userRatings:[], tags:currentTags.slice(), comments:[], postLikes:0, postLikedBy:[]};
-    books.unshift(book);
-
-    ensureUser(recommender); var recMe=userData[recommender]; if(!recMe.readList.some(function(x){return x.id===book.id;})) recMe.readList.push({id:book.id,title:book.title,author:book.author,_rating:currentRating});
-    addActionComment(book, recommender+' shared this book — '+currentRating+'★', recommender);
-    mergeOrPostActivity({type:'share',payload:{user:recommender,title:title,author:author,rating:currentRating}});
-    if(currentRating===5){ mergeOrPostActivity({type:'five',payload:{user:recommender,title:title,author:author,rating:5}}); }
-
-    $('#book-form').reset(); currentTags=[]; renderTagsDisplay();
-    currentRating=0; $$('#rating-stars .star').forEach(function(s){ s.classList.remove('filled'); }); $('#rating-feedback').textContent='Click stars to rate (required)'; $('#book-results').style.display='none';
-
-    saveAll(); populateRecommenderFilter(); populateTagFilter(); applyFilters(); updateStats(); showToast('Book shared!');
-  });
-
-  $('#prefs-save').addEventListener('click', function(){ sitePrefs.postNew=$('#pref-post-new').checked; sitePrefs.postFinish=$('#pref-post-finish').checked; sitePrefs.postFive=$('#pref-post-5').checked; saveAll(); showToast('Preferences saved.'); });
-  $('#save-teams-btn').addEventListener('click', function(){ sitePrefs.teamsWebhook=$('#pref-teams-url').value.trim(); saveAll(); showToast('Teams URL saved'); });
-  $('#export-csv-btn').addEventListener('click', exportCsvs);
-  $('#export-json-btn').addEventListener('click', exportJson);
-  $('#import-json').addEventListener('change', function(e){ var f=e.target.files && e.target.files[0]; if(f) importJson(f); e.target.value=''; });
-
-  $('#toggle-danger').addEventListener('click', function(){
-    var dm=$('#data-management');
-    if(dm.style.display==='none' || !dm.style.display){
-      var pw=prompt('Enter admin password:');
-      if(pw!==ADMIN_PASSWORD){ showToast('Incorrect password',true); return; }
-      dm.style.display='block';
-    }else{
-      dm.style.display='none';
-    }
-  });
-
-  $('#clear-data-btn').addEventListener('click', function(){
-    var pw=prompt('Enter admin password:'); if(pw!==ADMIN_PASSWORD){ showToast('Incorrect password',true); return; }
-    if(!confirm('This will erase ALL data. Continue?'))return;
-    books=[]; userData={}; activity=[]; sitePrefs={teamsWebhook:'',postNew:true,postFinish:true,postFive:true,openaiKey:sitePrefs.openaiKey||''};
-    saveAll(); populateRecommenderFilter(); populateTagFilter(); applyFilters(); renderActivity(); renderMyLists(); updateStats(); showToast('All data cleared.');
-  });
-  $('#rename-user-btn').addEventListener('click', function(){
-    var pw=prompt('Admin password:'); if(pw!==ADMIN_PASSWORD){ showToast('Incorrect password',true); return; }
-    var from=$('#rename-from').value.trim(); var to=$('#rename-to').value.trim();
-    if(!from||!to){ showToast('Enter both names',true); return; }
-    if(!userData[from]){ showToast('From user not found',true); return; }
-    ensureUser(to);
-    ['readList','wishList','currentReading'].forEach(function(k){
-      var a=userData[to][k]; var b=userData[from][k]; var ids={}; a.forEach(function(x){ids[x.id]=1;});
-      b.forEach(function(x){ if(!ids[x.id]) a.push(x); });
-    });
-    delete userData[from]; saveAll(); updateStats(); showToast('User renamed/merged');
-  });
-
-  $('#delete-book-btn').addEventListener('click', function(){
-    var pw=prompt('Admin password:'); if(pw!==ADMIN_PASSWORD){ showToast('Incorrect password',true); return; }
-    var idStr=$('#delete-book-id').value.trim(); if(!idStr){ showToast('Enter a book ID',true); return; }
-    var id=Number(idStr);
-    var before=books.length;
-    books=books.filter(function(b){return b.id!==id;});
-    Object.keys(userData).forEach(function(k){
-      var u=userData[k];
-      ['readList','wishList','currentReading'].forEach(function(key){ u[key]=u[key].filter(function(x){return x.id!==id;}); });
-    });
-    if(books.length===before){ showToast('No book with that ID found',true); return; }
-    saveAll(); applyFilters(); renderMyLists(); updateStats(); showToast('Book deleted.');
-  });
-
-  $('#purge-activity-btn').addEventListener('click', function(){
-    var pw=prompt('Admin password:'); if(pw!==ADMIN_PASSWORD){ showToast('Incorrect password',true); return; }
-    var days=parseInt($('#activity-days').value.trim(),10);
-    if(!days||days<1){ showToast('Enter a valid number of days',true); return; }
-    var cutoff=Date.now() - days*24*3600*1000;
-    var before=activity.length;
-    activity=activity.filter(function(a){ return new Date(a.at).getTime() >= cutoff; });
-    saveAll(); renderActivity(); showToast('Purged '+(before-activity.length)+' activity items.');
-  });
-  $('#delete-last-activity-btn').addEventListener('click', function(){
-    var pw=prompt('Admin password:'); if(pw!==ADMIN_PASSWORD){ showToast('Incorrect password',true); return; }
-    if(activity.length){ activity.shift(); saveAll(); renderActivity(); showToast('Most recent activity deleted.'); }
-    else { showToast('No activity to delete'); }
-  });
-
-  var postSampleBtn=$('#post-sample-btn');
-  if(postSampleBtn){
-    postSampleBtn.addEventListener('click', function(){
-      if(!currentUser){ showToast('Log in first.', true); return; }
-      var b=books[0]; if(!b){ showToast('No books yet'); return; }
-      postActivity('like',{user:currentUser,title:b.title});
-      showToast('Sample like posted.');
-    });
-  }
-
-  $('#install-app-btn').addEventListener('click', async function(){
-    var status=$('#install-status'); var standalone=(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;
-    if(standalone){ showToast('Already installed'); return; }
-    if(deferredPrompt){ deferredPrompt.prompt(); var res=await deferredPrompt.userChoice; if(res && res.outcome==='accepted'){ status.textContent='Installed'; showToast('Installed'); } deferredPrompt=null; }
-    else{ $('#ios-steps').setAttribute('open','open'); showToast('On iPhone/iPad use Share → Add to Home Screen'); }
-  });
-
-  $('#save-openai-key').addEventListener('click', function(){ sitePrefs.openaiKey=$('#openai-key').value.trim(); saveAll(); showToast('API key saved (local only)'); });
-  $('#clear-openai-key').addEventListener('click', function(){ sitePrefs.openaiKey=''; $('#openai-key').value=''; saveAll(); showToast('API key cleared'); });
-  $('#reason-suggest').addEventListener('click', async function(){ var tone=$('#reason-tone').value||'personal'; var btn=$('#reason-suggest'); setLoading(btn,true); var text=await suggestReason(tone); setLoading(btn,false); $('#reason').value=text; $('#reason').focus(); });
-
-  document.addEventListener('click',function(e){
-    var btn=e.target.closest && e.target.closest('[data-action]'); var jump=e.target.closest && e.target.closest('[data-jump]');
-    if(jump){ var id=jump.getAttribute('data-jump'); var el=$('#book-'+id); if(el){ openSection('feed'); el.scrollIntoView({behavior:'smooth',block:'start'}); } return; }
-    if(!btn) return;
-    var action=btn.getAttribute('data-action'); var bookId=btn.getAttribute('data-id'); var cid=btn.getAttribute('data-cid');
-
-    function findBook(id){ return books.find(function(x){return String(x.id)===String(id);}); }
-
-    if(action==='toggle-comments'){ var list=$('[data-list="'+bookId+'"]'); if(list) list.style.display=(list.style.display==='none'?'grid':'none'); return; }
-
-    if(action==='toggle-synopsis'){
-      var full=btn.getAttribute('data-full')||''; 
-      var wrap=document.querySelector('.syn[data-syn="'+bookId+'"]'); if(!wrap) return;
-      var span=wrap.querySelector('.syn-text'); if(!span) return;
-      var expanded=span.getAttribute('data-expanded')==='true';
-      if(expanded){
-        span.textContent = (full.length>280? full.slice(0,279)+'…' : full);
-        span.setAttribute('data-expanded','false');
-        btn.textContent='Read more';
-      }else{
-        span.textContent = full;
-        span.setAttribute('data-expanded','true');
-        btn.textContent='Show less';
-      }
-      return;
-    }
-
-    if(action==='like'){
-      if(!currentUser){ showToast('Log in to like.',true); return; }
-      var b=findBook(bookId); if(!b) return;
-      b.postLikedBy=b.postLikedBy||[];
-      if(b.postLikedBy.indexOf(currentUser)>-1){
-        b.postLikedBy=b.postLikedBy.filter(function(n){return n!==currentUser;}); b.postLikes=Math.max(0,(b.postLikes||0)-1);
-      }else{
-        b.postLikedBy.push(currentUser); b.postLikes=(b.postLikes||0)+1; mergeOrPostActivity({type:'like',payload:{user:currentUser,title:b.title}});
-      }
-      saveAll(); applyFilters(); return;
-    }
-
-    if(action==='wish'){
-      if(!currentUser){ showToast('Log in to add to list.',true); return; }
-      var bw=findBook(bookId); if(!bw) return; ensureUser(currentUser); var mine=me();
-      if(!mine.wishList.some(function(x){return x.id===bw.id;})) mine.wishList.push({id:bw.id,title:bw.title,author:bw.author});
-      addActionComment(bw, currentUser+' added to Want to Read', currentUser);
-      mergeOrPostActivity({type:'list',payload:{user:currentUser,title:bw.title,action:'added to Want to Read'}});
-      saveAll(); renderMyLists(); updateStats(); showToast('Added to Want to Read'); return;
-    }
-
-    if(action==='reading'){
-      if(!currentUser){ showToast('Log in to add to list.',true); return; }
-      var br=findBook(bookId); if(!br) return; ensureUser(currentUser); var meData=me();
-      if(!meData.currentReading.some(function(x){return x.id===br.id;})){ meData.currentReading.push({id:br.id,title:br.title,author:br.author}); meData.wishList=meData.wishList.filter(function(x){return x.id!==br.id;}); }
-      addActionComment(br, currentUser+' started reading', currentUser);
-      mergeOrPostActivity({type:'list',payload:{user:currentUser,title:br.title,action:'started reading'}});
-      saveAll(); renderMyLists(); updateStats(); showToast('Added to Currently Reading'); return;
-    }
-
-    if(action==='finish'){
-      if(!currentUser){ showToast('Log in to finish books.',true); return; }
-      var bf=findBook(bookId); if(!bf) return; openFinishModal(bf); return;
-    }
-
-    if(action==='remove-current'){ ensureUser(currentUser); me().currentReading=me().currentReading.filter(function(x){return String(x.id)!==String(bookId);}); saveAll(); renderMyLists(); updateStats(); return; }
-    if(action==='remove-wish'){ ensureUser(currentUser); me().wishList=me().wishList.filter(function(x){return String(x.id)!==String(bookId);}); saveAll(); renderMyLists(); updateStats(); return; }
-    if(action==='remove-read'){ ensureUser(currentUser); me().readList=me().readList.filter(function(x){return String(x.id)!==String(bookId);}); saveAll(); renderMyLists(); updateStats(); return; }
-
-    if(action==='add-comment'){
-      var wrap=btn.closest('.c-form'); if(!wrap) return;
-      var name=(wrap.querySelector('[data-field="name"]').value||'').trim()||currentUser||'Anonymous';
-      var text=(wrap.querySelector('[data-field="text"]').value||'').trim(); if(!text){ showToast('Comment cannot be empty.',true); return; }
-      var bb=findBook(bookId); if(!bb) return; bb.comments=bb.comments||[]; bb.comments.push({id:Date.now()+Math.random(),commenter:name,text:text,likes:0,likedBy:[],system:false});
-      mergeOrPostActivity({type:'comment',payload:{user:name,title:bb.title}}); saveAll(); applyFilters(); showToast('Comment added!'); return;
-    }
-
-    if(action==='like-comment'){
-      if(!currentUser){ showToast('Log in to like comments.', true); return; }
-      var bl=findBook(bookId); if(!bl) return; var c=(bl.comments||[]).find(function(x){return String(x.id)===String(cid);}); if(!c) return;
-      c.likedBy=c.likedBy||[];
-      if(c.likedBy.indexOf(currentUser)>-1){ c.likedBy=c.likedBy.filter(function(n){return n!==currentUser;}); c.likes=Math.max(0,(c.likes||0)-1); }
-      else { c.likedBy.push(currentUser); c.likes=(c.likes||0)+1; }
-      saveAll(); applyFilters(); return;
-    }
-  });
-
-  var t1=$('#trending-prelogin'); if(t1){ t1.addEventListener('click',function(e){ var r=e.target.closest && e.target.closest('[data-jump]'); if(!r) return; var id=r.getAttribute('data-jump'); var el=$('#book-'+id); if(el){ openSection('feed'); el.scrollIntoView({behavior:'smooth',block:'start'}); } }); }
-});
-
-/* Helpers */
-function openSection(id){
-  $$('.section').forEach(function(s){s.classList.remove('active');}); $('#'+id).classList.add('active');
-  $$('.nav-btn').forEach(function(b){b.classList.remove('active');});
-  if(id==='feed') $('#feed-btn').classList.add('active');
-  if(id==='add') $('#add-btn').classList.add('active');
-  if(id==='my-books') $('#my-books-btn').classList.add('active');
-  if(id==='prefs') $('#prefs-btn').classList.add('active');
-}
-function addActionComment(book, text, who){
-  book.comments=book.comments||[];
-  book.comments.unshift({id:Date.now()+Math.random(), commenter: who || 'Anonymous', text: text, likes:0, likedBy:[], system:false});
-}
-</script>
-</body>
-</html>
+    (book.reason?('<div class="why"><div class="reason-title">Why '+escapeHtml(book.recommender)+' recommends it</div>'+
